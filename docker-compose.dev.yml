@@ -1,0 +1,45 @@
+# Local development: everything runs in containers, nothing installs on the host.
+# Production compose (app, db, caddy) arrives with M6 as docker-compose.yml.
+name: fintrace
+
+services:
+  app:
+    build: docker/dev
+    # shortcut: runs as uid 1000 (the node user) so bind-mounted files stay yours, change it if your host uid differs.
+    user: node
+    working_dir: /app
+    command: sh -c "pnpm install --frozen-lockfile && pnpm dev --hostname 0.0.0.0"
+    env_file: .env
+    environment:
+      NEXT_TELEMETRY_DISABLED: "1"
+    ports:
+      - "127.0.0.1:${APP_PORT:-3000}:3000"
+    volumes:
+      - .:/app
+      - node_modules:/app/node_modules
+      - next_cache:/app/.next
+      - pnpm_store:/pnpm-store
+    depends_on:
+      db:
+        condition: service_healthy
+
+  # No published port: the app reaches it as db:5432, psql through `docker compose exec`.
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: fintrace
+      POSTGRES_PASSWORD: fintrace
+      POSTGRES_DB: fintrace
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U fintrace -d fintrace"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
+volumes:
+  node_modules:
+  next_cache:
+  pnpm_store:
+  db_data:
