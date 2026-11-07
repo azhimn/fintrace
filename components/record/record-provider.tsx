@@ -5,13 +5,13 @@ import { useRouter } from "next/navigation";
 import { createContext, use, useCallback, useEffect, useRef, useState } from "react";
 import { saveRecord } from "@/app/(app)/actions";
 import { flush } from "@/lib/offline-queue";
-import type { RecordInput } from "@/lib/record";
 import type { RecordData } from "@/lib/record-data";
 import { isTyping, matchesShortcut } from "@/lib/shortcuts";
-import { RecordForm, type Mode } from "./record-form";
+import { RecordForm, type Mode, type PlanInput } from "./record-form";
 import { Toaster, toasts } from "./toast";
 
-type Open = (options?: { initial?: Partial<RecordInput>; mode?: Mode }) => void;
+type Options = { initial?: PlanInput; mode?: Mode; plan?: { cycleId: string; cycleStart: string } };
+type Open = (options?: Options) => void;
 const RecordContext = createContext<{ open: Open; data: RecordData } | null>(null);
 
 export function useRecord() {
@@ -26,7 +26,7 @@ export function useRecord() {
  */
 export function RecordProvider({ data, children }: { data: RecordData; children: React.ReactNode }) {
   const router = useRouter();
-  const [sheet, setSheet] = useState<{ key: number; initial?: Partial<RecordInput>; mode?: Mode } | null>(null);
+  const [sheet, setSheet] = useState<(Options & { key: number }) | null>(null);
   const [open, setOpen] = useState(false);
   const popup = useRef<HTMLDivElement>(null);
 
@@ -87,8 +87,8 @@ export function RecordProvider({ data, children }: { data: RecordData; children:
         >
           <Drawer.VirtualKeyboardProvider>
             <Drawer.Portal>
-              <Drawer.Backdrop className="fixed inset-0 min-h-dvh bg-foreground opacity-[calc(0.35*(1-var(--drawer-swipe-progress)))] transition-opacity duration-[400ms] ease-[cubic-bezier(0.32,0.72,0,1)] data-ending-style:opacity-0 data-starting-style:opacity-0 data-swiping:duration-0" />
-              <Drawer.Viewport className="fixed inset-0 flex items-end justify-center lg:items-center">
+              <Drawer.Backdrop className="fixed inset-0 z-50 min-h-dvh bg-foreground opacity-[calc(0.35*(1-var(--drawer-swipe-progress)))] transition-opacity duration-[400ms] ease-[cubic-bezier(0.32,0.72,0,1)] data-ending-style:opacity-0 data-starting-style:opacity-0 data-swiping:duration-0" />
+              <Drawer.Viewport className="fixed inset-0 z-50 flex items-end justify-center lg:items-center">
                 <Drawer.Popup
                   ref={popup}
                   initialFocus={() => popup.current?.querySelector<HTMLElement>("[data-record-item]") ?? true}
@@ -100,6 +100,7 @@ export function RecordProvider({ data, children }: { data: RecordData; children:
                       data={data}
                       initial={sheet.initial}
                       mode={sheet.mode}
+                      plan={sheet.plan}
                       onDone={() => {
                         setOpen(false);
                         router.refresh();
@@ -107,7 +108,13 @@ export function RecordProvider({ data, children }: { data: RecordData; children:
                       onClose={() => setOpen(false)}
                       title={
                         <Drawer.Title className="text-base font-medium">
-                          {sheet.mode === "edit" ? "Edit record" : "Record"}
+                          {sheet.plan
+                            ? sheet.mode === "edit"
+                              ? "Edit plan item"
+                              : "Plan item"
+                            : sheet.mode === "edit"
+                              ? "Edit record"
+                              : "Record"}
                         </Drawer.Title>
                       }
                     />

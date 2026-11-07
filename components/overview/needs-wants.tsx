@@ -3,8 +3,8 @@ import { formatMoney, formatPercent } from "@/lib/format";
 
 const GROUPS = [
   { key: "needs", label: "Needs", color: "var(--secondary)" },
-  { key: "wants", label: "Wants", color: "#8e9be0" },
-  { key: null, label: "Unclassified", color: "#c8c2bb" },
+  { key: "wants", label: "Wants", color: "var(--wants)" },
+  { key: null, label: "Unclassified", color: "var(--unclassified)" },
 ] as const;
 
 const R = 42;

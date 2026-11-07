@@ -235,3 +235,28 @@ export function borrowBalances(rows: Borrow[], self: string) {
   }
   return [...net].map(([person, amount]) => ({ person, net: amount, settled: amount === 0 }));
 }
+
+/**
+ * Balance per Fund and Budget pair, keyed `account|envelope`, using the same rules as
+ * accountBalances. Summed over a Fund it gives that Fund's balance; over a Budget, its remaining.
+ * Close cycle carries each non-zero pair into the next cycle as an opening row.
+ */
+export function pairBalances(accts: Account[], txns: Txn[]) {
+  const own = new Set(accts.filter((a) => a.kind !== "external").map((a) => a.id));
+  const out = new Map<string, number>();
+  const add = (account: string, envelope: string | null, amount: number) => {
+    if (!own.has(account)) return;
+    const key = `${account}|${envelope ?? ""}`;
+    out.set(key, (out.get(key) ?? 0) + amount);
+  };
+  for (const t of txns) {
+    const total = lineTotal(t);
+    if (t.isOpening || t.type === "income") add(t.destAccountId, t.destEnvelopeId, total);
+    else if (isSpend(t)) add(t.sourceAccountId, t.sourceEnvelopeId, -total);
+    else {
+      add(t.sourceAccountId, t.sourceEnvelopeId, -total);
+      add(t.destAccountId, t.destEnvelopeId, total);
+    }
+  }
+  return out;
+}

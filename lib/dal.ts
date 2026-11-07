@@ -1,6 +1,7 @@
 import "server-only";
-import { and, asc, count, desc, eq, gte, inArray, lt, lte, sql, type AnyColumn } from "drizzle-orm";
-import { addDays, cycleName, nextPayDate } from "./calendar";
+import { and, asc, count, desc, eq, gt, gte, inArray, isNull, lt, lte, max, or, sql, type AnyColumn, type SQL } from "drizzle-orm";
+import { z } from "zod";
+import { addDays, cycleName, daysBetween, nextPayDate } from "./calendar";
 import type { Db } from "./db";
 import {
   accounts,
@@ -15,10 +16,39 @@ import {
   transactions,
   wishlist,
 } from "./db/schema";
-import { recordSchema, type RecordInput } from "./record";
+import { pairBalances } from "./finance";
+import { recordSchema, TYPES, type RecordInput } from "./record";
 
 // ilike needs its wildcards escaped so a typed % or _ matches itself.
 const escapeLike = (s: string) => s.replace(/[\\%_]/g, "\\$&");
+
+type Tx = Parameters<Parameters<Db["transaction"]>[0]>[0];
+
+const isoDate = z.iso.date();
+const validDate = (d: unknown): d is string => isoDate.safeParse(d).success;
+
+// Each filter falls back to "not set" when its value is malformed, so a hand-edited URL can't break the query.
+const loose = <T extends z.ZodType>(schema: T) => schema.optional().catch(undefined);
+export const transactionFilters = z.object({
+  cycle: loose(z.union([z.uuid(), z.literal("all")])),
+  from: loose(z.iso.date()),
+  to: loose(z.iso.date()),
+  type: loose(z.enum(TYPES)),
+  fund: loose(z.uuid()),
+  budget: loose(z.uuid()),
+  category: loose(z.uuid()),
+  sub: loose(z.uuid()),
+  class: loose(z.enum(["needs", "wants", "none"])),
+  tag: loose(z.string().trim().min(1).max(40)),
+  q: loose(z.string().trim().min(1).max(100)),
+});
+export type TransactionFilters = z.infer<typeof transactionFilters>;
+
+const planFields = z.object({
+  frequency: z.enum(["once", "weekly", "semiweekly", "monthly", "quarterly"]).default("once"),
+  date: z.iso.date().nullish(),
+  sortNo: z.number().int().min(0).max(1_000_000).optional(),
+});
 
 /**
  * Every read and write the app may make, bound to one user. Tables without user_id are reached
@@ -61,10 +91,46 @@ export function scopedTo(db: Db, userId: string) {
     return recordSchema({ accounts: accts, envelopes: envs, subcategories: subs, planItems: plan }).safeParse(input);
   }
 
+  const isId = (id: unknown): id is string => typeof id === "string" && /^[0-9a-f-]{36}$/i.test(id);
+
+  /** One of this user's own (non-opening) transactions with its cycle's status. */
+  const ownRow = async (id: unknown) =>
+    isId(id)
+      ? (
+          await db
+            .select({ id: transactions.id, status: cycles.status })
+            .from(transactions)
+            .innerJoin(cycles, eq(cycles.id, transactions.cycleId))
+            .where(and(eq(transactions.id, id), eq(cycles.userId, userId), eq(transactions.isOpening, false)))
+        )[0]
+      : undefined;
+
+  const ownCycle = async (id: unknown, tx: Db | Tx = db) =>
+    isId(id) ? (await tx.select().from(cycles).where(and(eq(cycles.id, id), eq(cycles.userId, userId))))[0] : undefined;
+
   const dateOf = (input: unknown) => {
     const date = (input as Partial<RecordInput> | null)?.date;
     return typeof date === "string" ? date : "";
   };
+
+  /** Appends `from`'s plan items to `to`, moving dated items by the gap between the two starts. */
+  async function copyPlan(tx: Tx, from: { id: string; startDate: string }, to: { id: string; startDate: string }) {
+    const items = await tx.select().from(planItems).where(eq(planItems.cycleId, from.id)).orderBy(asc(planItems.sortNo));
+    if (!items.length) return 0;
+    const [{ last }] = await tx.select({ last: max(planItems.sortNo) }).from(planItems).where(eq(planItems.cycleId, to.id));
+    const shift = daysBetween(from.startDate, to.startDate);
+    await tx.insert(planItems).values(
+      items.map((item, i) => ({
+        ...item,
+        id: crypto.randomUUID(),
+        total: undefined,
+        cycleId: to.id,
+        sortNo: (last ?? -1) + 1 + i,
+        date: item.date ? addDays(item.date, shift) : null,
+      })),
+    );
+    return items.length;
+  }
 
   return {
     accounts: () => db.select().from(accounts).where(eq(accounts.userId, userId)).orderBy(asc(accounts.sortOrder)),
@@ -185,11 +251,9 @@ export function scopedTo(db: Db, userId: string) {
     /** Edits a transaction of this user's, moving it to the cycle its (possibly new) date falls in. */
     updateTransaction: async (input: unknown) => {
       const id = (input as { id?: unknown } | null)?.id;
-      const [existing] =
-        typeof id === "string" && /^[0-9a-f-]{36}$/i.test(id)
-          ? await db.select({ id: transactions.id }).from(transactions).where(and(eq(transactions.id, id), ownTransactions))
-          : [];
+      const existing = await ownRow(id);
       if (!existing) return { ok: false as const, missing: true as const };
+      if (existing.status === "closed") return { ok: false as const, closed: true as const };
       const cycle = await cycleOn(dateOf(input));
       const parsed = await check(input, cycle?.id ?? null);
       if (!parsed.success) return { ok: false as const, error: parsed.error };
@@ -202,8 +266,13 @@ export function scopedTo(db: Db, userId: string) {
       return { ok: true as const };
     },
 
-    /** Undo: removes one of this user's transactions. */
-    deleteTransaction: (id: string) => db.delete(transactions).where(and(eq(transactions.id, id), ownTransactions)),
+    /** Removes one of this user's transactions, unless its cycle is closed. False when nothing was removed. */
+    deleteTransaction: async (id: string) => {
+      const existing = await ownRow(id);
+      if (!existing || existing.status === "closed") return false;
+      await db.delete(transactions).where(and(eq(transactions.id, existing.id), ownTransactions));
+      return true;
+    },
 
     /**
      * Starts a cycle on `start` so that `date` falls in it, keeping cycles free of gaps and overlaps:
@@ -246,6 +315,267 @@ export function scopedTo(db: Db, userId: string) {
         if (end < date) return "That start date makes a cycle that ends before the transaction";
         await tx.insert(cycles).values({ userId, name: cycleName(start, end), startDate: start, endDate: end });
         return null;
+      });
+    },
+
+    /**
+     * Transactions matching the Transactions screen's filters, newest first, opening rows included.
+     * Returns one more row than `limit` so the caller can tell the list was cut.
+     */
+    searchTransactions: (f: TransactionFilters, limit: number) => {
+      const where: (SQL | undefined)[] = [inArray(transactions.cycleId, ownedCycles)];
+      if (f.cycle && f.cycle !== "all") where.push(eq(transactions.cycleId, f.cycle));
+      if (f.from) where.push(gte(transactions.date, f.from));
+      if (f.to) where.push(lte(transactions.date, f.to));
+      if (f.type) where.push(eq(transactions.type, f.type));
+      if (f.fund) where.push(or(eq(transactions.sourceAccountId, f.fund), eq(transactions.destAccountId, f.fund)));
+      if (f.budget) where.push(or(eq(transactions.sourceEnvelopeId, f.budget), eq(transactions.destEnvelopeId, f.budget)));
+      if (f.sub) where.push(eq(transactions.subcategoryId, f.sub));
+      if (f.category) {
+        const subs = db
+          .select({ id: subcategories.id })
+          .from(subcategories)
+          .where(and(eq(subcategories.categoryId, f.category), inArray(subcategories.categoryId, ownedCategories)));
+        where.push(inArray(transactions.subcategoryId, subs));
+      }
+      if (f.class === "none") where.push(isNull(transactions.classification));
+      else if (f.class) where.push(eq(transactions.classification, f.class));
+      if (f.tag) where.push(sql`${f.tag} = any(${transactions.tags})`);
+      if (f.q) {
+        const like = `%${escapeLike(f.q)}%`;
+        where.push(
+          or(
+            sql`${transactions.item} ilike ${like}`,
+            sql`${transactions.location} ilike ${like}`,
+            sql`${transactions.note} ilike ${like}`,
+          ),
+        );
+      }
+      return db
+        .select()
+        .from(transactions)
+        .where(and(...where))
+        .orderBy(desc(transactions.date), desc(transactions.createdAt))
+        .limit(limit + 1);
+    },
+
+    /** Every tag this user has used, for the tag filter. */
+    tags: async () =>
+      (
+        await db
+          .selectDistinct({ tag: sql<string>`unnest(${transactions.tags})` })
+          .from(transactions)
+          .where(inArray(transactions.cycleId, ownedCycles))
+      )
+        .map((r) => r.tag)
+        .sort((a, b) => a.localeCompare(b)),
+
+    /**
+     * Adds or edits a plan item in an open cycle of this user's. It goes through the same section 3
+     * checks as a transaction, plus frequency and an optional date.
+     */
+    savePlanItem: async (cycleId: string, input: unknown, mode: "add" | "edit") => {
+      const cycle = await ownCycle(cycleId);
+      if (!cycle) return { ok: false as const, missing: true as const };
+      if (cycle.status === "closed") return { ok: false as const, closed: true as const };
+      const extra = planFields.safeParse(input);
+      if (!extra.success) return { ok: false as const, error: extra.error };
+      const date = extra.data.date ?? null;
+      // A plan item needs no date, but the shared checks do: borrow the cycle's start for them.
+      const parsed = await check({ ...(input as object), date: date ?? cycle.startDate, planItemId: null }, null);
+      if (!parsed.success) return { ok: false as const, error: parsed.error };
+      const r = parsed.data;
+      const changes = {
+        item: r.item,
+        location: r.location,
+        sourceAccountId: r.sourceAccountId,
+        sourceEnvelopeId: r.sourceEnvelopeId,
+        destAccountId: r.destAccountId,
+        destEnvelopeId: r.destEnvelopeId,
+        subcategoryId: r.subcategoryId ?? null,
+        classification: r.classification,
+        type: r.type,
+        unit: r.unit,
+        frequency: extra.data.frequency,
+        quantity: r.quantity,
+        amount: r.amount,
+        discount: r.discount,
+        date,
+      };
+      if (mode === "edit") {
+        const updated = await db
+          .update(planItems)
+          .set(changes)
+          .where(and(eq(planItems.id, r.id), eq(planItems.cycleId, cycle.id)))
+          .returning({ id: planItems.id });
+        return updated.length ? { ok: true as const } : { ok: false as const, missing: true as const };
+      }
+      const [{ last }] = await db
+        .select({ last: max(planItems.sortNo) })
+        .from(planItems)
+        .where(eq(planItems.cycleId, cycle.id));
+      await db
+        .insert(planItems)
+        .values({ ...changes, id: r.id, cycleId: cycle.id, sortNo: extra.data.sortNo ?? (last ?? -1) + 1 })
+        .onConflictDoNothing({ target: planItems.id });
+      return { ok: true as const };
+    },
+
+    /** Removes a plan item from an open cycle. Returns the row so it can be put back. */
+    deletePlanItem: async (id: string) => {
+      if (!isId(id)) return null;
+      const openCycles = db
+        .select({ id: cycles.id })
+        .from(cycles)
+        .where(and(eq(cycles.userId, userId), eq(cycles.status, "open")));
+      const [row] = await db
+        .delete(planItems)
+        .where(and(eq(planItems.id, id), inArray(planItems.cycleId, openCycles)))
+        .returning();
+      return row ?? null;
+    },
+
+    /** Appends the plan of the cycle before `cycleId`, dates moved by the gap between the two starts. */
+    copyPreviousPlan: async (cycleId: string) => {
+      const cycle = await ownCycle(cycleId);
+      if (!cycle) return "That cycle doesn't exist";
+      if (cycle.status === "closed") return "This cycle is closed";
+      const [before] = await db
+        .select()
+        .from(cycles)
+        .where(and(eq(cycles.userId, userId), lt(cycles.startDate, cycle.startDate)))
+        .orderBy(desc(cycles.startDate))
+        .limit(1);
+      if (!before) return "There's no cycle before this one";
+      const copied = await db.transaction((tx) => copyPlan(tx, before, cycle));
+      return copied ? null : `${before.name} has no plan items to copy`;
+    },
+
+    /**
+     * Moves a cycle's start (its pay day). The cycle before ends the day before, so there is never a
+     * gap or an overlap. A closed cycle before may change its end this way: that moves no record, and
+     * the move is refused if any record would end up in the other cycle. Opening rows move with the
+     * start. Returns an error message, or null.
+     */
+    moveCycleStart: async (cycleId: string, start: string) => {
+      if (!validDate(start)) return "Enter a valid date";
+      return db.transaction(async (tx) => {
+        const cycle = await ownCycle(cycleId, tx);
+        if (!cycle) return "That cycle doesn't exist";
+        if (cycle.status === "closed") return "This cycle is closed, so its dates are fixed";
+        if (start === cycle.startDate) return null;
+        if (start > cycle.endDate) return "The start has to be on or before the cycle's end";
+        const [before] = await tx
+          .select()
+          .from(cycles)
+          .where(and(eq(cycles.userId, userId), lt(cycles.startDate, cycle.startDate)))
+          .orderBy(desc(cycles.startDate))
+          .limit(1);
+        if (before && start <= before.startDate) return `That's on or before the start of ${before.name}`;
+        const [early] = await tx
+          .select({ id: transactions.id })
+          .from(transactions)
+          .where(and(eq(transactions.cycleId, cycle.id), eq(transactions.isOpening, false), lt(transactions.date, start)))
+          .limit(1);
+        if (early) return "This cycle has records before that date";
+        if (before) {
+          const [late] = await tx
+            .select({ id: transactions.id })
+            .from(transactions)
+            .where(and(eq(transactions.cycleId, before.id), gte(transactions.date, start)))
+            .limit(1);
+          if (late) return `${before.name} has records on or after that date`;
+          const endDate = addDays(start, -1);
+          await tx.update(cycles).set({ endDate, name: cycleName(before.startDate, endDate) }).where(eq(cycles.id, before.id));
+        }
+        await tx
+          .update(cycles)
+          .set({ startDate: start, name: cycleName(start, cycle.endDate) })
+          .where(eq(cycles.id, cycle.id));
+        await tx
+          .update(transactions)
+          .set({ date: start })
+          .where(and(eq(transactions.cycleId, cycle.id), eq(transactions.isOpening, true)));
+        return null;
+      });
+    },
+
+    /**
+     * SPEC section 4 Close cycle: ends the cycle the day before `nextStart` and locks it, starts the
+     * next cycle there (or uses the one that already follows it), copies the plan if the next cycle
+     * has none, and carries every non-zero Fund and Budget balance over as an opening row: income
+     * from External, negative when the pair was overspent.
+     */
+    closeCycle: async (cycleId: string, nextStart: string, payDay: number) => {
+      return db.transaction(async (tx) => {
+        const cycle = await ownCycle(cycleId, tx);
+        if (!cycle) return { error: "That cycle doesn't exist" };
+        if (cycle.status === "closed") return { error: "This cycle is already closed" };
+        const [earlier] = await tx
+          .select()
+          .from(cycles)
+          .where(and(eq(cycles.userId, userId), eq(cycles.status, "open"), lt(cycles.startDate, cycle.startDate)))
+          .limit(1);
+        if (earlier) return { error: `Close ${earlier.name} first` };
+
+        let [next] = await tx
+          .select()
+          .from(cycles)
+          .where(and(eq(cycles.userId, userId), gt(cycles.startDate, cycle.startDate)))
+          .orderBy(asc(cycles.startDate))
+          .limit(1);
+        if (!next) {
+          if (!validDate(nextStart)) return { error: "Enter a valid date" };
+          if (nextStart <= cycle.startDate) return { error: "The next pay date has to be after this cycle starts" };
+          const [late] = await tx
+            .select({ id: transactions.id })
+            .from(transactions)
+            .where(and(eq(transactions.cycleId, cycle.id), gte(transactions.date, nextStart)))
+            .limit(1);
+          if (late) return { error: "This cycle has records on or after that date. Pick a later pay date." };
+          const endDate = addDays(nextStart, -1);
+          await tx.update(cycles).set({ endDate, name: cycleName(cycle.startDate, endDate) }).where(eq(cycles.id, cycle.id));
+          const end = addDays(nextPayDate(nextStart, payDay), -1);
+          [next] = await tx
+            .insert(cycles)
+            .values({ userId, name: cycleName(nextStart, end), startDate: nextStart, endDate: end })
+            .returning();
+        }
+
+        const [accts, txns, carry] = await Promise.all([
+          tx.select().from(accounts).where(eq(accounts.userId, userId)),
+          tx.select().from(transactions).where(eq(transactions.cycleId, cycle.id)),
+          tx
+            .select({ id: subcategories.id })
+            .from(subcategories)
+            .where(and(inArray(subcategories.categoryId, ownedCategories), eq(subcategories.name, "Carry-over from last cycle"))),
+        ]);
+        const external = accts.find((a) => a.kind === "external");
+        if (!external) return { error: "The External Fund is missing" };
+        const opening = [...pairBalances(accts, txns)]
+          .filter(([, amount]) => amount !== 0)
+          .map(([key, amount]) => {
+            const [account, envelope] = key.split("|");
+            return {
+              cycleId: next.id,
+              date: next.startDate,
+              item: "Carry-over",
+              type: "income" as const,
+              sourceAccountId: external.id,
+              sourceEnvelopeId: envelope || null,
+              destAccountId: account,
+              destEnvelopeId: envelope || null,
+              amount,
+              subcategoryId: carry[0]?.id ?? null,
+              isOpening: true,
+            };
+          });
+        if (opening.length) await tx.insert(transactions).values(opening);
+
+        const [planned] = await tx.select({ id: planItems.id }).from(planItems).where(eq(planItems.cycleId, next.id)).limit(1);
+        if (!planned) await copyPlan(tx, cycle, next);
+        await tx.update(cycles).set({ status: "closed" }).where(eq(cycles.id, cycle.id));
+        return { error: null, next };
       });
     },
 

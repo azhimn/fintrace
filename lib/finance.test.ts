@@ -9,6 +9,7 @@ import {
   envelopeBalances,
   lineTotal,
   needsVsWants,
+  pairBalances,
   planVsActual,
   projectedRemainder,
   reconcile,
@@ -278,5 +279,32 @@ describe("borrows", () => {
       { person: "Budi", net: 0, settled: true },
       { person: "Sari", net: 30_000, settled: false },
     ]);
+  });
+});
+
+describe("pair balances", () => {
+  const pairs = pairBalances(accounts, txns);
+  const sumBy = (side: 0 | 1) => {
+    const out: Record<string, number> = {};
+    for (const [key, value] of pairs) {
+      const id = key.split("|")[side];
+      out[id] = (out[id] ?? 0) + value;
+    }
+    return out;
+  };
+
+  it("adds up to each Fund's balance", () => {
+    expect(sumBy(0)).toEqual(Object.fromEntries(balances));
+  });
+
+  it("adds up to each Budget's remaining", () => {
+    const budgets = envelopeBalances(envelopes, txns, plan);
+    const remaining = sumBy(1);
+    for (const id of envelopes) expect(remaining[id] ?? 0).toBe(budgets.get(id)!.remaining);
+  });
+
+  it("moves money between Funds inside one Budget", () => {
+    expect(pairs.get("jago|meal")).toBe(600_000 - 45_000 - 50_000);
+    expect(pairs.get("cash|meal")).toBe(100_000 - 30_000 + 50_000);
   });
 });

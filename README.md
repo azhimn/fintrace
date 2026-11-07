@@ -2,7 +2,7 @@
 
 Personal envelope budgeting by pay cycle, across several wallets and bank accounts. It replaces a Google Sheet, and the main goal is that recording a transaction takes seconds. [docs/SPEC.md](docs/SPEC.md) is the source of truth and defines the milestones.
 
-Milestones M1 to M3 exist today: the schema and migrations, seed data, login, the user-scoped data layer, the id-ID formatter and amount parser, `lib/finance.ts` with every SPEC section 4 formula, the Overview home screen, and Quick Record (as a sheet from any app page and at `/record`), installable as a PWA with an offline queue. The management and supporting screens come in M4 and M5.
+Milestones M1 to M4 exist today: the schema and migrations, seed data, login, the user-scoped data layer, the id-ID formatter and amount parser, `lib/finance.ts` with every SPEC section 4 formula, the Overview home screen, and Quick Record (as a sheet from any app page and at `/record`), installable as a PWA with an offline queue. M4 added the Transactions, Plan, Budgets and Cycles screens, with Close cycle. The supporting screens come in M5.
 
 ## Local development
 
@@ -74,8 +74,11 @@ After you change `.env`, run `docker compose up -d app` to recreate the containe
 | `lib/finance.ts` | SPEC section 4 formulas as pure functions over DAL rows, tested on a fixture cycle in `lib/finance.test.ts` |
 | `lib/format.ts` | Money, quantity, percent and date formatters, and `parseAmount` |
 | `lib/record.ts` | Quick Record's Zod schema: section 3 pairings, ownership of every referenced id, and the defaults it fills in |
-| `app/(app)/actions.ts`, `app/api/suggest` | Save, edit, undo and start-cycle actions; item suggestions |
-| `components/record/` | Quick Record form, item combobox, sheet, toasts and offline sync |
+| `app/(app)/actions.ts`, `app/api/suggest` | Server Actions for records, plan items, cycles and Close cycle; item suggestions |
+| `app/(app)/transactions`, `plan`, `budgets`, `cycles` | The M4 screens. Filters and the selected cycle live in the URL |
+| `components/record/` | Quick Record form (also the plan item form), item combobox, sheet, toasts and offline sync |
+| `components/shell/` | The kraft band with section tabs, the address window, the cycle stepper and shared row parts |
+| `components/transactions/`, `plan/`, `budgets/`, `cycles/` | Quick-entry row, tables, row menus, the Allocate dialog, pay day and Close cycle controls |
 | `components/overview/` | Overview parts: the Record bar, Needs vs Wants donut, recent records |
 | `lib/offline-queue.ts`, `public/sw.js`, `app/manifest.ts` | The PWA: entries saved offline, the service worker, the manifest with its Record shortcut |
 | `auth.ts`, `proxy.ts` | Auth.js config and route protection |
@@ -115,7 +118,17 @@ Server components and actions should get data through `getDal()`. `plan_items`, 
 - **Starting a cycle from Quick Record.** A record dated outside every cycle asks for a start date (the default pay date on or before it) and creates the cycle. The cycle before it is shortened or extended to end the day before, and the new one runs to the day before the next pay date at least 15 days later, so a pay day moved a few days early still ends at next month's. It refuses a start that would leave the cycle before with records on or after it. Closing a cycle with opening rows is M4.
 - **Amount keypad.** The amount field uses `inputmode="numeric"`, as SPEC section 5 asks, and phone number pads have no letters, so rb and jt buttons sit under the field. Plain digits gain thousands dots as you type.
 - **Shortcuts.** Read from `settings.shortcuts` over the defaults in `lib/shortcuts.ts`. Bindings look like `r`, `mod+enter` (Ctrl, or Cmd on a Mac) and `escape`. The editor comes with Settings in M5.
-- **Undo.** The toast after saving a new record offers Undo, which deletes it, or takes it out of the offline queue. Saved edits have no Undo.
+- **Undo.** The toast after saving a new record offers Undo, which deletes it, or takes it out of the offline queue. Undo after an edit saves the row as it was before. Deleting a record or plan item offers Undo too, which puts the same row back; a restored record gets a new `created_at`, so it can move among records of the same day.
 - **Budget colours.** Each envelope's pastel comes from its sort order, so reordering envelopes in Settings will recolour them. Unallocated is always kraft.
 - **Needs vs Wants donut.** Drawn as a small SVG. Recharts arrives with the Analytics charts in M5.
 - **Icons.** Phosphor (`@phosphor-icons/react`, fill weight) replaced lucide-react.
+- **Closed cycles.** A closed cycle refuses every write to its records and plan: add, edit, delete, copy and Close. Opening rows can't be edited or deleted in any cycle.
+- **Moving a pay day.** Only an open cycle's start can move. The cycle before ends the day before, even when that cycle is closed, because only its dates change and no record moves: the move is refused if any record would land in the other cycle. Opening rows move to the new start. The last cycle keeps its end date.
+- **Close cycle.** Cycles close oldest first. When a cycle after it already exists (Quick Record can start one), Close uses that cycle's start as the next pay date instead of asking. Otherwise the new cycle runs to the day before the next default pay day at least 15 days on, the same rule Quick Record uses.
+- **Opening rows.** One per Fund and Budget pair with a non-zero balance, from `pairBalances` in `lib/finance.ts`, inserted as income from External named "Carry-over" under the "Carry-over from last cycle" subcategory. An overspent pair carries over as a negative amount, so totals still match. Money moved between Funds inside one Budget stays with the Fund it ended up in.
+- **Copying a plan.** Close copies the plan only when the next cycle has none. "Copy from previous cycle" on the Plan screen appends to whatever is there. Dated items move by the number of days between the two cycle starts.
+- **Plan items.** Plan items go through the same section 3 checks as records, so an empty Budget is stored as Unallocated or the subcategory's default. Recording from a plan item links the record to it, dated today when today is in that cycle, otherwise the cycle's start. Plan items can't be reordered yet: new ones go to the end.
+- **Allocate.** A Transfer within one Fund, from one Budget to another, dated today and named "Allocate to <Budget>". The Fund defaults to whichever holds the most in the source Budget.
+- **Transactions list.** It shows the newest 300 matches, including opening rows (read only). With no cycle in the URL it shows the current cycle. The desktop quick-entry row saves the five required fields; More, or a date outside every cycle, opens the Quick Record sheet with what was typed. Phones use the sheet.
+- **Navigation.** Section tabs sit inside the kraft band and scroll sideways on phones. Every screen has the Record bar under the flap on phones, docking once it scrolls away, and Record in the band on desktop.
+- **Close cycle confirmation.** Closing can't be undone, so the button asks a second time, naming the cycle and the next pay date.

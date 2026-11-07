@@ -290,3 +290,131 @@ describe("Quick Record write path", () => {
     expect(await a.dal.startCycle("2032-03-04", "2032-03-30", 25)).toMatch(/already starts|records on or after/);
   });
 });
+
+describe("M4 cycles, plan and search", () => {
+  let carol: string;
+  let dal: ReturnType<typeof scopedTo>;
+  let ids: { cash: string; jago: string; external: string; unallocated: string; meal: string; mealSub: string };
+  const record = (over: object) => ({
+    id: crypto.randomUUID(),
+    item: "Nasi padang",
+    type: "expense",
+    sourceAccountId: ids.cash,
+    destAccountId: ids.external,
+    amount: 25_000,
+    date: "2033-01-26",
+    ...over,
+  });
+
+  beforeAll(async () => {
+    carol = (await seedUser(db, "carol@example.com", "hash")).userId;
+    dal = scopedTo(db, carol);
+    const accts = await dal.accounts();
+    const envs = await dal.envelopes();
+    const subs = await dal.subcategories();
+    ids = {
+      cash: accts.find((a) => a.name === "Cash")!.id,
+      jago: accts.find((a) => a.name === "Jago")!.id,
+      external: accts.find((a) => a.kind === "external")!.id,
+      unallocated: envs.find((e) => e.isSystem)!.id,
+      meal: envs.find((e) => e.name === "Meal")!.id,
+      mealSub: subs.find((s) => s.name === "Meal")!.id,
+    };
+    expect(await dal.startCycle("2033-01-25", "2033-01-25", 25)).toBeNull();
+    const salary = { type: "income", sourceAccountId: ids.external, destAccountId: ids.jago, amount: 5_000_000, item: "Salary", date: "2033-01-25" };
+    expect((await dal.addTransaction(record(salary))).ok).toBe(true);
+    const allocate = { type: "transfer", sourceAccountId: ids.jago, destAccountId: ids.jago, sourceEnvelopeId: ids.unallocated, destEnvelopeId: ids.meal, amount: 600_000, item: "Allocate to Meal" };
+    expect((await dal.addTransaction(record(allocate))).ok).toBe(true);
+    // Meal money moved to Cash, then spent from Cash: Cash|Meal ends negative.
+    const move = { type: "transfer", sourceAccountId: ids.jago, destAccountId: ids.cash, sourceEnvelopeId: ids.meal, destEnvelopeId: ids.meal, amount: 50_000, item: "Tarik tunai" };
+    expect((await dal.addTransaction(record(move))).ok).toBe(true);
+    expect((await dal.addTransaction(record({ sourceEnvelopeId: ids.meal, subcategoryId: ids.mealSub, amount: 75_000, tags: ["work trip"] }))).ok).toBe(true);
+  });
+
+  const cycleOf = async (date: string) => (await dal.cycleOn(date))!;
+
+  it("saves, edits and copies plan items, checking pairings like a record", async () => {
+    const cycle = await cycleOf("2033-01-26");
+    const item = { id: crypto.randomUUID(), item: "Rent", type: "expense", sourceAccountId: ids.jago, destAccountId: ids.external, amount: 1_500_000, frequency: "monthly", date: "2033-02-01" };
+    expect(await dal.savePlanItem(cycle.id, item, "add")).toEqual({ ok: true });
+    expect((await dal.savePlanItem(cycle.id, { ...item, id: crypto.randomUUID(), destAccountId: ids.cash }, "add")).ok).toBe(false);
+    expect(await dal.savePlanItem(cycle.id, { ...item, amount: 1_600_000, date: null }, "edit")).toEqual({ ok: true });
+    const [saved] = await dal.planItems(cycle.id);
+    expect([saved.amount, saved.date, saved.frequency, saved.sourceEnvelopeId]).toEqual([1_600_000, null, "monthly", ids.unallocated]);
+    expect((await scopedTo(db, bob).savePlanItem(cycle.id, item, "edit")).ok).toBe(false);
+    expect(await scopedTo(db, bob).deletePlanItem(saved.id)).toBeNull();
+    await dal.savePlanItem(cycle.id, { ...item, id: crypto.randomUUID(), item: "Internet", amount: 300_000, date: "2033-02-03" }, "add");
+  });
+
+  it("filters transactions and keeps them to their owner", async () => {
+    const all = { cycle: "all" } as const;
+    expect((await dal.searchTransactions({ ...all, q: "padang" }, 50)).map((t) => t.item)).toEqual(["Nasi padang"]);
+    expect(await dal.searchTransactions({ ...all, type: "transfer" }, 50)).toHaveLength(2);
+    expect(await dal.searchTransactions({ ...all, tag: "work trip" }, 50)).toHaveLength(1);
+    expect(await dal.searchTransactions({ ...all, fund: ids.cash }, 50)).toHaveLength(2);
+    const food = (await dal.subcategories()).find((s) => s.id === ids.mealSub)!.categoryId;
+    expect(await dal.searchTransactions({ ...all, category: food }, 50)).toHaveLength(1);
+    expect(await dal.searchTransactions({ ...all, class: "none" }, 50)).toHaveLength(3);
+    expect(await dal.tags()).toEqual(["work trip"]);
+    expect(await scopedTo(db, bob).searchTransactions({ ...all, q: "padang" }, 50)).toEqual([]);
+  });
+
+  it("moves a pay day without gaps, and refuses one that strands records", async () => {
+    expect(await dal.startCycle("2033-02-25", "2033-02-25", 25)).toBeNull();
+    const second = await cycleOf("2033-02-25");
+    expect(await dal.moveCycleStart(second.id, "2033-01-25")).toMatch(/on or before the start/);
+    expect(await dal.moveCycleStart(second.id, "2033-01-26")).toMatch(/has records on or after/);
+    expect(await dal.moveCycleStart(second.id, "2033-02-23")).toBeNull();
+    expect((await cycleOf("2033-02-22")).endDate).toBe("2033-02-22");
+    expect((await cycleOf("2033-02-23")).name).toBe("23 Feb – 24 Mar 2033");
+    expect(await scopedTo(db, bob).moveCycleStart(second.id, "2033-02-20")).toMatch(/doesn't exist/);
+  });
+
+  it("closes a cycle: locks it, carries each Fund and Budget pair over, copies the plan", async () => {
+    const first = await cycleOf("2033-01-26");
+    const second = await cycleOf("2033-02-23");
+    expect(await dal.closeCycle(second.id, "2033-03-25", 25)).toMatchObject({ error: expect.stringMatching(/first/) });
+    expect(await dal.closeCycle(first.id, "ignored", 25)).toMatchObject({ error: null });
+    expect((await cycleOf("2033-01-26")).status).toBe("closed");
+
+    const opening = (await dal.transactions(second.id)).filter((t) => t.isOpening);
+    const pairs = Object.fromEntries(opening.map((t) => [`${t.destAccountId}|${t.destEnvelopeId}`, t.amount]));
+    expect(pairs).toEqual({
+      [`${ids.jago}|${ids.unallocated}`]: 4_400_000,
+      [`${ids.jago}|${ids.meal}`]: 550_000,
+      [`${ids.cash}|${ids.meal}`]: -25_000,
+    });
+    expect(opening.every((t) => t.type === "income" && t.sourceAccountId === ids.external && t.date === "2033-02-23")).toBe(true);
+
+    // The plan came along, with dates moved by the 29 days between the starts.
+    const plan = await dal.planItems(second.id);
+    expect(plan.map((p) => [p.item, p.date])).toEqual([["Rent", null], ["Internet", "2033-03-04"]]);
+  });
+
+  it("refuses every write to a closed cycle", async () => {
+    const first = await cycleOf("2033-01-26");
+    const [row] = (await dal.transactions(first.id)).filter((t) => t.item === "Nasi padang");
+    expect(await dal.addTransaction(record({}))).toEqual({ ok: false, closed: true });
+    expect(await dal.updateTransaction(record({ id: row.id, date: "2033-02-24" }))).toEqual({ ok: false, closed: true });
+    expect(await dal.deleteTransaction(row.id)).toBe(false);
+    const [planned] = await dal.planItems(first.id);
+    expect(await dal.deletePlanItem(planned.id)).toBeNull();
+    expect(await dal.savePlanItem(first.id, { ...planned, id: crypto.randomUUID() }, "add")).toEqual({ ok: false, closed: true });
+    expect(await dal.copyPreviousPlan(first.id)).toMatch(/closed/);
+    expect(await dal.moveCycleStart(first.id, "2033-01-24")).toMatch(/closed/);
+    expect(await dal.closeCycle(first.id, "2033-02-23", 25)).toMatchObject({ error: expect.stringMatching(/already closed/) });
+  });
+
+  it("moves opening rows with the pay day, and creates the next cycle on close", async () => {
+    const second = await cycleOf("2033-02-23");
+    expect(await dal.moveCycleStart(second.id, "2033-02-24")).toBeNull();
+    expect((await dal.transactions(second.id)).filter((t) => t.isOpening).every((t) => t.date === "2033-02-24")).toBe(true);
+    expect((await cycleOf("2033-02-23")).status).toBe("closed");
+
+    expect(await dal.closeCycle(second.id, "2033-03-24", 25)).toMatchObject({ error: null });
+    const third = await cycleOf("2033-03-24");
+    expect([third.startDate, third.endDate, third.status]).toEqual(["2033-03-24", "2033-04-24", "open"]);
+    expect((await cycleOf("2033-03-23")).endDate).toBe("2033-03-23");
+    expect((await dal.transactions(third.id)).filter((t) => t.isOpening)).toHaveLength(3);
+  });
+});

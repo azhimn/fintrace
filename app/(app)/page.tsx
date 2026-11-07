@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { RecentList } from "@/components/overview/recent-list";
 import { RecordBar } from "@/components/overview/record-bar";
 import { NeedsWants } from "@/components/overview/needs-wants";
+import { AddressWindow, Band } from "@/components/shell/band";
+import { Empty, HueDot, Money, Section } from "@/components/shell/bits";
 import { daysBetween, today } from "@/lib/calendar";
 import {
   accountBalances,
@@ -14,8 +16,8 @@ import {
 } from "@/lib/finance";
 import { formatDate, formatMoney } from "@/lib/format";
 import { envelopeHue } from "@/lib/hue";
+import { rowToInput } from "@/lib/record";
 import { getDal } from "@/lib/session";
-import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = { title: "Overview" };
 
@@ -25,10 +27,6 @@ function daysLeft(end: string, date: string) {
   if (left === 0) return "last day";
   return `${left} ${left === 1 ? "day" : "days"} left`;
 }
-
-const Money = ({ value, className }: { value: number; className?: string }) => (
-  <span className={cn("figure", value < 0 && "text-destructive", className)}>{formatMoney(value)}</span>
-);
 
 export default async function OverviewPage() {
   const dal = await getDal();
@@ -64,39 +62,30 @@ export default async function OverviewPage() {
 
   return (
     <>
-      <header className="bg-kraft">
-        <div className="mx-auto max-w-5xl px-5 pt-5 pb-5 lg:px-8 lg:pt-6">
-          <div className="flex items-center justify-between gap-4">
-            <h1 className="text-base font-semibold">
-              fintrace<span className="sr-only"> overview</span>
-            </h1>
-            <p className="text-[0.8125rem] text-kraft-ink lg:mr-auto lg:ml-6">
-              {cycle ? `${cycle.name} · ${daysLeft(cycle.endDate, date)}` : "No pay cycle yet"}
-            </p>
-            <RecordBar placement="band" />
-          </div>
-
-          <section aria-label="Funds at a glance" className="mt-4 rounded-panel bg-window px-4 pt-3.5 pb-4 lg:max-w-md">
-            <p className="text-xs font-medium text-kraft-ink">
-              Usable funds{usableNames.length > 0 && ` · ${usableNames.join(", ")}`}
-            </p>
-            <Money value={usable} className="mt-0.5 block text-[2.125rem] leading-tight font-semibold tracking-[-0.01em]" />
-            <dl className="mt-2 grid grid-cols-2 gap-3 text-[0.8125rem]">
-              <div>
-                <dt className="text-kraft-ink">Total funds</dt>
-                <dd>
-                  <Money value={total} />
-                </dd>
-              </div>
-              <div>
-                <dt className="text-kraft-ink">Projected remainder</dt>
-                <dd>{plan.length ? <Money value={projectedRemainder(plan)} /> : <span className="text-kraft-ink">No plan yet</span>}</dd>
-              </div>
-            </dl>
-          </section>
-        </div>
-      </header>
-      <div className="flap" aria-hidden />
+      <Band>
+        <h1 className="sr-only">Overview</h1>
+        <p className="mt-3 text-[0.8125rem] text-kraft-ink">
+          {cycle ? `${cycle.name} · ${daysLeft(cycle.endDate, date)}` : "No pay cycle yet"}
+        </p>
+        <AddressWindow label="Funds at a glance" className="mt-2">
+          <p className="text-xs font-medium text-kraft-ink">
+            Usable funds{usableNames.length > 0 && ` · ${usableNames.join(", ")}`}
+          </p>
+          <Money value={usable} className="mt-0.5 block text-[2.125rem] leading-tight font-semibold tracking-[-0.01em]" />
+          <dl className="mt-2 grid grid-cols-2 gap-3 text-[0.8125rem]">
+            <div>
+              <dt className="text-kraft-ink">Total funds</dt>
+              <dd>
+                <Money value={total} />
+              </dd>
+            </div>
+            <div>
+              <dt className="text-kraft-ink">Projected remainder</dt>
+              <dd>{plan.length ? <Money value={projectedRemainder(plan)} /> : <span className="text-kraft-ink">No plan yet</span>}</dd>
+            </div>
+          </dl>
+        </AddressWindow>
+      </Band>
 
       <main className="mx-auto max-w-5xl px-5 lg:px-8">
         <RecordBar placement="page" />
@@ -139,7 +128,7 @@ export default async function OverviewPage() {
                       <li key={e.id} className="border-t border-divider px-4 py-3 first:border-t-0">
                         <div className="flex items-center justify-between gap-4 text-[0.9375rem]">
                           <span className="flex min-w-0 items-center gap-2">
-                            <span aria-hidden className="size-2.5 shrink-0 rounded-full" style={{ background: envelopeHue(e) }} />
+                            <HueDot hue={envelopeHue(e)} />
                             <span className="truncate">{e.name}</span>
                           </span>
                           {b.overBudget ? (
@@ -181,26 +170,7 @@ export default async function OverviewPage() {
               ) : (
                 <RecentList
                   rows={recent.map((t) => ({
-                    input: {
-                      id: t.id,
-                      item: t.item,
-                      type: t.type,
-                      sourceAccountId: t.sourceAccountId,
-                      destAccountId: t.destAccountId,
-                      amount: t.amount,
-                      date: t.date,
-                      quantity: t.quantity,
-                      discount: t.discount,
-                      sourceEnvelopeId: t.sourceEnvelopeId,
-                      destEnvelopeId: t.destEnvelopeId,
-                      subcategoryId: t.subcategoryId,
-                      classification: t.classification,
-                      location: t.location,
-                      unit: t.unit,
-                      note: t.note,
-                      tags: t.tags,
-                      planItemId: t.planItemId,
-                    },
+                    input: { ...rowToInput(t), date: t.date },
                     total: t.total ?? 0,
                     hue: hues.get((t.type === "income" ? t.destEnvelopeId : t.sourceEnvelopeId) ?? "") ?? "var(--track)",
                     meta: [
@@ -220,17 +190,4 @@ export default async function OverviewPage() {
       </main>
     </>
   );
-}
-
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
-  return (
-    <section className="mt-[22px]">
-      <h2 className="mb-2 text-sm font-semibold">{title}</h2>
-      {children}
-    </section>
-  );
-}
-
-function Empty({ children }: { children: React.ReactNode }) {
-  return <p className="rounded-panel bg-panel px-4 py-4 text-[0.9375rem] text-muted-foreground">{children}</p>;
 }

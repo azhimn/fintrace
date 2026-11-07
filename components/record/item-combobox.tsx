@@ -36,9 +36,12 @@ type Props = {
   inputRef: React.Ref<HTMLInputElement>;
   invalid?: boolean;
   describedBy?: string;
+  /** The 44px field of the Transactions quick-entry row, instead of Quick Record's large one. */
+  compact?: boolean;
+  placeholder?: string;
 };
 
-export function ItemCombobox({ id, value, onChange, onPick, inputRef, invalid, describedBy }: Props) {
+export function ItemCombobox({ id, value, onChange, onPick, inputRef, invalid, describedBy, compact, placeholder }: Props) {
   const { items, load } = useSuggestions();
   const typed = value.trim() !== "";
 
@@ -63,14 +66,14 @@ export function ItemCombobox({ id, value, onChange, onPick, inputRef, invalid, d
       <Autocomplete.Input
         id={id}
         ref={inputRef}
-        data-record-item
+        data-record-item={compact ? undefined : true}
         autoComplete="off"
         autoCapitalize="sentences"
         enterKeyHint="next"
-        placeholder="What did you pay for?"
+        placeholder={placeholder ?? (compact ? "Item" : "What did you pay for?")}
         aria-invalid={invalid || undefined}
         aria-describedby={describedBy}
-        className="h-14 w-full rounded-field bg-field px-4 text-lg outline-none placeholder:text-muted-foreground focus-visible:shadow-[0_0_0_2px_var(--primary)] aria-invalid:shadow-[0_0_0_2px_var(--destructive)]"
+        className={`${compact ? "h-11 px-3 text-base" : "h-14 px-4 text-lg"} w-full rounded-field bg-field outline-none placeholder:text-muted-foreground focus-visible:shadow-[0_0_0_2px_var(--primary)] aria-invalid:shadow-[0_0_0_2px_var(--destructive)]`}
       />
       <Autocomplete.Portal>
         <Autocomplete.Positioner sideOffset={6} align="start" className="z-[60] w-(--anchor-width)">

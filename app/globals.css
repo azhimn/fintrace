@@ -33,6 +33,10 @@
   --color-divider: var(--divider);
   --color-track: var(--track);
   --color-field: var(--field);
+  --color-quiet-control: var(--quiet-control);
+  --color-amount-placeholder: var(--amount-placeholder);
+  --color-wants: var(--wants);
+  --color-unclassified: var(--unclassified);
   --radius-field: 10px;
   --radius-button: 14px;
   --radius-panel: 16px;
@@ -72,6 +76,13 @@
   --divider: #e0e2ea;
   --track: #dcdee7;
   --field: #ffffff;
+  /* Icon-only controls inside rows (3.38:1 on panel): icons only, never text. */
+  --quiet-control: #85807a;
+  /* The address-window amount placeholder; passes only at its 40px size. */
+  --amount-placeholder: #8a7b6a;
+  /* Needs vs Wants chart fills. */
+  --wants: #8e9be0;
+  --unclassified: #c8c2bb;
   --border: var(--divider);
   --input: var(--divider);
   --ring: var(--primary);

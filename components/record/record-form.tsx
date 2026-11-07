@@ -2,13 +2,13 @@
 
 import { CaretDownIcon } from "@phosphor-icons/react";
 import { useEffect, useId, useRef, useState } from "react";
-import { saveRecord, startCycleAndSave, undoRecord, type SaveResult } from "@/app/(app)/actions";
+import { deletePlanItem, deleteRecord, savePlanItem, saveRecord, startCycleAndSave, type SaveResult } from "@/app/(app)/actions";
 import { Button } from "@/components/ui/button";
 import { today } from "@/lib/calendar";
 import { lineTotal } from "@/lib/finance";
 import { formatAmountInput, formatDate, formatMoney, formatQuantity, parseAmount } from "@/lib/format";
 import { dequeue, enqueue } from "@/lib/offline-queue";
-import { fieldErrors, recordInput, TYPES, type RecordInput, type RecordType, type Suggestion } from "@/lib/record";
+import { fieldErrors, recordInput, TYPE_LABELS, TYPES, type RecordInput, type RecordType, type Suggestion } from "@/lib/record";
 import type { RecordData } from "@/lib/record-data";
 import { matchesShortcut } from "@/lib/shortcuts";
 import { cn } from "@/lib/utils";
@@ -17,7 +17,7 @@ import { toasts } from "./toast";
 
 export type Mode = "add" | "edit";
 
-type State = {
+export type State = {
   id: string;
   item: string;
   type: RecordType;
@@ -36,20 +36,20 @@ type State = {
   note: string;
   tags: string;
   planItemId: string | null;
+  frequency: Frequency;
 };
 
-const TYPE_LABELS: Record<RecordType, string> = {
-  expense: "Expense",
-  income: "Income",
-  transfer: "Transfer",
-  saving: "Saving",
-};
+export const FREQUENCIES = ["once", "weekly", "semiweekly", "monthly", "quarterly"] as const;
+export type Frequency = (typeof FREQUENCIES)[number];
+/** A plan item as the form takes it: a record plus frequency, with an optional date. */
+export type PlanInput = Omit<Partial<RecordInput>, "date"> & { date?: string | null; frequency?: Frequency; sortNo?: number };
+
 const CATEGORY_KIND = { expense: "expense", income: "income", saving: "saving", transfer: null } as const;
 
 const money = (n: number | null | undefined) => (n == null ? "" : formatAmountInput(String(n)));
 
 /** The Fund lists, most used first (sort is stable, so ties keep the Settings order). */
-function useFunds(data: RecordData) {
+export function useFunds(data: RecordData) {
   const own = data.accounts.filter((a) => a.kind !== "external");
   return {
     external: data.accounts.find((a) => a.kind === "external")?.id ?? "",
@@ -57,10 +57,10 @@ function useFunds(data: RecordData) {
     dests: [...own].sort((a, b) => b.destUses - a.destUses),
   };
 }
-type Funds = ReturnType<typeof useFunds>;
+export type Funds = ReturnType<typeof useFunds>;
 
 /** Puts External on the side section 3 says it belongs to, keeping the user's own picks where they fit. */
-function withType(s: State, type: RecordType, funds: Funds): State {
+export function withType(s: State, type: RecordType, funds: Funds): State {
   const ownId = (id: string) => (id && id !== funds.external ? id : "");
   const source = ownId(s.sourceAccountId) || ownId(s.destAccountId) || funds.sources[0]?.id || "";
   const dest = ownId(s.destAccountId) || ownId(s.sourceAccountId) || funds.dests[0]?.id || "";
@@ -72,7 +72,7 @@ function withType(s: State, type: RecordType, funds: Funds): State {
   return { ...s, type, sourceAccountId: source, destAccountId: funds.external };
 }
 
-function fromInput(d: Partial<RecordInput>): Partial<State> {
+export function fromInput(d: PlanInput): Partial<State> {
   const out: Partial<State> = {};
   const set = <K extends keyof State>(k: K, v: State[K] | undefined) => v !== undefined && (out[k] = v);
   set("id", d.id);
@@ -80,7 +80,8 @@ function fromInput(d: Partial<RecordInput>): Partial<State> {
   set("type", d.type);
   set("sourceAccountId", d.sourceAccountId);
   set("destAccountId", d.destAccountId);
-  set("date", d.date);
+  if (d.date !== undefined) out.date = d.date ?? "";
+  set("frequency", d.frequency);
   if (d.amount !== undefined) out.amount = money(d.amount);
   if (d.quantity !== undefined) out.quantity = formatQuantity(d.quantity);
   if (d.discount !== undefined) out.discount = d.discount ? money(d.discount) : "";
@@ -96,7 +97,7 @@ function fromInput(d: Partial<RecordInput>): Partial<State> {
   return out;
 }
 
-function blank(funds: Funds, keep?: Pick<State, "type" | "sourceAccountId" | "destAccountId" | "date">): State {
+export function blank(funds: Funds, keep?: Pick<State, "type" | "sourceAccountId" | "destAccountId" | "date">): State {
   const s: State = {
     id: crypto.randomUUID(),
     item: "",
@@ -116,13 +117,14 @@ function blank(funds: Funds, keep?: Pick<State, "type" | "sourceAccountId" | "de
     note: "",
     tags: "",
     planItemId: null,
+    frequency: "once",
     ...keep,
   };
   return withType(s, s.type, funds);
 }
 
 /** Form state to what the server takes. Amount text that isn't an id-ID amount becomes NaN and fails. */
-function toInput(s: State) {
+export function toInput(s: State) {
   const discount = s.discount.trim() ? parseAmount(s.discount) : 0;
   const input = {
     id: s.id,
@@ -149,7 +151,9 @@ function toInput(s: State) {
 
 type Props = {
   data: RecordData;
-  initial?: Partial<RecordInput>;
+  initial?: PlanInput;
+  /** Edit the plan of this cycle instead of recording a transaction. */
+  plan?: { cycleId: string; cycleStart: string };
   mode?: Mode;
   /** The record was saved and the user is done. */
   onDone: () => void;
@@ -159,10 +163,10 @@ type Props = {
   title: React.ReactNode;
 };
 
-export function RecordForm({ data, initial, mode = "add", onDone, onClose, handleEscape, title }: Props) {
+export function RecordForm({ data, initial, plan, mode = "add", onDone, onClose, handleEscape, title }: Props) {
   const funds = useFunds(data);
   const [state, setState] = useState<State>(() => {
-    const base = blank(funds);
+    const base = plan ? { ...blank(funds), date: "" } : blank(funds);
     if (!initial) return base;
     const merged = { ...base, ...fromInput(initial) };
     return initial.sourceAccountId ? merged : withType(merged, merged.type, funds);
@@ -213,33 +217,45 @@ export function RecordForm({ data, initial, mode = "add", onDone, onClose, handl
   const showTotal = total !== null && (input.quantity !== "1" || input.discount > 0);
   const started = mode === "edit" || state.item.trim() !== "" || !!initial;
 
+  /** Reverses the save. False when it couldn't. */
+  async function undo(saved: RecordInput, offline: boolean) {
+    if (offline) {
+      dequeue(saved.id);
+      return true;
+    }
+    if (mode === "add") return plan ? !!(await deletePlanItem(saved.id)) : deleteRecord(saved.id);
+    // Put the row back as it was before this edit.
+    const result = plan ? await savePlanItem(plan.cycleId, initial, "edit") : await saveRecord(initial, "edit");
+    return result.ok;
+  }
+
   function finish(saved: RecordInput, again: boolean, offline: boolean) {
     const description = `${saved.item} · ${formatMoney(lineTotal(saved as Parameters<typeof lineTotal>[0]))}`;
     const id = toasts.add({
-      title: offline ? "Saved on this device" : mode === "edit" ? "Changes saved" : "Saved",
+      title: offline ? "Saved on this device" : mode === "edit" ? "Changes saved" : plan ? "Added to the plan" : "Saved",
       description: offline ? `${description}. It syncs when you're back online.` : description,
       timeout: 6000,
-      actionProps:
-        mode === "add"
-          ? {
-              children: "Undo",
-              async onClick() {
-                toasts.close(id);
-                if (offline) dequeue(saved.id);
-                else await undoRecord(saved.id);
-                toasts.add({ title: `Removed ${saved.item}`, timeout: 3000 });
-              },
-            }
-          : undefined,
+      actionProps: {
+        children: "Undo",
+        async onClick() {
+          toasts.close(id);
+          const undone = await undo(saved, offline);
+          toasts.add({
+            title: !undone ? "Couldn't undo that" : mode === "edit" ? `Changes to ${saved.item} undone` : `Removed ${saved.item}`,
+            timeout: 3000,
+          });
+        },
+      },
     });
     setCycle(null);
     if (!again && !offline) return onDone();
     // Offline there is nothing to refresh or navigate to: close if we can, and clear the form so a
     // second tap can't queue the same entry twice.
     if (!again) onClose();
-    setState((s) =>
-      blank(funds, { type: s.type, sourceAccountId: s.sourceAccountId, destAccountId: s.destAccountId, date: s.date }),
-    );
+    setState((s) => ({
+      ...blank(funds, { type: s.type, sourceAccountId: s.sourceAccountId, destAccountId: s.destAccountId, date: s.date }),
+      frequency: s.frequency,
+    }));
     setMore(false);
     picks.load("");
     requestAnimationFrame(() => itemRef.current?.focus());
@@ -258,7 +274,8 @@ export function RecordForm({ data, initial, mode = "add", onDone, onClose, handl
   async function submit(again: boolean) {
     if (busy) return;
     setFormError(null);
-    const parsed = recordInput.safeParse(input);
+    // A plan item may have no date; the shared checks borrow the cycle's start, as the server does.
+    const parsed = recordInput.safeParse(plan ? { ...input, date: input.date || plan.cycleStart } : input);
     if (!parsed.success) {
       const fields = fieldErrors(parsed.error);
       if (!Number.isFinite(input.amount)) {
@@ -274,13 +291,16 @@ export function RecordForm({ data, initial, mode = "add", onDone, onClose, handl
       enqueue(input);
       finish(input, again, true);
     };
-    if (mode === "add" && !navigator.onLine) return offlineSave();
+    if (mode === "add" && !plan && !navigator.onLine) return offlineSave();
     setBusy(true);
     try {
-      handle(await saveRecord(input, mode), input, again);
+      const result = plan
+        ? await savePlanItem(plan.cycleId, { ...input, date: input.date || null, frequency: state.frequency }, mode)
+        : await saveRecord(input, mode);
+      handle(result, input, again);
     } catch {
       // The request never reached the server: keep a new record on the device, refuse an edit.
-      if (mode === "add") offlineSave();
+      if (mode === "add" && !plan) offlineSave();
       else setFormError("You're offline. Try again once you're back online.");
     } finally {
       setBusy(false);
@@ -353,6 +373,7 @@ export function RecordForm({ data, initial, mode = "add", onDone, onClose, handl
               if (state.planItemId) set("planItemId", null);
             }}
             onPick={pick}
+            placeholder={plan ? "What are you planning for?" : undefined}
             invalid={!!errors.item}
             describedBy={described("item")}
           />
@@ -383,7 +404,7 @@ export function RecordForm({ data, initial, mode = "add", onDone, onClose, handl
                   placeholder="0"
                   aria-invalid={!!errors.amount || undefined}
                   aria-describedby={described("amount")}
-                  className="figure h-14 min-w-0 flex-1 bg-transparent text-[2.5rem] font-semibold tracking-tight outline-none placeholder:text-[#8a7b6a]"
+                  className="figure h-14 min-w-0 flex-1 bg-transparent text-[2.5rem] font-semibold tracking-tight outline-none placeholder:text-amount-placeholder"
                 />
               </div>
               <div className="mt-1 flex gap-2">
@@ -414,7 +435,7 @@ export function RecordForm({ data, initial, mode = "add", onDone, onClose, handl
         <div className="flap" aria-hidden />
 
         {!started ? (
-          <QuickPicks items={picks.items} onPick={pick} envelopes={data.envelopes} />
+          <QuickPicks items={picks.items} onPick={pick} envelopes={data.envelopes} heading={plan ? "Plan from a past item" : "Record again"} />
         ) : (
           <div className="flex flex-col gap-5 px-5 pt-4 pb-6">
             <fieldset>
@@ -484,9 +505,30 @@ export function RecordForm({ data, initial, mode = "add", onDone, onClose, handl
               </button>
               {more && (
                 <div id={fid("more")} className="grid grid-cols-2 gap-x-3 gap-y-4 px-4 pt-1 pb-4">
-                  <Field label="Date" htmlFor={fid("date")} error={err("date")} wide>
-                    <DateField id={fid("date")} value={state.date} onChange={(v) => set("date", v)} />
+                  <Field label={plan ? "Date (optional)" : "Date"} htmlFor={fid("date")} error={err("date")} wide={!plan}>
+                    <DateField
+                      id={fid("date")}
+                      value={state.date}
+                      onChange={(v) => set("date", v)}
+                      onClear={plan ? () => set("date", "") : undefined}
+                    />
                   </Field>
+                  {plan && (
+                    <Field label="Frequency" htmlFor={fid("frequency")}>
+                      <select
+                        id={fid("frequency")}
+                        value={state.frequency}
+                        onChange={(e) => set("frequency", e.target.value as Frequency)}
+                        className={cn(fieldClass, "capitalize")}
+                      >
+                        {FREQUENCIES.map((f) => (
+                          <option key={f} value={f}>
+                            {f === "semiweekly" ? "Twice a week" : f[0].toUpperCase() + f.slice(1)}
+                          </option>
+                        ))}
+                      </select>
+                    </Field>
+                  )}
                   {(state.type === "expense" || state.type === "saving" || state.type === "transfer") && (
                     <EnvelopeSelect
                       id={fid("source-envelope")}
@@ -646,7 +688,7 @@ export function RecordForm({ data, initial, mode = "add", onDone, onClose, handl
                 Save & add another
               </Button>
               <Button type="submit" size="lg" disabled={busy} className="flex-1">
-                Save
+                {plan ? "Add to plan" : "Save"}
               </Button>
             </>
           ) : (
@@ -725,7 +767,7 @@ function EnvelopeSelect({
 }
 
 function moreSummary(s: State, data: RecordData) {
-  const parts = [s.date !== today() ? formatDate(s.date) : null];
+  const parts = [s.date && s.date !== today() ? formatDate(s.date) : null];
   const env = data.envelopes.find((e) => e.id === (s.type === "income" ? s.destEnvelopeId : s.sourceEnvelopeId));
   if (env && !env.isSystem) parts.push(env.name);
   const sub = data.categories.flatMap((c) => c.subs).find((x) => x.id === s.subcategoryId);
@@ -777,7 +819,9 @@ function QuickPicks({
   items,
   onPick,
   envelopes,
+  heading,
 }: {
+  heading: string;
   items: Suggestion[];
   onPick: (s: Suggestion) => void;
   envelopes: RecordData["envelopes"];
@@ -793,7 +837,7 @@ function QuickPicks({
   }
   return (
     <section aria-label="Recent items" className="px-5 pt-4 pb-6">
-      <h2 className="mb-2 text-sm font-medium">Record again</h2>
+      <h2 className="mb-2 text-sm font-medium">{heading}</h2>
       <ul className="rounded-panel bg-panel">
         {items.map((s) => (
           <li key={s.key} className="border-t border-divider first:border-t-0">
@@ -819,20 +863,40 @@ function QuickPicks({
  * A date shown as 'Sat, Nov 7' so it can't be misread as day/month, with the native picker on top
  * (invisible) so tapping it still opens the system date picker.
  */
-function DateField({ id, value, max, onChange }: { id: string; value: string; max?: string; onChange: (v: string) => void }) {
+export function DateField({
+  id,
+  value,
+  max,
+  onChange,
+  onClear,
+}: {
+  id: string;
+  value: string;
+  max?: string;
+  onChange: (v: string) => void;
+  /** Offers a Clear button, for dates that may be left empty. */
+  onClear?: () => void;
+}) {
   return (
-    <div className="relative flex h-11 items-center rounded-field bg-field px-3 focus-within:shadow-[0_0_0_2px_var(--primary)]">
-      <span aria-hidden>{value ? formatDate(value) : "Pick a date"}</span>
-      <input
-        id={id}
-        type="date"
-        value={value}
-        max={max}
-        required
-        onChange={(e) => e.target.value && onChange(e.target.value)}
-        onClick={(e) => e.currentTarget.showPicker?.()}
-        className="absolute inset-0 cursor-pointer opacity-0"
-      />
+    <div className="flex gap-1">
+      <div className="relative flex h-11 min-w-0 flex-1 items-center rounded-field bg-field px-3 focus-within:shadow-[0_0_0_2px_var(--primary)]">
+        <span aria-hidden className={cn(!value && "text-muted-foreground")}>{value ? formatDate(value) : onClear ? "No date" : "Pick a date"}</span>
+        <input
+          id={id}
+          type="date"
+          value={value}
+          max={max}
+          required={!onClear}
+          onChange={(e) => e.target.value && onChange(e.target.value)}
+          onClick={(e) => e.currentTarget.showPicker?.()}
+          className="absolute inset-0 cursor-pointer opacity-0"
+        />
+      </div>
+      {onClear && value && (
+        <button type="button" onClick={onClear} className="h-11 shrink-0 rounded-button px-3 text-[0.9375rem] text-muted-foreground hover:bg-accent hover:text-foreground">
+          Clear
+        </button>
+      )}
     </div>
   );
 }

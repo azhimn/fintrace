@@ -4,6 +4,12 @@ import { lineTotal } from "./finance";
 
 export const TYPES = ["expense", "income", "transfer", "saving"] as const;
 export type RecordType = (typeof TYPES)[number];
+export const TYPE_LABELS: Record<RecordType, string> = {
+  expense: "Expense",
+  income: "Income",
+  transfer: "Transfer",
+  saving: "Saving",
+};
 type Kind = "bank" | "e_wallet" | "cash" | "external";
 
 const optionalId = z.uuid().nullish();
@@ -120,3 +126,46 @@ export function fieldErrors(error: z.ZodError | undefined) {
 /** Fields a picked suggestion fills in. Date and note stay as the user left them. */
 export type Fill = Partial<Omit<RecordInput, "id" | "date" | "note">>;
 export type Suggestion = { key: string; item: string; from: "history" | "plan" | "wishlist"; fill: Fill };
+
+/** A stored transaction or plan item back in the shape Quick Record edits. */
+export function rowToInput(t: {
+  id: string;
+  item: string;
+  type: RecordType;
+  sourceAccountId: string;
+  destAccountId: string;
+  amount: number;
+  date: string | null;
+  quantity: string;
+  discount: number;
+  sourceEnvelopeId: string | null;
+  destEnvelopeId: string | null;
+  subcategoryId: string | null;
+  classification: "needs" | "wants" | null;
+  location: string | null;
+  unit: string | null;
+  note?: string | null;
+  tags?: string[];
+  planItemId?: string | null;
+}) {
+  return {
+    id: t.id,
+    item: t.item,
+    type: t.type,
+    sourceAccountId: t.sourceAccountId,
+    destAccountId: t.destAccountId,
+    amount: t.amount,
+    date: t.date,
+    quantity: t.quantity,
+    discount: t.discount,
+    sourceEnvelopeId: t.sourceEnvelopeId,
+    destEnvelopeId: t.destEnvelopeId,
+    subcategoryId: t.subcategoryId,
+    classification: t.classification,
+    location: t.location,
+    unit: t.unit,
+    note: t.note ?? null,
+    tags: t.tags ?? [],
+    planItemId: t.planItemId ?? null,
+  };
+}

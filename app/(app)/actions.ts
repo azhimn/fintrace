@@ -1,6 +1,7 @@
 "use server";
 
 import { refresh } from "next/cache";
+import type { ZodError } from "zod";
 import { payDateOnOrBefore } from "@/lib/calendar";
 import { fieldErrors } from "@/lib/record";
 import { getDal } from "@/lib/session";
@@ -10,9 +11,14 @@ export type SaveResult =
   | { ok: false; error: string; fields?: Record<string, string> }
   | { ok: false; needsCycle: { date: string; suggestedStart: string } };
 
-type Outcome = Awaited<ReturnType<Awaited<ReturnType<typeof getDal>>["addTransaction"]>>;
+type Outcome =
+  | { ok: true }
+  | { ok: false; error: ZodError }
+  | { ok: false; closed: true }
+  | { ok: false; missing: true }
+  | { ok: false; needsCycle: true };
 
-async function explain(outcome: Outcome | { ok: false; missing: true }, input: unknown): Promise<SaveResult> {
+async function explain(outcome: Outcome, input: unknown): Promise<SaveResult> {
   if (outcome.ok) {
     refresh();
     return { ok: true };
@@ -50,8 +56,55 @@ export async function startCycleAndSave(start: string, input: unknown, mode: "ad
   return saveRecord(input, mode);
 }
 
-export async function undoRecord(id: string) {
+/** Deletes a record (also Undo for a new one). False when it was gone already or its cycle is closed. */
+export async function deleteRecord(id: string) {
   const dal = await getDal();
-  if (typeof id === "string" && /^[0-9a-f-]{36}$/i.test(id)) await dal.deleteTransaction(id);
+  const removed = await dal.deleteTransaction(id);
   refresh();
+  return removed;
+}
+
+export async function savePlanItem(cycleId: string, input: unknown, mode: "add" | "edit" = "add"): Promise<SaveResult> {
+  const dal = await getDal();
+  const outcome = await dal.savePlanItem(cycleId, input, mode);
+  if (!outcome.ok && "closed" in outcome) return { ok: false, error: "This cycle is closed, so its plan is fixed." };
+  if (!outcome.ok && "missing" in outcome) return { ok: false, error: "That plan item no longer exists." };
+  return explain(outcome, input);
+}
+
+/** Removes a plan item and returns what Undo needs to put it back in the same place. */
+export async function deletePlanItem(id: string) {
+  const dal = await getDal();
+  const row = await dal.deletePlanItem(id);
+  refresh();
+  return row && { cycleId: row.cycleId, sortNo: row.sortNo };
+}
+
+export async function copyPreviousPlan(cycleId: string) {
+  const error = await (await getDal()).copyPreviousPlan(cycleId);
+  refresh();
+  return error;
+}
+
+export async function moveCycleStart(cycleId: string, start: string) {
+  const error = await (await getDal()).moveCycleStart(cycleId, start);
+  refresh();
+  return error;
+}
+
+export async function closeCycle(cycleId: string, nextStart: string) {
+  const dal = await getDal();
+  const settings = await dal.settings();
+  const { error } = await dal.closeCycle(cycleId, nextStart, settings?.defaultPayDay ?? 25);
+  refresh();
+  return error;
+}
+
+/** The first cycle, for a user who has none yet. */
+export async function startFirstCycle(start: string) {
+  const dal = await getDal();
+  const settings = await dal.settings();
+  const error = await dal.startCycle(start, start, settings?.defaultPayDay ?? 25);
+  refresh();
+  return error;
 }

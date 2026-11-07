@@ -91,7 +91,7 @@ function SwipeRow({ row, onEdit, onDuplicate }: { row: Row; onEdit: () => void; 
           type="button"
           onClick={onDuplicate}
           aria-label={`Record ${row.input.item} again`}
-          className="mx-1 flex size-11 shrink-0 items-center justify-center rounded-button text-[#85807a] hover:bg-accent hover:text-foreground"
+          className="mx-1 flex size-11 shrink-0 items-center justify-center rounded-button text-quiet-control hover:bg-accent hover:text-foreground"
         >
           <RepeatIcon weight="fill" className="size-[1.125rem]" />
         </button>

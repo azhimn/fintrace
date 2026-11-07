@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-11-07T12:15:26+00:00",
+  "generatedAt": "2026-11-08T12:00:00+00:00",
   "title": "Design System: fintrace",
   "extensions": {
     "colorMeta": {
@@ -457,6 +457,10 @@
       "caption": {
         "displayName": "Caption",
         "purpose": "Row metadata, notes, percentages."
+      },
+      "title-page": {
+        "displayName": "Title Page",
+        "purpose": "Page title on every secondary screen, in the band above the window."
       }
     },
     "shadows": [
@@ -468,7 +472,7 @@
       {
         "name": "popover-lift",
         "value": "0 8px 24px -8px rgb(61 56 50 / 0.3)",
-        "purpose": "Item suggestion popup."
+        "purpose": "Item suggestion popup and the row menu."
       },
       {
         "name": "focus-ring-field",
@@ -478,7 +482,7 @@
       {
         "name": "sheet-backdrop",
         "value": "rgb(61 56 50 / 0.35)",
-        "purpose": "Backdrop behind the Quick Record sheet; fades with swipe."
+        "purpose": "Backdrop behind the Quick Record and Allocate sheets; fades with swipe under Quick Record."
       }
     ],
     "motion": [
@@ -587,13 +591,37 @@
       "description": "Inverted ink toast with a pastel periwinkle action.",
       "html": "<div class=\"ds-toast\"><span>Bensin didn't sync</span><button>Fix</button></div>",
       "css": ".ds-toast{font-family:'Hanken Grotesk',ui-sans-serif,system-ui,sans-serif;display:flex;align-items:center;gap:12px;min-height:56px;padding:8px 8px 8px 16px;border-radius:16px;background:var(--foreground,#3d3832);color:var(--background,#f6f7fb);font-size:15px}.ds-toast span{flex:1}.ds-toast button{height:44px;padding:0 16px;border:0;border-radius:14px;background:var(--secondary,#bcc8f6);color:var(--foreground,#3d3832);font:inherit;font-weight:500;cursor:pointer}.ds-toast button:focus-visible{outline:2px solid var(--secondary,#bcc8f6);outline-offset:2px}"
+    },
+    {
+      "name": "Section Tabs",
+      "kind": "nav",
+      "refersTo": "nav-tab",
+      "description": "The app's sections as 44px tabs cut into the kraft band; current tab at Kraft Ink 20%.",
+      "html": "<nav class=\"ds-nav\"><a href=\"#\" aria-current=\"page\">Overview</a><a href=\"#\">Transactions</a><a href=\"#\">Plan</a><a href=\"#\">Budgets</a><a href=\"#\">Cycles</a></nav>",
+      "css": ".ds-nav{font-family:'Hanken Grotesk',ui-sans-serif,system-ui,sans-serif;display:flex;gap:4px;background:var(--kraft,#ead3b5);padding:8px}.ds-nav a{display:flex;align-items:center;height:44px;padding:0 14px;border-radius:14px;font-size:15px;color:var(--kraft-ink,#5f503f);text-decoration:none}.ds-nav a:hover{background:rgb(95 80 63/0.08);color:var(--foreground,#3d3832)}.ds-nav a[aria-current=page]{background:rgb(95 80 63/0.2);color:var(--foreground,#3d3832);font-weight:500}.ds-nav a:focus-visible{outline:2px solid var(--primary,#4a5bc4);outline-offset:2px}"
+    },
+    {
+      "name": "Row Menu",
+      "kind": "custom",
+      "refersTo": "row-menu-trigger",
+      "description": "Quiet Control dots trigger opening a Panel Tint popover with 44px items; Delete in Deep Red.",
+      "html": "<div class=\"ds-rm\"><button class=\"ds-rm-t\" aria-label=\"Actions\"><svg viewBox=\"0 0 256 256\" width=\"20\" height=\"20\" fill=\"currentColor\"><circle cx=\"128\" cy=\"128\" r=\"16\"/><circle cx=\"60\" cy=\"128\" r=\"16\"/><circle cx=\"196\" cy=\"128\" r=\"16\"/></svg></button><div class=\"ds-rm-p\" role=\"menu\"><div role=\"menuitem\">Edit</div><div role=\"menuitem\">Record again</div><div role=\"menuitem\" class=\"ds-rm-d\">Delete</div></div></div>",
+      "css": ".ds-rm{font-family:'Hanken Grotesk',ui-sans-serif,system-ui,sans-serif;display:flex;flex-direction:column;align-items:flex-end;gap:4px;width:200px}.ds-rm-t{display:flex;align-items:center;justify-content:center;width:44px;height:44px;border:0;border-radius:14px;background:transparent;color:var(--quiet-control,#85807a);cursor:pointer}.ds-rm-t:hover{background:var(--accent,#e3e6f3);color:var(--foreground,#3d3832)}.ds-rm-t:focus-visible{outline:2px solid var(--primary,#4a5bc4);outline-offset:2px}.ds-rm-p{min-width:176px;padding:4px;border-radius:16px;background:var(--panel,#edeef4);box-shadow:0 8px 24px -8px rgb(61 56 50/0.3)}.ds-rm-p div{display:flex;align-items:center;height:44px;padding:0 12px;border-radius:10px;font-size:15px;color:var(--foreground,#3d3832)}.ds-rm-p div:hover{background:var(--field,#fff)}.ds-rm-p .ds-rm-d{color:var(--destructive,#b3261e)}"
+    },
+    {
+      "name": "Status Badge",
+      "kind": "chip",
+      "refersTo": "status-badge-open",
+      "description": "Cycle status pill: open and current in Pastel Periwinkle, closed on Track.",
+      "html": "<span class=\"ds-badge\">Current</span> <span class=\"ds-badge ds-badge-closed\">Closed</span>",
+      "css": ".ds-badge{font-family:'Hanken Grotesk',ui-sans-serif,system-ui,sans-serif;display:inline-block;border-radius:9999px;padding:2px 10px;font-size:12px;background:var(--secondary,#bcc8f6);color:var(--foreground,#3d3832)}.ds-badge-closed{background:var(--track,#dcdee7);color:var(--muted-foreground,#66615b)}"
     }
   ],
   "narrative": {
     "northStar": "Amplop Gaji",
-    "overview": "Each pay cycle is a pay envelope and each Budget an envelope you spend from. The top of every surface is a kraft band, the envelope itself, that ends in a soft wavy flap. Inside the band sits a die-cut white address window that frames the one figure that matters: usable funds on Overview, the typed amount in Quick Record. Below the flap is a faintly cool white work area where content sits in grouped, tinted panels. Nothing is outlined and nothing casts a shadow at rest.\n\nThe palette is soft pastels with firm ink. Pastels are fills only. Text and figures stay in a warm dark ink that is never black, and every text pairing keeps WCAG AA. Action has one colour: a solid periwinkle with white text. Its pastel twin marks selection. One sans with tabular figures carries every level. Hierarchy comes from size and spacing, with little weight contrast. Density is calm and one-handed: 44px minimum targets, a full-width Record bar in thumb reach, and lists you scan rather than tables you read.\n\nThe world replaced a rejected wall-calendar direction. It also turns away from the fintech default of white cards, a hero balance and a floating pill button, and from both \"spreadsheet grey\" and \"too decorative\". UI terms are fixed: **Fund** (an account), **Budget** (an envelope), and the primary action is labelled **Record**.",
+    "overview": "Each pay cycle is a pay envelope and each Budget an envelope you spend from. The top of every surface is a kraft band, the envelope itself, that ends in a soft wavy flap. Inside the band sits a die-cut white address window that frames the one figure that matters: usable funds on Overview, the typed amount in Quick Record. Below the flap is a faintly cool white work area where content sits in grouped, tinted panels. Nothing is outlined and nothing casts a shadow at rest.\n\nThe palette is soft pastels with firm ink. Pastels are fills only. Text and figures stay in a warm dark ink that is never black, and every text pairing keeps WCAG AA. Action has one colour: a solid periwinkle with white text. Its pastel twin marks selection. One sans with tabular figures carries every level. Hierarchy comes from size and spacing, with little weight contrast. Density is calm and one-handed: 44px minimum targets, a full-width Record bar in thumb reach, and lists you scan rather than tables you read. Desktop gets real tables for Transactions, Plan and Budgets, but they sit inside the same tinted panels with the same divider rows.\n\nThe world replaced a rejected wall-calendar direction. It also turns away from the fintech default of white cards, a hero balance and a floating pill button, and from both \"spreadsheet grey\" and \"too decorative\". UI terms are fixed: **Fund** (an account), **Budget** (an envelope), and the primary action is labelled **Record**.",
     "keyCharacteristics": [
-      "Kraft band with a wavy flap edge on every top-level surface: Overview, Quick Record sheet, login.",
+      "Kraft band with a wavy flap edge on every top-level surface: each app screen (Overview, Transactions, Plan, Budgets, Cycles), the Quick Record and Allocate sheets, login.",
       "A white address window inside the kraft frames the key figure.",
       "Flat tinted panels with 1px soft dividers between rows. No borders and no resting shadows.",
       "Solid periwinkle for action, pastel periwinkle for selection, warm ink for text.",
@@ -643,7 +671,7 @@
       }
     ],
     "dos": [
-      "**Do** start every top-level surface with the kraft band and its whole-wave flap, and put the surface's key figure in a white address window.",
+      "**Do** start every top-level surface with the kraft band and its whole-wave flap, and put the surface's key figure in a white address window. App screens use the shared band with the section tabs.",
       "**Do** group content into Panel Tint panels at 16px with 1px Divider rows.",
       "**Do** give every primary action solid Ink Periwinkle with white text, and every selected state Pastel Periwinkle with ink text.",
       "**Do** keep each Budget's hue fixed and show it as a dot or bar wherever the Budget appears. Unallocated is kraft.",
