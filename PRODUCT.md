@@ -2,15 +2,13 @@
 
 <!-- impeccable:product-schema 1 -->
 
-Inferred from SPEC.md without an interview, because the build was requested without waiting. Everything below is inferred unless SPEC.md states it word for word; correct anything that reads wrong.
-
 ## Platform
 
 web
 
 ## Users
 
-One person tracking their own money in Indonesia. They log spending on a phone, usually right after paying, and plan or reconcile on a larger screen at pay day. (Inferred from SPEC section 0, "personal finance", and section 1, "transactions are logged on a phone".)
+One person tracking their own money in Indonesia. They log spending on a phone, usually right after paying, and plan or reconcile on a larger screen at pay day. Confirmed by the user on 2026-11-07.
 
 ## Product Purpose
 
@@ -22,15 +20,19 @@ Built around one person's real pay cycle: pay days that shift, rupiah shorthand 
 
 ## Operating Context
 
-Logged standing up, one-handed, often outdoors or in a shop just after paying. Reviewed at a desk on pay day. Runs on the user's own server, self-hosted.
+Logged standing up, one-handed, often outdoors or in a shop just after paying. Reviewed at a desk on pay day. On an ordinary day the user opens the app to record, not to review, so the Record action comes before every figure on the home screen. Runs on the user's own server, self-hosted.
 
 ## Capabilities and Constraints
 
-UI language is English; money and numbers are id-ID ('Rp 1.234.567', '22,5', '12,5%'); dates read like 'Fri, Sep 25'. Negative money is red. One login, no signup. Installable PWA with offline capture arrives in M3.
+UI language is English; money and numbers are id-ID ('Rp 1.234.567', '22,5', '12,5%'); dates read like 'Fri, Sep 25'. Negative money is red. UI terminology: say Fund for an account and Budget for an envelope everywhere in the interface; the spec's schema names (accounts, envelopes) stay in code. One login, no signup. Installable PWA with offline capture arrives in M3.
 
 ## Brand Commitments
 
 The name is fintrace, written lowercase. No logo or other brand assets exist yet.
+
+The user ruled out two failures: too decorative (motifs or personality that slow down reading numbers) and spreadsheet grey (dense and joyless like the sheet it replaces). The wall-calendar look M1 assigned without asking is rejected and must not return.
+
+The palette is soft pastels (user's choice, 2026-11-07).
 
 ## Evidence on Hand
 
@@ -45,4 +47,4 @@ No real financial data exists. Seeded reference lists only: accounts, envelopes,
 
 ## Accessibility & Inclusion
 
-WCAG AA contrast, full keyboard use on desktop, and touch targets that work one-handed on a phone. (Inferred from SPEC section 6, "accessible forms".)
+WCAG AA contrast, full keyboard use on desktop, and touch targets that work one-handed on a phone.
