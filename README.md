@@ -1,6 +1,6 @@
 # fintrace
 
-Personal envelope budgeting by pay cycle, across several wallets and bank accounts. It replaces a Google Sheet, and the main goal is that recording a transaction takes seconds. [SPEC.md](SPEC.md) is the source of truth and defines the milestones.
+Personal envelope budgeting by pay cycle, across several wallets and bank accounts. It replaces a Google Sheet, and the main goal is that recording a transaction takes seconds. [docs/SPEC.md](docs/SPEC.md) is the source of truth and defines the milestones.
 
 Milestones M1 (Foundation) and M2 (Calculation engine) exist today: the schema and migrations, seed data, login, the user-scoped data layer, the id-ID formatter and amount parser, an app shell, and `lib/finance.ts` with every SPEC section 4 formula. Quick Record and the other screens come in later milestones.
 
