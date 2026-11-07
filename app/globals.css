@@ -83,6 +83,8 @@
   /* Needs vs Wants chart fills. */
   --wants: #8e9be0;
   --unclassified: #c8c2bb;
+  /* Chart lines: a deeper periwinkle that keeps 3:1 on panel. Never text, never an action. */
+  --chart-line: #6c7bd2;
   --border: var(--divider);
   --input: var(--divider);
   --ring: var(--primary);

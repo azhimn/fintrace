@@ -28,6 +28,7 @@ colors:
   hue-butter: "#ecd88a"
   wants: "#8e9be0"
   unclassified: "#c8c2bb"
+  chart-line: "#6c7bd2"
 typography:
   display:
     fontFamily: "Hanken Grotesk, ui-sans-serif, system-ui, sans-serif"
@@ -223,7 +224,7 @@ The palette is soft pastels with firm ink. Pastels are fills only. Text and figu
 The world replaced a rejected wall-calendar direction. It also turns away from the fintech default of white cards, a hero balance and a floating pill button, and from both "spreadsheet grey" and "too decorative". UI terms are fixed: **Fund** (an account), **Budget** (an envelope), and the primary action is labelled **Record**.
 
 **Key Characteristics:**
-- Kraft band with a wavy flap edge on every top-level surface: each app screen (Overview, Transactions, Plan, Budgets, Cycles), the Quick Record and Allocate sheets, login.
+- Kraft band with a wavy flap edge on every top-level surface: each app screen (Overview, Transactions, Plan, Budgets, Reconcile, Analytics, Cycles, Borrows, Wishlist, Settings), the Quick Record and Allocate sheets, login.
 - A white address window inside the kraft frames the key figure.
 - Flat tinted panels with 1px soft dividers between rows. No borders and no resting shadows.
 - Solid periwinkle for action, pastel periwinkle for selection, warm ink for text.
@@ -245,7 +246,7 @@ Soft pastel fills on cool white, a kraft envelope, and one saturated periwinkle 
 - **Kraft** (#ead3b5): the envelope. It owns the shell band, the Quick Record and Allocate headers and the flap edge, plus the browser theme colour and the icon ground. Unallocated money is also kraft, because it is still in the pay envelope. At 50% it fills the rb/jt amount shortcuts.
 - **Kraft Ink** (#5f503f): secondary text on kraft or in the window, such as cycle dates, window labels, the Close control, the section tabs and the cycle stepper (5.35:1 on kraft). On the band it also tints fills: 8% for a hovered tab, 10% for hovered quiet controls, 20% for the current tab.
 - **Address Window** (#fffdfb): the warm white die-cut window inside the band. Use it only for the framed key figure.
-- **Budget Hues**: mint (#9ed4b6), apricot (#f2c08e), lilac (#cdb8ee), sky (#a9d3f0), rose (#f2b8c6), butter (#ecd88a). Each Budget gets one, in sort order. They appear as 10px dots and as progress fills, never as text.
+- **Budget Hues**: mint (#9ed4b6), apricot (#f2c08e), lilac (#cdb8ee), sky (#a9d3f0), rose (#f2b8c6), butter (#ecd88a). Each Budget stores its hue (`envelopes.hue`). A new Budget gets the one fewest Budgets use, and reordering never changes it. They appear as 10px dots and as progress fills, never as text.
 
 ### Neutral
 - **Cool Paper** (#f6f7fb): the page and sheet background, and the toast text.
@@ -259,6 +260,7 @@ Soft pastel fills on cool white, a kraft envelope, and one saturated periwinkle 
 - **Quiet Control** (#85807a): icon-only secondary controls that sit inside a row or field: the Recent repeat button, the row menu "⋯" and the search magnifier. At 3.38:1 on panel it meets the 3:1 non-text floor. Use it for icons only, never for text, and turn it to Warm Ink on hover.
 - **Amount Placeholder** (#8a7b6a): the "0" placeholder in the address-window amount field. It passes only because that text is large (40px/600, 4.04:1 on the window). Do not use it at body sizes.
 - **Unclassified Stone** (#c8c2bb): the Unclassified slice and dot in Needs vs Wants. It is a chart fill only.
+- **Chart Periwinkle** (#6c7bd2): the line in the Analytics daily spending chart and its legend swatch. It keeps 3.4:1 on Panel Tint, so the line passes the 3:1 floor for graphics. It is never text and never an action. The previous cycle's line is Quiet Control, dashed.
 
 ### Error
 - **Deep Red** (#b3261e): negative figures, "over" labels, field errors, alert text and the Delete menu item (5.65:1 on panel).
@@ -271,7 +273,7 @@ Soft pastel fills on cool white, a kraft envelope, and one saturated periwinkle 
 
 **The Kraft Means Envelope Rule.** Kraft appears only where the pay envelope is: the top band, its flap, and Unallocated money. Work areas are never kraft.
 
-**The Fixed Hue Rule.** A Budget keeps one hue on every surface it appears on: its bar, its Recent dot, its suggestion dot.
+**The Fixed Hue Rule.** A Budget keeps one hue on every surface it appears on: its bar, its Recent dot, its suggestion dot, its Settings row. Moving it in Settings keeps the hue.
 
 ## Typography
 
@@ -285,7 +287,7 @@ Soft pastel fills on cool white, a kraft envelope, and one saturated periwinkle 
 - **Display** (600, 40px, -0.025em): the typed amount in the Quick Record address window, next to a 32px/500 "Rp" in Kraft Ink. This is the largest type in the product.
 - **Headline** (600, 34px, line-height 1.25, -0.01em): usable funds in the Overview address window.
 - **Headline Page** (500, 28px): the login "Sign in" heading.
-- **Title Page** (500, 22px): the page title on every secondary screen (Transactions, Plan, Budgets, Cycles), set in the band above the window. Overview has no visible title.
+- **Title Page** (500, 22px): the page title on every secondary screen, set in the band above the window. Overview has no visible title.
 - **Title Action** (600, 19px): the mobile Record bar label. The docked twin is 17px and the desktop band button is 15px/500.
 - **Title** (600, 14px): section headings (Funds, Budgets, Needs vs Wants, Recent). The wordmark "fintrace" is 16px/600, and the sheet title is 16px/500.
 - **Body** (400, 15px): list rows, table cells, empty states, chips and tabs. Section tabs drop to 14px on phones. Inputs use 16px to stop iOS zoom, and the item field uses 18px.
@@ -343,11 +345,11 @@ There are no borders. The only line is the 1px Divider between rows inside a pan
 - **Focus:** a 2px Ink Periwinkle outline at 2px offset on every focusable element.
 
 ### Navigation
-- **Section tabs:** Overview, Transactions, Plan, Budgets and Cycles as 44px tabs cut into the band, 14px radius, Kraft Ink text with no fill. Padding is 10px on phones and 14px on desktop.
+- **Section tabs:** Overview, Transactions, Plan, Budgets, Reconcile, Analytics, Cycles, Borrows, Wishlist and Settings as 44px tabs cut into the band, 14px radius, Kraft Ink text with no fill. Padding is 10px on phones and 8px on desktop. On desktop, Settings is a 20px Phosphor gear (fill) with its name for screen readers, because ten labels don't fit beside Record.
 - **Hover:** Kraft Ink at 8% with Warm Ink text.
 - **Current:** Kraft Ink at 20% with Warm Ink text at 500, marked with `aria-current="page"`.
 - **Phones:** a row of their own under the wordmark at 14px, scrolling sideways with no scrollbar. The current tab is scrolled into view.
-- **Desktop:** inline after the wordmark at 15px, 4px apart.
+- **Desktop:** inline after the wordmark at 15px, 2px apart. If the band is ever too narrow they scroll sideways, as on phones.
 
 ### Cycle Stepper
 A line in the band under the page title: the cycle name at 500 and " · status" in Kraft Ink, 13px, between 44px caret links (Phosphor fill caret). The links are quiet controls on kraft, Kraft Ink turning Warm Ink over a 10% Kraft Ink fill. A missing older cycle keeps its space so the name does not shift.
@@ -366,7 +368,7 @@ This is the signature action. On phones it is full width, 60px tall, with a 19px
 - **Shadow Strategy:** none (see Elevation).
 - **Internal Padding:** 12px by 16px per row, 16px for single-block panels and empty states.
 - **Rows:** a 15px name over 12px Muted Ink metadata, with a tabular figure right-aligned. A Budget or record row leads with a 10px hue dot. Budget rows add a 8px rounded progress bar on Track, filled with the Budget hue, or Pastel Red when over budget.
-- **Desktop tables:** Transactions, Plan and Budgets render as a table inside a Panel Tint panel at 16px. The header row is 13px/500 Muted Ink, rows are divided by the 1px Divider, figures are right-aligned in `.figure`, and zero values drop to Muted Ink. An empty Budget collapses to one row reading "Empty". On phones the same data is list rows with the Recent row anatomy.
+- **Desktop tables:** Transactions, Plan and Budgets render as a table inside a Panel Tint panel at 16px. The header row is 13px/500 Muted Ink, rows are divided by the 1px Divider, figures are right-aligned in `.figure`, and zero values drop to Muted Ink. An empty Budget collapses to one row reading "Empty". On phones the whole row opens Allocate, so it reads "Empty · Allocate" while the cycle is open. On phones the same data is list rows with the Recent row anatomy.
 - **Recent rows:** tap to edit. Swipe left past 72px to reveal a Pastel Periwinkle "Record again" strip, or use the 44px Quiet Control repeat icon.
 
 ### Row Menu
@@ -385,13 +387,25 @@ Desktop only, above the Transactions table. A Panel Tint strip at 8px padding ho
 An irreversible step (closing a cycle) is never one tap. The secondary button reveals an inline Pastel Periwinkle panel at 45%, 16px radius, that restates the consequence, with a primary confirm and a quiet cancel.
 
 ### Address Window
-A warm white 16px-radius window inside the kraft band. It holds a 13px/500 Kraft Ink label, the key figure in Headline or Display type, and supporting 13px pairs underneath. Quick Record's window holds the amount input itself. That input is transparent with no focus box, so the window is the field.
+A warm white 16px-radius window inside the kraft band. It holds a 13px/500 Kraft Ink label, the key figure in Headline or Display type, and supporting 13px pairs underneath. Quick Record's window holds the amount input itself. That input is transparent with no focus box, so the window is the field. Settings does the same with the default pay day. The other M5 screens frame one figure each: the counted-minus-recorded difference on Reconcile, spending this cycle on Analytics, what others owe you on Borrows, and the wishlist total.
 
 ### Inputs and Fields
 - **Style:** Field White fill, no border, 10px radius, 44px tall (56px for the item field), 16px text.
-- **Focus:** a 2px inset Ink Periwinkle ring drawn with box-shadow, no outline offset.
+- **Focus:** a 2px Ink Periwinkle ring drawn with box-shadow just outside the field (`0 0 0 2px`), no outline.
 - **Error:** a 2px Deep Red ring with a 14px Deep Red message below.
 - **Labels:** 13px/500 Muted Ink, 8px above the field.
+
+### Toggle Chip
+A checkbox drawn as a 44px chip: Cool Paper at rest inside a panel, Pastel Periwinkle with ink text when on. Used for a Fund's "Counts as usable" and a wish's "Mark acquired". Archiving goes in the row menu instead, so an unchecked chip never reads as a status.
+
+### Difference Badge
+On Reconcile, a fully round 12px pill after the latest count: "Matches" on Pastel Periwinkle, or the unsigned amount with "short" or "more" on Pastel Red at 50% in Deep Red. A secondary Adjust button sits beside a non-zero badge.
+
+### Inline Forms
+Adding a borrow or a wish is an inline Panel Tint form, not a dialog: labelled 44px fields on a 2-column grid, a full-width primary button, and rarely used fields behind a "More details" disclosure. Settings edits in place: names are transparent fields that fill Field White on hover and focus and save on blur, selects and chips save on change, and caret buttons (Quiet Control) move a row up or down.
+
+### Charts
+Recharts on a Panel Tint panel. Bars are Pastel Periwinkle, 20px thick with 8px corners, each labelled with its amount in 13px/500 Warm Ink, so the label carries the value. The daily line is Chart Periwinkle at 2.5px with the previous cycle dashed in Quiet Control behind it, and stops at today. Axis text is 12px Muted Ink, the only grid lines are horizontal Dividers, and a custom HTML legend above the chart names each line by its stroke. The tooltip is a Panel Tint popover with the popover lift.
 
 ### Needs vs Wants Donut
 A 112px ring with a 16px stroke on Track. Needs is Pastel Periwinkle, Wants is Wants Periwinkle and Unclassified is Unclassified Stone. A legend with amounts and percentages always sits beside it, so colour is never the only key.

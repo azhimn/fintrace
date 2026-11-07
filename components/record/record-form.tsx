@@ -160,10 +160,12 @@ type Props = {
   onClose: () => void;
   /** Escape is handled by the sheet itself; the page variant handles it here. */
   handleEscape?: boolean;
+  /** Opens with the optional fields showing, to categorise a record. */
+  more?: boolean;
   title: React.ReactNode;
 };
 
-export function RecordForm({ data, initial, plan, mode = "add", onDone, onClose, handleEscape, title }: Props) {
+export function RecordForm({ data, initial, plan, mode = "add", onDone, onClose, handleEscape, more: openMore, title }: Props) {
   const funds = useFunds(data);
   const [state, setState] = useState<State>(() => {
     const base = plan ? { ...blank(funds), date: "" } : blank(funds);
@@ -173,7 +175,7 @@ export function RecordForm({ data, initial, plan, mode = "add", onDone, onClose,
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [formError, setFormError] = useState<string | null>(null);
-  const [more, setMore] = useState(false);
+  const [more, setMore] = useState(!!openMore);
   const [busy, setBusy] = useState(false);
   const [cycle, setCycle] = useState<{ date: string; start: string; again: boolean } | null>(null);
   const itemRef = useRef<HTMLInputElement>(null);

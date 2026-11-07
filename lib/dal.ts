@@ -16,7 +16,9 @@ import {
   transactions,
   wishlist,
 } from "./db/schema";
-import { pairBalances } from "./finance";
+import { lineTotal, pairBalances } from "./finance";
+import { nextHue } from "./hue";
+import { bindingProblem, DEFAULT_SHORTCUTS, shortcutConflicts, type ShortcutAction } from "./shortcuts";
 import { recordSchema, TYPES, type RecordInput } from "./record";
 
 // ilike needs its wildcards escaped so a typed % or _ matches itself.
@@ -49,6 +51,76 @@ const planFields = z.object({
   date: z.iso.date().nullish(),
   sortNo: z.number().int().min(0).max(1_000_000).optional(),
 });
+
+const MONEY = Number.MAX_SAFE_INTEGER;
+const name = (what: string) => z.string().trim().min(1, `Name the ${what}`).max(80);
+const optionalText = (max: number) =>
+  z.string().trim().max(max).nullish().transform((v) => v || null);
+
+export const countInput = z.object({
+  accountId: z.uuid(),
+  counted: z.number({ error: "Enter the amount you counted" }).int().min(-MONEY).max(MONEY),
+  note: optionalText(200),
+});
+
+/** The person in a borrow row when the other side is the user. */
+export const SELF = "Me";
+export const borrowInput = z.object({
+  person: name("person").refine((p) => p.toLowerCase() !== SELF.toLowerCase(), "Use the other person's name"),
+  /** out: money went from you (lent, or you paid back). in: money came to you. */
+  direction: z.enum(["out", "in"]),
+  item: z.string().trim().min(1, "Say what it was for").max(200),
+  amount: z.number({ error: "Enter an amount like 50rb" }).int().positive("Enter an amount above zero").max(MONEY),
+  date: z.iso.date(),
+  sourceAccountId: z.uuid().nullish(),
+  envelopeId: z.uuid().nullish(),
+});
+
+export const wishInput = z
+  .object({
+    id: z.uuid(),
+    item: z.string().trim().min(1, "Name the item").max(200),
+    reason: optionalText(500),
+    price: z.number({ error: "Enter a price like 250rb" }).int().min(0).max(MONEY),
+    category: optionalText(40),
+    priority: z.number().int().min(0).max(999).default(0),
+    relativePriority: z.number().int().min(0).max(999).default(0),
+    unit: optionalText(40),
+    time: z.enum(["Once", "Monthly", "Quarterly"]).default("Once"),
+    quantity: z
+      .string()
+      .regex(/^\d{1,7}(\.\d{1,3})?$/, "Use a number with up to 3 decimals")
+      .refine((q) => Number(q) > 0, "Quantity must be above zero")
+      .default("1"),
+    discount: z.number().int().min(0).max(MONEY).default(0),
+  })
+  .refine((w) => lineTotal({ quantity: w.quantity, amount: w.price, discount: w.discount }) >= 0, {
+    message: "The discount is larger than the price",
+    path: ["discount"],
+  });
+
+export const accountPatch = z
+  .object({
+    name: name("Fund"),
+    kind: z.enum(["bank", "e_wallet", "cash"]),
+    minBalance: z.number().int().min(0).max(MONEY),
+    countsAsUsable: z.boolean(),
+    archived: z.boolean(),
+  })
+  .partial();
+export const categoryPatch = z
+  .object({ name: name("category"), kind: z.enum(["income", "expense", "saving"]), archived: z.boolean() })
+  .partial();
+export const subcategoryPatch = z
+  .object({
+    name: name("subcategory"),
+    defaultClassification: z.enum(["needs", "wants"]).nullable(),
+    defaultEnvelopeId: z.uuid().nullable(),
+  })
+  .partial();
+
+/** The first validation message, for a one-line error. */
+const problem = (error: z.ZodError) => error.issues[0]?.message ?? "Check what you entered";
 
 /**
  * Every read and write the app may make, bound to one user. Tables without user_id are reached
@@ -579,18 +651,291 @@ export function scopedTo(db: Db, userId: string) {
       });
     },
 
+    /** Counts in a cycle, newest first. finance.reconcile uses the latest per account. */
     reconciliations: (cycleId: string) =>
       db
         .select()
         .from(reconciliations)
-        .where(and(eq(reconciliations.cycleId, cycleId), inArray(reconciliations.cycleId, ownedCycles))),
+        .where(and(eq(reconciliations.cycleId, cycleId), inArray(reconciliations.cycleId, ownedCycles)))
+        .orderBy(desc(reconciliations.countedAt)),
+
+    /** Saves a counted balance for one of this user's Funds in an open cycle. Returns an error message, or null. */
+    addCount: async (cycleId: string, input: unknown) => {
+      const cycle = await ownCycle(cycleId);
+      if (!cycle) return "That cycle doesn't exist";
+      if (cycle.status === "closed") return "This cycle is closed, so its counts are final";
+      const parsed = countInput.safeParse(input);
+      if (!parsed.success) return problem(parsed.error);
+      const [account] = await db
+        .select({ kind: accounts.kind })
+        .from(accounts)
+        .where(and(eq(accounts.id, parsed.data.accountId), eq(accounts.userId, userId)));
+      if (!account || account.kind === "external") return "Pick one of your Funds";
+      const { accountId, counted, note } = parsed.data;
+      await db.insert(reconciliations).values({ accountId, countedBalance: counted, note, cycleId: cycle.id });
+      return null;
+    },
+
+    /** Removes a count from an open cycle. False when nothing was removed. */
+    deleteCount: async (id: string) => {
+      if (!isId(id)) return false;
+      const open = db.select({ id: cycles.id }).from(cycles).where(and(eq(cycles.userId, userId), eq(cycles.status, "open")));
+      const removed = await db
+        .delete(reconciliations)
+        .where(and(eq(reconciliations.id, id), inArray(reconciliations.cycleId, open)))
+        .returning({ id: reconciliations.id });
+      return removed.length > 0;
+    },
+
     borrows: () => db.select().from(borrows).where(eq(borrows.userId, userId)).orderBy(desc(borrows.date)),
+
+    /** Records money lent or borrowed. The user is always SELF, the other side the person named. */
+    addBorrow: async (input: unknown) => {
+      const parsed = borrowInput.safeParse(input);
+      if (!parsed.success) return problem(parsed.error);
+      const b = parsed.data;
+      if (b.sourceAccountId) {
+        const [own] = await db
+          .select({ id: accounts.id })
+          .from(accounts)
+          .where(and(eq(accounts.id, b.sourceAccountId), eq(accounts.userId, userId)));
+        if (!own) return "Pick one of your Funds";
+      }
+      if (b.envelopeId) {
+        const [own] = await db
+          .select({ id: envelopes.id })
+          .from(envelopes)
+          .where(and(eq(envelopes.id, b.envelopeId), eq(envelopes.userId, userId)));
+        if (!own) return "Pick one of your Budgets";
+      }
+      // SPEC section 2: positive when money went out to them, negative when it came back or was borrowed.
+      const out = b.direction === "out";
+      await db.insert(borrows).values({
+        userId,
+        lender: out ? SELF : b.person,
+        lendee: out ? b.person : SELF,
+        item: b.item,
+        amount: out ? b.amount : -b.amount,
+        date: b.date,
+        sourceAccountId: b.sourceAccountId ?? null,
+        envelopeId: b.envelopeId ?? null,
+      });
+      return null;
+    },
+
+    /** Marks every open row with `person` settled, only when they add up to zero. */
+    settleBorrows: async (person: string) => {
+      if (typeof person !== "string") return "Nothing open with them";
+      const withPerson = and(
+        eq(borrows.userId, userId),
+        eq(borrows.settled, false),
+        or(and(eq(borrows.lender, person), eq(borrows.lendee, SELF)), and(eq(borrows.lendee, person), eq(borrows.lender, SELF))),
+      );
+      return db.transaction(async (tx) => {
+        const rows = await tx.select({ amount: borrows.amount }).from(borrows).where(withPerson);
+        if (!rows.length) return "Nothing open with them";
+        if (rows.reduce((s, r) => s + r.amount, 0) !== 0) return "Their balance isn't zero yet";
+        await tx.update(borrows).set({ settled: true }).where(withPerson);
+        return null;
+      });
+    },
+
+    deleteBorrow: async (id: string) =>
+      isId(id) &&
+      (await db.delete(borrows).where(and(eq(borrows.id, id), eq(borrows.userId, userId))).returning({ id: borrows.id }))
+        .length > 0,
+
     wishlist: () =>
       db
         .select()
         .from(wishlist)
         .where(eq(wishlist.userId, userId))
-        .orderBy(asc(wishlist.priority), asc(wishlist.relativePriority)),
+        .orderBy(asc(wishlist.priority), asc(wishlist.relativePriority), asc(wishlist.item)),
+
+    /** Adds a wishlist item, or edits it when the id is already one of this user's. */
+    saveWish: async (input: unknown) => {
+      const parsed = wishInput.safeParse(input);
+      if (!parsed.success) return problem(parsed.error);
+      const { id, ...fields } = parsed.data;
+      const updated = await db
+        .update(wishlist)
+        .set(fields)
+        .where(and(eq(wishlist.id, id), eq(wishlist.userId, userId)))
+        .returning({ id: wishlist.id });
+      if (!updated.length) await db.insert(wishlist).values({ ...fields, id, userId }).onConflictDoNothing({ target: wishlist.id });
+      return null;
+    },
+
+    setAcquired: async (id: string, acquired: boolean) =>
+      isId(id) &&
+      typeof acquired === "boolean" &&
+      (await db.update(wishlist).set({ acquired }).where(and(eq(wishlist.id, id), eq(wishlist.userId, userId))).returning({ id: wishlist.id }))
+        .length > 0,
+
+    deleteWish: async (id: string) =>
+      isId(id) &&
+      (await db.delete(wishlist).where(and(eq(wishlist.id, id), eq(wishlist.userId, userId))).returning({ id: wishlist.id }))
+        .length > 0,
+
+    /** Adds a Fund (id null) or changes one. External can't be edited. Returns an error message, or null. */
+    saveAccount: async (id: string | null, patch: unknown) => {
+      const parsed = accountPatch.safeParse(patch);
+      if (!parsed.success) return problem(parsed.error);
+      if (id === null) {
+        const { name, kind } = parsed.data;
+        if (!name || !kind) return "Name the Fund and pick its kind";
+        const [{ last }] = await db.select({ last: max(accounts.sortOrder) }).from(accounts).where(eq(accounts.userId, userId));
+        await db.insert(accounts).values({ ...parsed.data, name, kind, userId, sortOrder: (last ?? -1) + 1 });
+        return null;
+      }
+      if (!isId(id)) return "That Fund doesn't exist";
+      const updated = await db
+        .update(accounts)
+        .set(parsed.data)
+        .where(and(eq(accounts.id, id), eq(accounts.userId, userId), sql`${accounts.kind} <> 'external'`))
+        .returning({ id: accounts.id });
+      return updated.length ? null : "That Fund can't be changed";
+    },
+
+    /** Adds a Budget (id null) with the least used pastel, or renames one. */
+    saveEnvelope: async (id: string | null, input: unknown) => {
+      const parsed = z.object({ name: name("Budget") }).safeParse(input);
+      if (!parsed.success) return problem(parsed.error);
+      if (id === null) {
+        const rows = await db.select({ hue: envelopes.hue, sortOrder: envelopes.sortOrder, isSystem: envelopes.isSystem }).from(envelopes).where(eq(envelopes.userId, userId));
+        const own = rows.filter((r) => !r.isSystem);
+        await db.insert(envelopes).values({
+          userId,
+          name: parsed.data.name,
+          hue: nextHue(own.map((r) => r.hue)),
+          sortOrder: Math.max(-1, ...rows.map((r) => r.sortOrder)) + 1,
+        });
+        return null;
+      }
+      if (!isId(id)) return "That Budget doesn't exist";
+      const updated = await db
+        .update(envelopes)
+        .set(parsed.data)
+        .where(and(eq(envelopes.id, id), eq(envelopes.userId, userId)))
+        .returning({ id: envelopes.id });
+      return updated.length ? null : "That Budget doesn't exist";
+    },
+
+    /** Deletes a Budget nothing points at yet. Unallocated can't be deleted. */
+    deleteEnvelope: async (id: string) => {
+      if (!isId(id)) return "That Budget doesn't exist";
+      const used = (column: AnyColumn) => sql`exists (select 1 from ${transactions} where ${column} = ${id})`;
+      const [row] = await db
+        .select({
+          isSystem: envelopes.isSystem,
+          inUse: sql<boolean>`${used(transactions.sourceEnvelopeId)} or ${used(transactions.destEnvelopeId)}
+            or exists (select 1 from ${planItems} where ${planItems.sourceEnvelopeId} = ${id} or ${planItems.destEnvelopeId} = ${id})
+            or exists (select 1 from ${borrows} where ${borrows.envelopeId} = ${id})`,
+        })
+        .from(envelopes)
+        .where(and(eq(envelopes.id, id), eq(envelopes.userId, userId)));
+      if (!row) return "That Budget doesn't exist";
+      if (row.isSystem) return "Unallocated can't be deleted";
+      if (row.inUse) return "It has records or plan items, so it stays. Rename it instead.";
+      await db.delete(envelopes).where(and(eq(envelopes.id, id), eq(envelopes.userId, userId)));
+      return null;
+    },
+
+    /** Adds a category (id null) or changes one. */
+    saveCategory: async (id: string | null, patch: unknown) => {
+      const parsed = categoryPatch.safeParse(patch);
+      if (!parsed.success) return problem(parsed.error);
+      if (id === null) {
+        const { name, kind } = parsed.data;
+        if (!name || !kind) return "Name the category and pick its kind";
+        const [{ last }] = await db.select({ last: max(categories.sortOrder) }).from(categories).where(eq(categories.userId, userId));
+        await db.insert(categories).values({ name, kind, userId, sortOrder: (last ?? -1) + 1 });
+        return null;
+      }
+      if (!isId(id)) return "That category doesn't exist";
+      const updated = await db
+        .update(categories)
+        .set(parsed.data)
+        .where(and(eq(categories.id, id), eq(categories.userId, userId)))
+        .returning({ id: categories.id });
+      return updated.length ? null : "That category doesn't exist";
+    },
+
+    /** Adds a subcategory under `categoryId` (id null) or changes one; its default Budget must be the user's. */
+    saveSubcategory: async (id: string | null, categoryId: string, patch: unknown) => {
+      const parsed = subcategoryPatch.safeParse(patch);
+      if (!parsed.success) return problem(parsed.error);
+      const { defaultEnvelopeId } = parsed.data;
+      if (defaultEnvelopeId) {
+        const [own] = await db
+          .select({ id: envelopes.id })
+          .from(envelopes)
+          .where(and(eq(envelopes.id, defaultEnvelopeId), eq(envelopes.userId, userId)));
+        if (!own) return "Pick one of your Budgets";
+      }
+      if (id === null) {
+        if (!parsed.data.name) return "Name the subcategory";
+        if (!isId(categoryId)) return "That category doesn't exist";
+        const [own] = await db
+          .select({ id: categories.id })
+          .from(categories)
+          .where(and(eq(categories.id, categoryId), eq(categories.userId, userId)));
+        if (!own) return "That category doesn't exist";
+        await db.insert(subcategories).values({ ...parsed.data, name: parsed.data.name, categoryId });
+        return null;
+      }
+      if (!isId(id)) return "That subcategory doesn't exist";
+      const updated = await db
+        .update(subcategories)
+        .set(parsed.data)
+        .where(and(eq(subcategories.id, id), inArray(subcategories.categoryId, ownedCategories)))
+        .returning({ id: subcategories.id });
+      return updated.length ? null : "That subcategory doesn't exist";
+    },
+
+    /** Sets sort order to the order of `ids`, which must be exactly this user's rows of that list. */
+    reorder: async (list: "accounts" | "envelopes" | "categories", ids: string[]) => {
+      const table = { accounts, envelopes, categories }[list];
+      if (!table || !Array.isArray(ids)) return "That list can't be reordered";
+      const own = await db.select({ id: table.id }).from(table).where(eq(table.userId, userId));
+      const owned = new Set(own.map((r) => r.id));
+      if (ids.length !== owned.size || new Set(ids).size !== ids.length || !ids.every((id) => owned.has(id))) {
+        return "The list changed. Reload and try again.";
+      }
+      await db.transaction(async (tx) => {
+        for (const [i, id] of ids.entries()) await tx.update(table).set({ sortOrder: i }).where(eq(table.id, id));
+      });
+      return null;
+    },
+
+    setPayDay: async (day: unknown) => {
+      const parsed = z.number().int().min(1, "Pick a day from 1 to 31").max(31, "Pick a day from 1 to 31").safeParse(day);
+      if (!parsed.success) return problem(parsed.error);
+      await db
+        .insert(settings)
+        .values({ userId, defaultPayDay: parsed.data })
+        .onConflictDoUpdate({ target: settings.userId, set: { defaultPayDay: parsed.data } });
+      return null;
+    },
+
+    /** Saves every shortcut at once, refusing a clash or a binding that would get in the way of typing. */
+    setShortcuts: async (input: unknown) => {
+      const parsed = z
+        .object(Object.fromEntries(Object.keys(DEFAULT_SHORTCUTS).map((k) => [k, z.string().min(1).max(40)])))
+        .safeParse(input);
+      if (!parsed.success) return "Those shortcuts aren't valid";
+      const shortcuts = parsed.data as typeof DEFAULT_SHORTCUTS;
+      if (shortcutConflicts(shortcuts).length) return "Two actions share a shortcut";
+      for (const [action, binding] of Object.entries(shortcuts)) {
+        const issue = bindingProblem(action as ShortcutAction, binding);
+        if (issue) return issue;
+      }
+      await db
+        .insert(settings)
+        .values({ userId, shortcuts })
+        .onConflictDoUpdate({ target: settings.userId, set: { shortcuts } });
+      return null;
+    },
   };
 }
 

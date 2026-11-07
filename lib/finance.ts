@@ -260,3 +260,15 @@ export function pairBalances(accts: Account[], txns: Txn[]) {
   }
   return out;
 }
+
+/** Expense total per day of the cycle, in date order, with zero for days nothing was spent. */
+export function dailySpending(txns: (Txn & { date: string })[], cycle: Row<typeof cycles, "startDate" | "endDate">) {
+  const byDate = tally(
+    txns.filter((t) => !t.isOpening && t.type === "expense"),
+    (t) => t.date,
+  );
+  return Array.from({ length: cycleDays(cycle) }, (_, i) => {
+    const date = new Date(Date.parse(cycle.startDate) + i * 86_400_000).toISOString().slice(0, 10);
+    return { date, total: byDate.get(date)?.total ?? 0 };
+  });
+}

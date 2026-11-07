@@ -124,7 +124,7 @@ export async function seedUser(db: Db, email: string, passwordHash: string) {
 
     await tx.insert(accounts).values(ACCOUNTS.map((a, i) => ({ ...a, userId, sortOrder: i })));
     await tx.insert(envelopes).values(
-      ENVELOPES.map((name, i) => ({ userId, name, sortOrder: i, isSystem: name === "Unallocated" })),
+      ENVELOPES.map((name, i) => ({ userId, name, sortOrder: i, hue: i % 6, isSystem: name === "Unallocated" })),
     );
     for (const [i, { name, kind, subs }] of TAXONOMY.entries()) {
       const [category] = await tx

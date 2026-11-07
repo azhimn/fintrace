@@ -57,7 +57,7 @@ export default async function TransactionsPage({ searchParams }: PageProps<"/tra
       <Band>
         <h1 className="mt-3 text-[1.375rem] font-medium">Transactions</h1>
         <AddressWindow label="This view in numbers" className="mt-2">
-          <p className="text-xs font-medium text-kraft-ink">Spent and saved in this view</p>
+          <p className="text-[0.8125rem] font-medium text-kraft-ink">Spent and saved in this view</p>
           <Money value={spent} className="mt-0.5 block text-[2.125rem] leading-tight font-semibold tracking-[-0.01em]" />
           <p className="mt-2 text-[0.8125rem] text-kraft-ink">
             Income <Money value={income} className="text-foreground" /> · {rows.length}

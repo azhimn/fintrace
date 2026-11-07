@@ -49,3 +49,16 @@ export function formatAmountInput(text: string) {
   const digits = text.replaceAll(".", "").replace(/^0+(?=\d)/, "");
   return digits.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
 }
+
+const dateTime = new Intl.DateTimeFormat("en-US", {
+  weekday: "short",
+  month: "short",
+  day: "numeric",
+  hour: "2-digit",
+  minute: "2-digit",
+  hourCycle: "h23",
+  timeZone: "Asia/Jakarta",
+});
+
+/** A moment as 'Sun, Nov 8, 14:05' in Jakarta time. */
+export const formatDateTime = (moment: Date) => dateTime.format(moment);

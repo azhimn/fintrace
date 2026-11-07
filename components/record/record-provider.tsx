@@ -10,7 +10,7 @@ import { isTyping, matchesShortcut } from "@/lib/shortcuts";
 import { RecordForm, type Mode, type PlanInput } from "./record-form";
 import { Toaster, toasts } from "./toast";
 
-type Options = { initial?: PlanInput; mode?: Mode; plan?: { cycleId: string; cycleStart: string } };
+type Options = { initial?: PlanInput; mode?: Mode; plan?: { cycleId: string; cycleStart: string }; more?: boolean };
 type Open = (options?: Options) => void;
 const RecordContext = createContext<{ open: Open; data: RecordData } | null>(null);
 
@@ -101,6 +101,7 @@ export function RecordProvider({ data, children }: { data: RecordData; children:
                       initial={sheet.initial}
                       mode={sheet.mode}
                       plan={sheet.plan}
+                      more={sheet.more}
                       onDone={() => {
                         setOpen(false);
                         router.refresh();

@@ -29,7 +29,7 @@ export default async function CyclesPage() {
         <h1 className="mt-3 text-[1.375rem] font-medium">Cycles</h1>
         {framed && (
           <AddressWindow label={framed === current ? "Current cycle" : "Latest cycle"} className="mt-2">
-            <p className="text-xs font-medium text-kraft-ink">{framed === current ? "Current cycle" : "Latest cycle"}</p>
+            <p className="text-[0.8125rem] font-medium text-kraft-ink">{framed === current ? "Current cycle" : "Latest cycle"}</p>
             <p className="mt-0.5 text-[1.75rem] leading-tight font-semibold tracking-[-0.01em]">{framed.name}</p>
             <p className="mt-2 text-[0.8125rem] text-kraft-ink">
               {framed.status === "closed"

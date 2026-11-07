@@ -6,6 +6,7 @@ import {
   accountBalances,
   borrowBalances,
   cycleDays,
+  dailySpending,
   envelopeBalances,
   lineTotal,
   needsVsWants,
@@ -306,5 +307,18 @@ describe("pair balances", () => {
   it("moves money between Funds inside one Budget", () => {
     expect(pairs.get("jago|meal")).toBe(600_000 - 45_000 - 50_000);
     expect(pairs.get("cash|meal")).toBe(100_000 - 30_000 + 50_000);
+  });
+});
+
+describe("daily spending", () => {
+  it("sums expenses per cycle day and leaves out savings and opening rows", () => {
+    const dated = txns.map((t, i) => ({ ...t, date: i < 10 ? "2026-09-25" : "2026-09-27" }));
+    const days = dailySpending(dated, cycle);
+    expect(days).toHaveLength(28);
+    expect(days[0]).toEqual({ date: "2026-09-25", total: 45_000 + 30_000 });
+    expect(days[1].total).toBe(0);
+    // Fuel 23.450, coffee 35.000, uncategorised 15.000 and parking 1.501; the saving is left out.
+    expect(days[2]).toEqual({ date: "2026-09-27", total: 23_450 + 35_000 + 15_000 + 1_501 });
+    expect(days.at(-1)!.date).toBe("2026-10-22");
   });
 });

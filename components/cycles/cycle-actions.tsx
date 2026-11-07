@@ -1,34 +1,13 @@
 "use client";
 
-import { useId, useState, useTransition } from "react";
+import { useId, useState } from "react";
 import { closeCycle, moveCycleStart, startFirstCycle } from "@/app/(app)/actions";
 import { DateField } from "@/components/record/record-form";
-import { toasts } from "@/components/record/toast";
+import { useAction } from "@/components/shell/action";
 import { Button } from "@/components/ui/button";
 import { formatDate } from "@/lib/format";
 
 const labelClass = "text-[0.8125rem] font-medium text-muted-foreground";
-
-function useAction() {
-  const [error, setError] = useState<string | null>(null);
-  const [pending, startTransition] = useTransition();
-  const run = (action: () => Promise<string | null>, done: string) =>
-    startTransition(async () => {
-      try {
-        const message = await action();
-        setError(message);
-        if (!message) toasts.add({ title: done, timeout: 4000 });
-      } catch {
-        setError("You're offline. Try again once you're back online.");
-      }
-    });
-  const alert = error && (
-    <p role="alert" className="rounded-panel bg-destructive-soft/50 px-4 py-3 text-sm text-destructive">
-      {error}
-    </p>
-  );
-  return { run, pending, alert };
-}
 
 /** Moves an open cycle's pay day. The cycle before ends the day before the new date. */
 export function StartDateEditor({ cycleId, start }: { cycleId: string; start: string }) {

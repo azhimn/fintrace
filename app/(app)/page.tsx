@@ -68,7 +68,7 @@ export default async function OverviewPage() {
           {cycle ? `${cycle.name} · ${daysLeft(cycle.endDate, date)}` : "No pay cycle yet"}
         </p>
         <AddressWindow label="Funds at a glance" className="mt-2">
-          <p className="text-xs font-medium text-kraft-ink">
+          <p className="text-[0.8125rem] font-medium text-kraft-ink">
             Usable funds{usableNames.length > 0 && ` · ${usableNames.join(", ")}`}
           </p>
           <Money value={usable} className="mt-0.5 block text-[2.125rem] leading-tight font-semibold tracking-[-0.01em]" />

@@ -2,7 +2,7 @@
 
 Personal envelope budgeting by pay cycle, across several wallets and bank accounts. It replaces a Google Sheet, and the main goal is that recording a transaction takes seconds. [docs/SPEC.md](docs/SPEC.md) is the source of truth and defines the milestones.
 
-Milestones M1 to M4 exist today: the schema and migrations, seed data, login, the user-scoped data layer, the id-ID formatter and amount parser, `lib/finance.ts` with every SPEC section 4 formula, the Overview home screen, and Quick Record (as a sheet from any app page and at `/record`), installable as a PWA with an offline queue. M4 added the Transactions, Plan, Budgets and Cycles screens, with Close cycle. The supporting screens come in M5.
+Milestones M1 to M5 exist today: the schema and migrations, seed data, login, the user-scoped data layer, the id-ID formatter and amount parser, `lib/finance.ts` with every SPEC section 4 formula, the Overview home screen, and Quick Record (as a sheet from any app page and at `/record`), installable as a PWA with an offline queue. M4 added the Transactions, Plan, Budgets and Cycles screens, with Close cycle. M5 added Reconcile, Analytics, Borrows, Wishlist and Settings. Deployment (M6) is handled separately.
 
 ## Local development
 
@@ -67,7 +67,7 @@ After you change `.env`, run `docker compose up -d app` to recreate the containe
 | Path | Contents |
 |---|---|
 | `lib/db/schema.ts` | Drizzle schema for every SPEC section 2 table, plus auth and settings |
-| `drizzle/` | Migrations. `0000` and `0002` are hand-written SQL |
+| `drizzle/` | Migrations. `0000` and `0002` are hand-written SQL, and `0003` adds `envelopes.hue` with a hand-written backfill |
 | `lib/db/seed.ts` | Seed data and `seedUser` |
 | `lib/dal.ts` | `scopedTo(db, userId)`, the user-scoped queries |
 | `lib/session.ts` | `getDal()`, which binds those queries to the signed-in user |
@@ -76,10 +76,13 @@ After you change `.env`, run `docker compose up -d app` to recreate the containe
 | `lib/record.ts` | Quick Record's Zod schema: section 3 pairings, ownership of every referenced id, and the defaults it fills in |
 | `app/(app)/actions.ts`, `app/api/suggest` | Server Actions for records, plan items, cycles and Close cycle; item suggestions |
 | `app/(app)/transactions`, `plan`, `budgets`, `cycles` | The M4 screens. Filters and the selected cycle live in the URL |
+| `app/(app)/reconcile`, `analytics`, `borrows`, `wishlist`, `settings` | The M5 screens |
 | `components/record/` | Quick Record form (also the plan item form), item combobox, sheet, toasts and offline sync |
 | `components/shell/` | The kraft band with section tabs, the address window, the cycle stepper and shared row parts |
 | `components/transactions/`, `plan/`, `budgets/`, `cycles/` | Quick-entry row, tables, row menus, the Allocate dialog, pay day and Close cycle controls |
 | `components/overview/` | Overview parts: the Record bar, Needs vs Wants donut, recent records |
+| `components/reconcile/`, `analytics/`, `borrows/`, `wishlist/`, `settings/` | Count rows and the cash calculator, the Recharts charts, borrow and wish forms, the Settings lists and shortcut editor |
+| `components/shell/action.tsx` | `useAction` for Server Actions that answer with an error message, the row menu and the toggle chip |
 | `lib/offline-queue.ts`, `public/sw.js`, `app/manifest.ts` | The PWA: entries saved offline, the service worker, the manifest with its Record shortcut |
 | `auth.ts`, `proxy.ts` | Auth.js config and route protection |
 
@@ -96,12 +99,12 @@ Server components and actions should get data through `getDal()`. `plan_items`, 
 - **`settings` table.** SPEC section 2 doesn't list one, but section 5 needs per-user pay day and shortcuts, and section 9 seeds them.
 - **`categories.archived`.** Not in the section 2 column list, but the same row says categories can be archived.
 - **Nullable classification.** `subcategories.default_classification` is null for Income and Saving, since section 2b gives them no Needs or Wants default.
-- **Default envelopes.** `subcategories.default_envelope_id` is seeded empty because the spec gives no mapping. Set it in Settings once that screen exists (M5).
+- **Default envelopes.** `subcategories.default_envelope_id` is seeded empty because the spec gives no mapping. Set it per subcategory under Settings, Categories.
 - **Whole-rupiah totals.** `total` is a generated column rounded to whole rupiah on `transactions`, `plan_items` and `wishlist`. Section 2 only says `round()` for transactions, but money is stored as BIGINT throughout.
 - **Deferred cycle constraint.** `cycles_no_overlap` is checked at commit, so moving a pay day can update both neighbouring cycles in one transaction. It prevents overlaps only: gaps are the job of the cycle logic in M4.
 - **Amount parsing.** In `parseAmount` a dot only ever groups thousands, so `1.5jt` is rejected rather than guessed at. `1,5jt` is the accepted form. Results that would land on a fraction of a rupiah are rejected too.
 - **Time zone.** "Today" is fixed to Asia/Jakarta.
-- **Goal Savings link.** The optional link from a Goal Savings row to a wishlist item (section 2b) has no column yet, because section 2's transaction columns don't include one. It can be added later without touching existing data.
+- **Goal Savings link.** The optional link from a Goal Savings row to a wishlist item (section 2b) has no column yet, because section 2's transaction columns don't include one. M5 skipped it: it needs a column, an ownership check in `recordSchema` and a picker in Quick Record. It can be added later without touching existing data.
 - **Section 8 metrics.** Out of scope for now. The tables it needs are additive, and transactions can't be deleted along with their cycle, so history stays available.
 - **Line totals in code.** `lineTotal` in `lib/finance.ts` computes `round(quantity * amount - discount)` in exact integers and rounds half away from zero, the same as Postgres. A test in `lib/db/db.test.ts` checks it against the generated `total` column. The formulas use it, so they don't depend on `total` having been read from the database.
 - **Opening rows.** A row with `is_opening` adds its total to its destination account and envelope, whatever its type, and the running balance counts it as money in. Close-cycle (M4) should insert them as income from External.
@@ -117,10 +120,10 @@ Server components and actions should get data through `getDal()`. `plan_items`, 
 - **Service worker.** `public/sw.js` registers in production builds only. It caches hashed build assets on first use, and the Overview and `/record` pages each time they load online, so the installed app opens offline. A navigation that lands on the login page clears the cached pages. Offline behaviour can't be tested in `next dev`.
 - **Starting a cycle from Quick Record.** A record dated outside every cycle asks for a start date (the default pay date on or before it) and creates the cycle. The cycle before it is shortened or extended to end the day before, and the new one runs to the day before the next pay date at least 15 days later, so a pay day moved a few days early still ends at next month's. It refuses a start that would leave the cycle before with records on or after it. Closing a cycle with opening rows is M4.
 - **Amount keypad.** The amount field uses `inputmode="numeric"`, as SPEC section 5 asks, and phone number pads have no letters, so rb and jt buttons sit under the field. Plain digits gain thousands dots as you type.
-- **Shortcuts.** Read from `settings.shortcuts` over the defaults in `lib/shortcuts.ts`. Bindings look like `r`, `mod+enter` (Ctrl, or Cmd on a Mac) and `escape`. The editor comes with Settings in M5.
+- **Shortcuts.** Read from `settings.shortcuts` over the defaults in `lib/shortcuts.ts`. Bindings look like `r`, `mod+enter` (Ctrl, or Cmd on a Mac) and `escape`. In Settings you press Change, then the keys. Two actions can't share keys. Save & add another and Close also work while you type, so they need Ctrl, Cmd or Alt (or Escape). Tab and Space can't be bound. The desktop Record button shows the current key.
 - **Undo.** The toast after saving a new record offers Undo, which deletes it, or takes it out of the offline queue. Undo after an edit saves the row as it was before. Deleting a record or plan item offers Undo too, which puts the same row back; a restored record gets a new `created_at`, so it can move among records of the same day.
-- **Budget colours.** Each envelope's pastel comes from its sort order, so reordering envelopes in Settings will recolour them. Unallocated is always kraft.
-- **Needs vs Wants donut.** Drawn as a small SVG. Recharts arrives with the Analytics charts in M5.
+- **Budget colours.** Each envelope stores its pastel in `envelopes.hue`. Migration `0003` set it from the old sort order, so no Budget changed colour, and reordering in Settings leaves it alone. A new Budget gets the pastel fewest Budgets use. Unallocated is always kraft.
+- **Needs vs Wants donut.** Drawn as a small SVG. The Analytics charts use Recharts 3 with its `responsive` prop.
 - **Icons.** Phosphor (`@phosphor-icons/react`, fill weight) replaced lucide-react.
 - **Closed cycles.** A closed cycle refuses every write to its records and plan: add, edit, delete, copy and Close. Opening rows can't be edited or deleted in any cycle.
 - **Moving a pay day.** Only an open cycle's start can move. The cycle before ends the day before, even when that cycle is closed, because only its dates change and no record moves: the move is refused if any record would land in the other cycle. Opening rows move to the new start. The last cycle keeps its end date.
@@ -132,3 +135,10 @@ Server components and actions should get data through `getDal()`. `plan_items`, 
 - **Transactions list.** It shows the newest 300 matches, including opening rows (read only). With no cycle in the URL it shows the current cycle. The desktop quick-entry row saves the five required fields; More, or a date outside every cycle, opens the Quick Record sheet with what was typed. Phones use the sheet.
 - **Navigation.** Section tabs sit inside the kraft band and scroll sideways on phones. Every screen has the Record bar under the flap on phones, docking once it scrolls away, and Record in the band on desktop.
 - **Close cycle confirmation.** Closing can't be undone, so the button asks a second time, naming the cycle and the next pay date.
+- **Reconcile.** Counts belong to the cycle on screen and only an open cycle takes new ones. The difference uses the latest count per Fund, and the history under each Fund lists every count in the cycle. A count can be removed while the cycle is open.
+- **Adjustments.** Adjust records the difference in one tap: income from External when you counted more, an expense to External when you counted less. It has no category, so a shortfall shows under Uncategorised in Analytics until you categorise it. It is dated today, or the nearest day inside the cycle, and goes to Unallocated. Undo deletes it.
+- **Cash calculator.** Notes are counted one by one (Rp 100.000 down to Rp 1.000) and coins entered as one amount, because coin values vary. The total fills the counted field.
+- **Analytics.** The bar chart, daily line, subcategory tables and cycle comparison count expenses only. Needs vs Wants counts expenses and savings, as section 4 says, so savings appear under Unclassified there. The daily line stops at today, and the previous cycle is drawn by day of cycle. The tag filter applies to the subcategory tables. Categorise opens the record with the category field showing.
+- **Borrows.** You are stored as "Me". Money out (you lent, or paid back) is positive and money in is negative. A borrow row is a tally only: it doesn't change any Fund, so record the money movement in Quick Record too. Mark settled appears when a person's net is zero and moves their rows to history.
+- **Wishlist.** Sorted by priority, then relative priority, lowest first. Buy opens Quick Record as an Expense with the item, price, quantity, discount and unit filled in. Marking it acquired stays a separate tap.
+- **Settings.** Names save when the field loses focus, and selects and toggles save on change. External can't be edited. A Budget can be deleted only while no record, plan item or borrow uses it, and Unallocated never. Archived Funds and categories disappear from Quick Record but keep their history.

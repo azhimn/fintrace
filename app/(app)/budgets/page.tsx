@@ -208,7 +208,7 @@ export default async function BudgetsPage({ searchParams }: PageProps<"/budgets"
         {cycle && <CycleStepper cycles={cycles} cycle={cycle} path="/budgets" date={date} />}
         {cycle && unallocated && (
           <AddressWindow label="Not yet in a Budget" className="mt-1">
-            <p className="text-xs font-medium text-kraft-ink">Unallocated, still in the envelope</p>
+            <p className="text-[0.8125rem] font-medium text-kraft-ink">Unallocated, still in the envelope</p>
             <Money
               value={balances.get(unallocated.id)!.remaining}
               className="mt-0.5 block text-[2.125rem] leading-tight font-semibold tracking-[-0.01em]"

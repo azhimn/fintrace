@@ -3,6 +3,8 @@
 import { PlusCircleIcon } from "@phosphor-icons/react";
 import { useEffect, useRef, useState } from "react";
 import { useRecord } from "@/components/record/record-provider";
+import { useIsMac } from "@/components/shell/action";
+import { formatBinding } from "@/lib/shortcuts";
 import { cn } from "@/lib/utils";
 
 /**
@@ -10,7 +12,8 @@ import { cn } from "@/lib/utils";
  * once scrolled away; on a desktop it sits top-right in the band.
  */
 export function RecordBar({ placement }: { placement: "band" | "page" }) {
-  const { open } = useRecord();
+  const { open, data } = useRecord();
+  const mac = useIsMac();
   const bar = useRef<HTMLButtonElement>(null);
   const [docked, setDocked] = useState(false);
 
@@ -36,7 +39,9 @@ export function RecordBar({ placement }: { placement: "band" | "page" }) {
         className="hidden h-11 shrink-0 items-center gap-2 rounded-button bg-primary px-5 text-[0.9375rem] font-medium text-primary-foreground hover:bg-[color-mix(in_oklch,var(--primary),black_10%)] lg:flex"
       >
         {label}
-        <kbd className="ml-1 rounded-sm bg-primary-foreground/20 px-1.5 text-xs font-normal uppercase">R</kbd>
+        <kbd className="ml-1 rounded-sm bg-primary-foreground/20 px-1.5 text-xs font-normal">
+          {formatBinding(data.shortcuts.openQuickRecord, mac)}
+        </kbd>
       </button>
     );
   }

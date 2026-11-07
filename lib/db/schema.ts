@@ -113,6 +113,8 @@ export const envelopes = pgTable(
     name: text("name").notNull(),
     sortOrder: integer("sort_order").notNull().default(0),
     isSystem: boolean("is_system").notNull().default(false),
+    // Index into the Budget pastels, fixed at creation so reordering never recolours a Budget.
+    hue: smallint("hue").notNull().default(0),
   },
   (t) => [index("envelopes_user_idx").on(t.userId)],
 );

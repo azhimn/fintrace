@@ -418,3 +418,101 @@ describe("M4 cycles, plan and search", () => {
     expect((await dal.transactions(third.id)).filter((t) => t.isOpening)).toHaveLength(3);
   });
 });
+
+describe("M5 supporting screens", () => {
+  let dave: string;
+  let dal: ReturnType<typeof scopedTo>;
+  let cash: string;
+
+  beforeAll(async () => {
+    dave = (await seedUser(db, "dave@example.com", "hash")).userId;
+    dal = scopedTo(db, dave);
+    cash = (await dal.accounts()).find((a) => a.name === "Cash")!.id;
+    expect(await dal.startCycle("2034-01-25", "2034-01-25", 25)).toBeNull();
+  });
+
+  it("saves counts newest first and refuses other users' Funds and closed cycles", async () => {
+    const [cycle] = await dal.cycles();
+    expect(await dal.addCount(cycle.id, { accountId: cash, counted: 100_000 })).toBeNull();
+    expect(await dal.addCount(cycle.id, { accountId: cash, counted: 120_000, note: "after lunch" })).toBeNull();
+    expect((await dal.reconciliations(cycle.id)).map((c) => c.countedBalance)).toEqual([120_000, 100_000]);
+    const bobCash = (await scopedTo(db, bob).accounts()).find((a) => a.name === "Cash")!.id;
+    expect(await dal.addCount(cycle.id, { accountId: bobCash, counted: 1 })).toMatch(/your Funds/);
+    expect(await scopedTo(db, bob).addCount(cycle.id, { accountId: bobCash, counted: 1 })).toMatch(/doesn't exist/);
+    await db.update(cycles).set({ status: "closed" }).where(eq(cycles.id, cycle.id));
+    expect(await dal.addCount(cycle.id, { accountId: cash, counted: 1 })).toMatch(/closed/);
+    expect(await dal.deleteCount((await dal.reconciliations(cycle.id))[0].id)).toBe(false);
+    await db.update(cycles).set({ status: "open" }).where(eq(cycles.id, cycle.id));
+  });
+
+  it("signs borrows and settles a person only at zero", async () => {
+    const row = { person: "Rina", item: "Dinner", amount: 50_000, date: "2034-01-26" };
+    expect(await dal.addBorrow({ ...row, direction: "out" })).toBeNull();
+    expect(await dal.settleBorrows("Rina")).toMatch(/isn't zero/);
+    expect(await dal.addBorrow({ ...row, item: "Paid back", direction: "in" })).toBeNull();
+    expect((await dal.borrows()).map((b) => [b.lender, b.lendee, b.amount])).toEqual(
+      expect.arrayContaining([["Me", "Rina", 50_000], ["Rina", "Me", -50_000]]),
+    );
+    expect(await scopedTo(db, bob).settleBorrows("Rina")).toMatch(/Nothing open/);
+    expect(await dal.settleBorrows("Rina")).toBeNull();
+    expect((await dal.borrows()).every((b) => b.settled)).toBe(true);
+    expect(await dal.addBorrow({ ...row, person: "me", direction: "out" })).toMatch(/other person/);
+  });
+
+  it("adds, edits and toggles wishes for their owner only", async () => {
+    const id = crypto.randomUUID();
+    const wish = { id, item: "Keyboard", price: 1_250_000, priority: 1 };
+    expect(await dal.saveWish(wish)).toBeNull();
+    expect(await dal.saveWish({ ...wish, price: 1_100_000, discount: 100_000 })).toBeNull();
+    expect((await dal.wishlist())[0]).toMatchObject({ price: 1_100_000, total: 1_000_000 });
+    expect(await scopedTo(db, bob).saveWish({ ...wish, item: "Taken" })).toBeNull();
+    expect((await dal.wishlist())[0].item).toBe("Keyboard");
+    expect(await scopedTo(db, bob).setAcquired(id, true)).toBe(false);
+    expect(await dal.setAcquired(id, true)).toBe(true);
+    expect(await dal.saveWish({ ...wish, id: crypto.randomUUID(), discount: 2_000_000 })).toMatch(/discount/);
+  });
+
+  it("gives a new Budget its own hue and keeps hues through a reorder", async () => {
+    expect(await dal.saveEnvelope(null, { name: "Holiday" })).toBeNull();
+    const before = await dal.envelopes();
+    const holiday = before.find((e) => e.name === "Holiday")!;
+    // 13 seeded Budgets use hues 0 to 5 round-robin, so the least used is 1.
+    expect(holiday.hue).toBe(1);
+    expect(await dal.reorder("envelopes", before.map((e) => e.id).reverse())).toBeNull();
+    const after = await dal.envelopes();
+    expect(after[0].name).toBe("Holiday");
+    expect(after.map((e) => [e.id, e.hue]).sort()).toEqual(before.map((e) => [e.id, e.hue]).sort());
+    expect(await dal.reorder("envelopes", after.map((e) => e.id).slice(1))).toMatch(/changed/);
+    const bobEnv = (await scopedTo(db, bob).envelopes())[0].id;
+    expect(await dal.reorder("envelopes", [...after.map((e) => e.id).slice(1), bobEnv])).toMatch(/changed/);
+  });
+
+  it("deletes only unused, non-system Budgets", async () => {
+    const envs = await dal.envelopes();
+    expect(await dal.deleteEnvelope(envs.find((e) => e.isSystem)!.id)).toMatch(/can't be deleted/);
+    expect(await dal.deleteEnvelope(envs.find((e) => e.name === "Holiday")!.id)).toBeNull();
+    expect(await scopedTo(db, bob).deleteEnvelope(envs.find((e) => e.name === "Meal")!.id)).toMatch(/doesn't exist/);
+  });
+
+  it("edits Funds and subcategories but not External or another user's rows", async () => {
+    const accts = await dal.accounts();
+    expect(await dal.saveAccount(cash, { minBalance: 20_000, countsAsUsable: false })).toBeNull();
+    expect((await dal.accounts()).find((a) => a.id === cash)).toMatchObject({ minBalance: 20_000, countsAsUsable: false });
+    expect(await dal.saveAccount(accts.find((a) => a.kind === "external")!.id, { name: "Shop" })).toMatch(/can't be changed/);
+    expect(await scopedTo(db, bob).saveAccount(cash, { name: "Mine" })).toMatch(/can't be changed/);
+    const sub = (await dal.subcategories()).find((s) => s.name === "Meal")!;
+    const meal = (await dal.envelopes()).find((e) => e.name === "Meal")!.id;
+    expect(await dal.saveSubcategory(sub.id, sub.categoryId, { defaultEnvelopeId: meal })).toBeNull();
+    const bobMeal = (await scopedTo(db, bob).envelopes()).find((e) => e.name === "Meal")!.id;
+    expect(await dal.saveSubcategory(sub.id, sub.categoryId, { defaultEnvelopeId: bobMeal })).toMatch(/your Budgets/);
+  });
+
+  it("stores pay day and shortcuts, refusing clashes and typing-hostile keys", async () => {
+    expect(await dal.setPayDay(28)).toBeNull();
+    expect(await dal.setPayDay(32)).toMatch(/1 to 31/);
+    expect(await dal.setShortcuts({ ...DEFAULT_SHORTCUTS, openQuickRecord: "n" })).toBeNull();
+    expect(await dal.settings()).toMatchObject({ defaultPayDay: 28, shortcuts: { openQuickRecord: "n" } });
+    expect(await dal.setShortcuts({ ...DEFAULT_SHORTCUTS, close: "mod+enter" })).toMatch(/share/);
+    expect(await dal.setShortcuts({ ...DEFAULT_SHORTCUTS, close: "x" })).toMatch(/Ctrl/);
+  });
+});

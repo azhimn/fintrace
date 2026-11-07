@@ -108,3 +108,32 @@ export async function startFirstCycle(start: string) {
   refresh();
   return error;
 }
+
+/** Refreshes after a write that worked, and passes its error message (or null) back. */
+async function settle<T extends string | boolean | null>(write: Promise<T>) {
+  const result = await write;
+  if (result === null || result === true) refresh();
+  return result;
+}
+
+export const addCount = async (cycleId: string, input: unknown) => settle((await getDal()).addCount(cycleId, input));
+export const deleteCount = async (id: string) => settle((await getDal()).deleteCount(id));
+
+export const addBorrow = async (input: unknown) => settle((await getDal()).addBorrow(input));
+export const settleBorrows = async (person: string) => settle((await getDal()).settleBorrows(person));
+export const deleteBorrow = async (id: string) => settle((await getDal()).deleteBorrow(id));
+
+export const saveWish = async (input: unknown) => settle((await getDal()).saveWish(input));
+export const setAcquired = async (id: string, acquired: boolean) => settle((await getDal()).setAcquired(id, acquired));
+export const deleteWish = async (id: string) => settle((await getDal()).deleteWish(id));
+
+export const saveAccount = async (id: string | null, patch: unknown) => settle((await getDal()).saveAccount(id, patch));
+export const saveEnvelope = async (id: string | null, input: unknown) => settle((await getDal()).saveEnvelope(id, input));
+export const deleteEnvelope = async (id: string) => settle((await getDal()).deleteEnvelope(id));
+export const saveCategory = async (id: string | null, patch: unknown) => settle((await getDal()).saveCategory(id, patch));
+export const saveSubcategory = async (id: string | null, categoryId: string, patch: unknown) =>
+  settle((await getDal()).saveSubcategory(id, categoryId, patch));
+export const reorder = async (list: "accounts" | "envelopes" | "categories", ids: string[]) =>
+  settle((await getDal()).reorder(list, ids));
+export const setPayDay = async (day: number) => settle((await getDal()).setPayDay(day));
+export const setShortcuts = async (input: unknown) => settle((await getDal()).setShortcuts(input));
