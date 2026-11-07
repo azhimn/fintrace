@@ -2,7 +2,7 @@
 
 Personal envelope budgeting by pay cycle, across several wallets and bank accounts. It replaces a Google Sheet, and the main goal is that recording a transaction takes seconds. [SPEC.md](SPEC.md) is the source of truth and defines the milestones.
 
-Milestone M1 (Foundation) is what exists today: the schema and migrations, seed data, login, the user-scoped data layer, the id-ID formatter and amount parser, and an app shell. Balances, Quick Record and the other screens come in later milestones.
+Milestones M1 (Foundation) and M2 (Calculation engine) exist today: the schema and migrations, seed data, login, the user-scoped data layer, the id-ID formatter and amount parser, an app shell, and `lib/finance.ts` with every SPEC section 4 formula. Quick Record and the other screens come in later milestones.
 
 ## Local development
 
@@ -71,6 +71,7 @@ After you change `.env`, run `docker compose up -d app` to recreate the containe
 | `lib/db/seed.ts` | Seed data and `seedUser` |
 | `lib/dal.ts` | `scopedTo(db, userId)`, the user-scoped queries |
 | `lib/session.ts` | `getDal()`, which binds those queries to the signed-in user |
+| `lib/finance.ts` | SPEC section 4 formulas as pure functions over DAL rows, tested on a fixture cycle in `lib/finance.test.ts` |
 | `lib/format.ts` | Money, quantity, percent and date formatters, and `parseAmount` |
 | `auth.ts`, `proxy.ts` | Auth.js config and route protection |
 
@@ -94,3 +95,11 @@ Server components and actions should get data through `getDal()`. `plan_items`, 
 - **Time zone.** "Today" is fixed to Asia/Jakarta.
 - **Goal Savings link.** The optional link from a Goal Savings row to a wishlist item (section 2b) has no column yet, because section 2's transaction columns don't include one. It can be added later without touching existing data.
 - **Section 8 metrics.** Out of scope for now. The tables it needs are additive, and transactions can't be deleted along with their cycle, so history stays available.
+- **Line totals in code.** `lineTotal` in `lib/finance.ts` computes `round(quantity * amount - discount)` in exact integers and rounds half away from zero, the same as Postgres. A test in `lib/db/db.test.ts` checks it against the generated `total` column. The formulas use it, so they don't depend on `total` having been read from the database.
+- **Opening rows.** A row with `is_opening` adds its total to its destination account and envelope, whatever its type, and the running balance counts it as money in. Close-cycle (M4) should insert them as income from External.
+- **Transfers within one envelope.** Section 4 counts every transfer into an envelope as allocated, but only counts transfers out when the destination envelope differs. Moving Meal money from Jago to Cash would then raise Meal's remaining. fintrace leaves such transfers out of both allocated and moved out.
+- **Missing envelopes.** Envelope balances skip rows with no envelope. Section 3 says the write path fills in Unallocated, so it has to.
+- **Percent used and variance.** `% used` is spent over allocated, and empty when nothing was allocated. Plan-vs-actual variance is planned minus actual, so a positive number is money not yet used.
+- **Unclassified spending.** Saving subcategories have no Needs or Wants default, so Needs vs Wants gets a third group for rows with no classification.
+- **Reconciliation.** The latest count per account is compared with the balance the caller passes in, normally the current one.
+- **Borrows.** The person in a borrow row is whichever of lender and lendee is not the user, so `borrowBalances` takes the user's own name.

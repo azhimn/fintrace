@@ -6,6 +6,7 @@ import { drizzle } from "drizzle-orm/pglite";
 import { migrate } from "drizzle-orm/pglite/migrator";
 import { beforeAll, describe, expect, it } from "vitest";
 import { scopedTo } from "../dal";
+import { lineTotal } from "../finance";
 import type { Db } from "./index";
 import { accounts, categories, cycles, envelopes, settings, subcategories, transactions, wishlist } from "./schema";
 import { DEFAULT_SHORTCUTS, seedUser } from "./seed";
@@ -135,6 +136,33 @@ describe("schema", () => {
       .values({ userId: alice, item: "Helmet", price: 500_000, quantity: "2", discount: 50_000 })
       .returning();
     expect(wish.total).toBe(950_000);
+  });
+
+  it("rounds totals the same way as lineTotal in lib/finance", async () => {
+    const cycle = await addCycle(alice, "2031-01-25", "2031-02-24");
+    const [cash] = await db.select().from(accounts).where(eq(accounts.name, "Cash")).limit(1);
+    const lines = [
+      { quantity: "0.5", amount: 3_001, discount: 0 },
+      { quantity: "0.5", amount: 1, discount: 1 },
+      { quantity: "1.001", amount: 999, discount: 0 },
+      { quantity: "22.5", amount: 13_333, discount: 7 },
+      { quantity: "0.333", amount: 1_500, discount: 0 },
+    ];
+    const rows = await db
+      .insert(transactions)
+      .values(
+        lines.map((l) => ({
+          ...l,
+          cycleId: cycle.id,
+          date: "2031-01-26",
+          item: "Rounding",
+          sourceAccountId: cash.id,
+          destAccountId: cash.id,
+          type: "expense" as const,
+        })),
+      )
+      .returning();
+    expect(rows.map((r) => r.total)).toEqual(lines.map(lineTotal));
   });
 
   it("rejects a pay day outside 1 to 31", async () => {
