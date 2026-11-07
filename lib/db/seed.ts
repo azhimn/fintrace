@@ -1,4 +1,5 @@
 import { eq } from "drizzle-orm";
+import { DEFAULT_SHORTCUTS } from "../shortcuts";
 import type { Db } from "./index";
 import { accounts, categories, envelopes, settings, subcategories, users } from "./schema";
 
@@ -106,11 +107,7 @@ const TAXONOMY: { name: string; kind: Kind; subs: [string, ("needs" | "wants")?]
   },
 ];
 
-export const DEFAULT_SHORTCUTS = {
-  openQuickRecord: "r",
-  saveAndAddAnother: "mod+enter",
-  close: "escape",
-};
+export { DEFAULT_SHORTCUTS };
 
 /**
  * Creates the user if needed, then seeds their reference lists once. The settings row marks a

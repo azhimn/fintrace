@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { formatDate, formatMoney, formatPercent, formatQuantity, parseAmount } from "./format";
+import { formatAmountInput, formatDate, formatMoney, formatPercent, formatQuantity, parseAmount } from "./format";
 
 describe("id-ID formatters", () => {
   it("formats money with dot thousands and no decimals", () => {
@@ -74,5 +74,20 @@ describe("parseAmount", () => {
     for (const value of [0, 37_000, 3_789_316, -1_234_567]) {
       expect(parseAmount(formatMoney(value))).toBe(value);
     }
+  });
+});
+
+describe("formatAmountInput", () => {
+  it.each([
+    ["1500000", "1.500.000"],
+    ["1.5000", "15.000"],
+    ["007", "7"],
+    ["0", "0"],
+    ["", ""],
+    ["50rb", "50rb"],
+    ["1,5jt", "1,5jt"],
+    ["1.500rb", "1.500rb"],
+  ])("%s becomes %s", (input, expected) => {
+    expect(formatAmountInput(input)).toBe(expected);
   });
 });

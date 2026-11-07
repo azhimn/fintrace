@@ -23,8 +23,8 @@ export function LoginForm({ magicLink }: { magicLink: boolean }) {
   const linkError = `${id}-link-error`;
 
   return (
-    <div className="flex flex-col gap-8">
-      <form action={passwordAction} className="flex flex-col gap-4">
+    <div className="flex flex-col gap-4">
+      <form action={passwordAction} className="flex flex-col gap-4 rounded-panel bg-panel p-4">
         <div className="flex flex-col gap-2">
           <Label htmlFor={`${id}-email`}>Email</Label>
           <Input
@@ -35,7 +35,7 @@ export function LoginForm({ magicLink }: { magicLink: boolean }) {
             required
             autoComplete="username"
             autoFocus
-            className="h-11 bg-background"
+           
           />
         </div>
         <div className="flex flex-col gap-2">
@@ -48,18 +48,18 @@ export function LoginForm({ magicLink }: { magicLink: boolean }) {
             autoComplete="current-password"
             aria-invalid={!!password.error}
             aria-describedby={password.error ? passwordError : undefined}
-            className="h-11 bg-background"
+           
           />
         </div>
         <FieldError id={passwordError} message={password.error} />
-        <Button type="submit" disabled={signingIn} className="h-11 text-base">
+        <Button type="submit" size="lg" disabled={signingIn} className="mt-1">
           {signingIn ? "Signing in…" : "Sign in"}
         </Button>
       </form>
 
       {magicLink && (
-        <form action={linkAction} className="flex flex-col gap-3 border-t border-border pt-6">
-          <Label htmlFor={`${id}-link-email`}>No password handy? Get a sign-in link by email.</Label>
+        <form action={linkAction} className="flex flex-col gap-3 rounded-panel bg-panel p-4">
+          <Label htmlFor={`${id}-link-email`} className="leading-snug">No password handy? Get a sign-in link by email.</Label>
           <div className="flex gap-2">
             <Input
               id={`${id}-link-email`}
@@ -70,9 +70,9 @@ export function LoginForm({ magicLink }: { magicLink: boolean }) {
               autoComplete="username"
               aria-invalid={!!link.error}
               aria-describedby={link.error ? linkError : undefined}
-              className="h-11 bg-background"
+             
             />
-            <Button type="submit" variant="outline" disabled={sending} className="h-11">
+            <Button type="submit" variant="secondary" disabled={sending} className="h-11 px-4">
               {sending ? "Sending…" : "Send link"}
             </Button>
           </div>

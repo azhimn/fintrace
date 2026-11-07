@@ -1,17 +1,32 @@
 import { expect, it } from "vitest";
-import { dayTone, monthSheet } from "./calendar";
+import { addDays, cycleName, nextPayDate, payDateOnOrBefore, today } from "./calendar";
 
-it("reads the date in Jakarta, not UTC", () => {
-  const sheet = monthSheet(new Date("2026-09-24T18:00:00Z"));
-  expect([sheet.day, sheet.weekday, sheet.month, sheet.year]).toEqual([25, "Friday", "September", 2026]);
+it("reads today in Jakarta, not UTC", () => {
+  expect(today(new Date("2026-09-24T18:00:00Z"))).toBe("2026-09-25");
+  expect(today(new Date("2026-09-24T16:00:00Z"))).toBe("2026-09-24");
 });
 
-it("lays out a Sunday-first month", () => {
-  expect(monthSheet(new Date("2026-11-07T05:00:00Z"))).toMatchObject({ leadingBlanks: 0, daysInMonth: 30 });
-  expect(monthSheet(new Date("2026-09-25T05:00:00Z"))).toMatchObject({ leadingBlanks: 2, daysInMonth: 30 });
-  expect(monthSheet(new Date("2028-02-10T05:00:00Z"))).toMatchObject({ daysInMonth: 29 });
+it("adds days across months and years", () => {
+  expect(addDays("2026-12-31", 1)).toBe("2027-01-01");
+  expect(addDays("2026-03-01", -1)).toBe("2026-02-28");
 });
 
-it("colours Sundays and Fridays like a wall calendar", () => {
-  expect([0, 1, 5].map(dayTone)).toEqual(["text-destructive", "text-foreground", "text-friday"]);
+it("finds the pay date a cycle holding a date starts on", () => {
+  expect(payDateOnOrBefore("2026-11-07", 25)).toBe("2026-10-25");
+  expect(payDateOnOrBefore("2026-11-25", 25)).toBe("2026-11-25");
+  expect(payDateOnOrBefore("2026-03-05", 31)).toBe("2026-02-28");
+  expect(payDateOnOrBefore("2027-01-03", 25)).toBe("2026-12-25");
+});
+
+it("runs a cycle to next month's pay day, even when this one started early", () => {
+  expect(nextPayDate("2026-10-25", 25)).toBe("2026-11-25");
+  expect(nextPayDate("2026-10-23", 25)).toBe("2026-11-25");
+  expect(nextPayDate("2026-10-02", 25)).toBe("2026-10-25");
+  expect(nextPayDate("2026-12-25", 25)).toBe("2027-01-25");
+  expect(nextPayDate("2026-01-31", 31)).toBe("2026-02-28");
+});
+
+it("names a cycle like the spec", () => {
+  expect(cycleName("2026-09-25", "2026-10-23")).toBe("25 Sep – 23 Oct 2026");
+  expect(cycleName("2026-12-25", "2027-01-24")).toBe("25 Dec 2026 – 24 Jan 2027");
 });

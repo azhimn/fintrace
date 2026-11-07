@@ -1,292 +1,352 @@
 ---
 name: fintrace
-description: Personal envelope budgeting whose one flourish is today's date, set like an Indonesian wall calendar.
+description: Personal envelope budgeting by pay cycle, drawn as a kraft pay envelope (amplop gaji) over soft pastel work areas.
 colors:
-  primary: "oklch(0.38 0.09 152)"
-  primary-foreground: "oklch(0.99 0.003 150)"
-  destructive: "oklch(0.52 0.2 27)"
-  friday: "#15803d"
-  background: "oklch(0.992 0.003 150)"
-  foreground: "oklch(0.2 0.02 160)"
-  muted: "oklch(0.96 0.01 150)"
-  muted-foreground: "oklch(0.43 0.02 160)"
-  border: "oklch(0.86 0.015 150)"
-  input: "oklch(0.6 0.02 155)"
+  primary: "#4a5bc4"
+  primary-foreground: "#ffffff"
+  secondary: "#bcc8f6"
+  kraft: "#ead3b5"
+  kraft-ink: "#5f503f"
+  window: "#fffdfb"
+  background: "#f6f7fb"
+  foreground: "#3d3832"
+  panel: "#edeef4"
+  accent: "#e3e6f3"
+  divider: "#e0e2ea"
+  track: "#dcdee7"
+  field: "#ffffff"
+  muted-foreground: "#66615b"
+  quiet-control: "#85807a"
+  amount-placeholder: "#8a7b6a"
+  destructive: "#b3261e"
+  destructive-soft: "#f2b8b5"
+  hue-mint: "#9ed4b6"
+  hue-apricot: "#f2c08e"
+  hue-lilac: "#cdb8ee"
+  hue-sky: "#a9d3f0"
+  hue-rose: "#f2b8c6"
+  hue-butter: "#ecd88a"
+  wants: "#8e9be0"
+  unclassified: "#c8c2bb"
 typography:
   display:
-    fontFamily: "Archivo, sans-serif"
-    fontSize: "6rem"
-    fontWeight: 800
-    lineHeight: 1
-    letterSpacing: "-0.02em"
-    fontVariation: "'wdth' 75"
-  display-page:
-    fontFamily: "Archivo, sans-serif"
-    fontSize: "4.5rem"
-    fontWeight: 800
-    lineHeight: 1
-    letterSpacing: "-0.02em"
-    fontVariation: "'wdth' 75"
-  numeral-grid:
-    fontFamily: "Archivo, sans-serif"
-    fontSize: "1.875rem"
-    fontWeight: 800
-    lineHeight: 1.2
-    letterSpacing: "-0.02em"
-    fontVariation: "'wdth' 75"
-  figure:
-    fontFamily: "Archivo, sans-serif"
-    fontSize: "1rem"
-    fontWeight: 800
-    lineHeight: 1.5
-    letterSpacing: "-0.02em"
-    fontVariation: "'wdth' 75"
-  wordmark:
-    fontFamily: "Archivo, sans-serif"
-    fontSize: "1.125rem"
-    fontWeight: 800
-    lineHeight: 1.5
-    letterSpacing: "0.01em"
-    fontVariation: "'wdth' 75"
+    fontFamily: "Hanken Grotesk, ui-sans-serif, system-ui, sans-serif"
+    fontSize: "2.5rem"
+    fontWeight: 600
+    lineHeight: 1.1
+    letterSpacing: "-0.025em"
+    fontFeature: "tnum"
   headline:
-    fontFamily: "Archivo, sans-serif"
-    fontSize: "1.5rem"
+    fontFamily: "Hanken Grotesk, ui-sans-serif, system-ui, sans-serif"
+    fontSize: "2.125rem"
     fontWeight: 600
-    lineHeight: 1.333
+    lineHeight: 1.25
+    letterSpacing: "-0.01em"
+    fontFeature: "tnum"
+  headline-page:
+    fontFamily: "Hanken Grotesk, ui-sans-serif, system-ui, sans-serif"
+    fontSize: "1.75rem"
+    fontWeight: 500
+    lineHeight: 1.25
+  title-action:
+    fontFamily: "Hanken Grotesk, ui-sans-serif, system-ui, sans-serif"
+    fontSize: "1.1875rem"
+    fontWeight: 600
+    lineHeight: 1.2
   title:
-    fontFamily: "Archivo, sans-serif"
-    fontSize: "1.125rem"
+    fontFamily: "Hanken Grotesk, ui-sans-serif, system-ui, sans-serif"
+    fontSize: "0.875rem"
     fontWeight: 600
-    lineHeight: 1.556
+    lineHeight: 1.43
   body:
-    fontFamily: "Archivo, sans-serif"
-    fontSize: "1rem"
+    fontFamily: "Hanken Grotesk, ui-sans-serif, system-ui, sans-serif"
+    fontSize: "0.9375rem"
     fontWeight: 400
     lineHeight: 1.5
-  body-sm:
-    fontFamily: "Archivo, sans-serif"
-    fontSize: "0.875rem"
-    fontWeight: 400
-    lineHeight: 1.429
-  label:
-    fontFamily: "Archivo, sans-serif"
-    fontSize: "0.875rem"
+  figure:
+    fontFamily: "Hanken Grotesk, ui-sans-serif, system-ui, sans-serif"
+    fontSize: "0.9375rem"
     fontWeight: 500
-    lineHeight: 1
+    lineHeight: 1.5
+    fontFeature: "tnum"
+  label:
+    fontFamily: "Hanken Grotesk, ui-sans-serif, system-ui, sans-serif"
+    fontSize: "0.8125rem"
+    fontWeight: 500
+    lineHeight: 1.4
   caption:
-    fontFamily: "Archivo, sans-serif"
+    fontFamily: "Hanken Grotesk, ui-sans-serif, system-ui, sans-serif"
     fontSize: "0.75rem"
     fontWeight: 400
-    lineHeight: 1.333
+    lineHeight: 1.33
 rounded:
-  sm: "2.4px"
-  lg: "4px"
+  kbd: "6px"
+  field: "10px"
+  button: "14px"
+  panel: "16px"
+  sheet: "24px"
+  full: "9999px"
 spacing:
-  "2": "8px"
-  "3": "12px"
-  "4": "16px"
-  "6": "24px"
-  "8": "32px"
-  "10": "40px"
-  "12": "48px"
+  xs: "4px"
+  sm: "8px"
+  md: "12px"
+  lg: "16px"
+  gutter: "20px"
+  section: "22px"
+  gutter-desktop: "32px"
 components:
   button-primary:
     backgroundColor: "{colors.primary}"
     textColor: "{colors.primary-foreground}"
-    typography: "{typography.body}"
-    rounded: "{rounded.lg}"
-    padding: "0 10px"
-    height: "44px"
+    typography: "{typography.figure}"
+    rounded: "{rounded.button}"
+    padding: "0 20px"
+    height: "48px"
   button-primary-hover:
-    backgroundColor: "oklch(0.38 0.09 152 / 0.8)"
-  button-outline:
-    backgroundColor: "{colors.background}"
-    textColor: "{colors.foreground}"
-    typography: "{typography.body-sm}"
-    rounded: "{rounded.lg}"
-    padding: "0 10px"
-    height: "44px"
-  button-outline-hover:
-    backgroundColor: "{colors.muted}"
-  button-band:
+    backgroundColor: "color-mix(in oklch, #4a5bc4, black 10%)"
     textColor: "{colors.primary-foreground}"
-    typography: "{typography.body-sm}"
-    rounded: "{rounded.lg}"
+  button-secondary:
+    backgroundColor: "{colors.secondary}"
+    textColor: "{colors.foreground}"
+    rounded: "{rounded.button}"
+    padding: "0 20px"
+    height: "48px"
+  button-destructive:
+    backgroundColor: "{colors.destructive-soft}"
+    textColor: "{colors.destructive}"
+    rounded: "{rounded.button}"
+  button-quiet:
+    backgroundColor: "transparent"
+    textColor: "{colors.muted-foreground}"
+    rounded: "{rounded.button}"
     padding: "0 12px"
     height: "44px"
-  button-band-hover:
-    backgroundColor: "oklch(0.99 0.003 150 / 0.15)"
+  button-quiet-hover:
+    backgroundColor: "{colors.accent}"
+    textColor: "{colors.foreground}"
+  record-bar:
+    backgroundColor: "{colors.primary}"
+    textColor: "{colors.primary-foreground}"
+    typography: "{typography.title-action}"
+    rounded: "{rounded.button}"
+    height: "60px"
+    width: "100%"
   input:
-    backgroundColor: "{colors.background}"
+    backgroundColor: "{colors.field}"
     textColor: "{colors.foreground}"
     typography: "{typography.body}"
-    rounded: "{rounded.lg}"
-    padding: "4px 10px"
+    rounded: "{rounded.field}"
+    padding: "0 12px"
     height: "44px"
-  app-band:
-    backgroundColor: "{colors.primary}"
-    textColor: "{colors.primary-foreground}"
+  chip:
+    backgroundColor: "{colors.panel}"
+    textColor: "{colors.muted-foreground}"
+    typography: "{typography.body}"
+    rounded: "{rounded.button}"
+    padding: "0 16px"
+    height: "44px"
+  chip-selected:
+    backgroundColor: "{colors.secondary}"
+    textColor: "{colors.foreground}"
+  panel:
+    backgroundColor: "{colors.panel}"
+    textColor: "{colors.foreground}"
+    rounded: "{rounded.panel}"
+    padding: "12px 16px"
+  address-window:
+    backgroundColor: "{colors.window}"
+    textColor: "{colors.foreground}"
+    rounded: "{rounded.panel}"
+    padding: "14px 16px 16px"
+  kraft-band:
+    backgroundColor: "{colors.kraft}"
+    textColor: "{colors.foreground}"
+    padding: "20px"
+  sheet:
+    backgroundColor: "{colors.background}"
+    rounded: "{rounded.sheet}"
+  toast:
+    backgroundColor: "{colors.foreground}"
+    textColor: "{colors.background}"
+    rounded: "{rounded.panel}"
     height: "56px"
-  month-cell-today:
-    backgroundColor: "{colors.primary}"
-    textColor: "{colors.primary-foreground}"
-    typography: "{typography.numeral-grid}"
-    padding: "12px"
-  month-cell-blank:
-    backgroundColor: "{colors.muted}"
 ---
 
 # Design System: fintrace
 
 ## Overview
 
-**Creative North Star: "The Kalender Dinding"**
+**Creative North Star: "Amplop Gaji"**
 
-fintrace looks like the printed wall calendar that hangs in an Indonesian kitchen: near-white paper, ink, a deep green band across the top, and a date figure heavy enough to read from across the room. Today's date is the single flourish the system allows itself. Every other surface is a plain, ruled record of what is true now, kept quiet so that the figures carry the screen.
+Each pay cycle is a pay envelope and each Budget an envelope you spend from. The top of every surface is a kraft band, the envelope itself, that ends in a soft wavy flap. Inside the band sits a die-cut white address window that frames the one figure that matters: usable funds on Overview, the typed amount in Quick Record. Below the flap is a faintly cool white work area where content sits in grouped, tinted panels. Nothing is outlined and nothing casts a shadow at rest.
 
-Density is that of a ledger page. Hairline rules organize the data, one family sets all the type, and the only saturated fields of color are the band, the primary action and today's cell. The system is light only, because the work happens on a phone in daylight, often outdoors.
+The palette is soft pastels with firm ink. Pastels are fills only. Text and figures stay in a warm dark ink that is never black, and every text pairing keeps WCAG AA. Action has one colour: a solid periwinkle with white text. Its pastel twin marks selection. One sans with tabular figures carries every level. Hierarchy comes from size and spacing, with little weight contrast. Density is calm and one-handed: 44px minimum targets, a full-width Record bar in thumb reach, and lists you scan rather than tables you read.
 
-The confirmed visual rejection is the fintech default of a dark gradient card with a hero balance. Money appears as a figure in a ruled row, and the largest number on any screen is the date.
+The world replaced a rejected wall-calendar direction. It also turns away from the fintech default of white cards, a hero balance and a floating pill button, and from both "spreadsheet grey" and "too decorative". UI terms are fixed: **Fund** (an account), **Budget** (an envelope), and the primary action is labelled **Record**.
 
 **Key Characteristics:**
-- Near-white, faintly green paper with ink text and hairline rules
-- A deep green band along the top edge of the sign-in and app screens
-- Archivo throughout, with its condensed extra-bold cut reserved for figures and the wordmark
-- Calendar weekday tones: red Sundays, green Fridays, ink otherwise
-- Flat, square-celled surfaces with 4px corners on controls only
+- Kraft band with a wavy flap edge on every top-level surface: Overview, Quick Record sheet, login.
+- A white address window inside the kraft frames the key figure.
+- Flat tinted panels with 1px soft dividers between rows. No borders and no resting shadows.
+- Solid periwinkle for action, pastel periwinkle for selection, warm ink for text.
+- One fixed pastel hue per Budget, shown as a dot or bar everywhere that Budget appears.
+- Hanken Grotesk at 400/500/600 only, with tabular figures throughout.
 
 ## Colors
 
-A tinted-paper neutral set carries two greens and one red, each with a narrow assigned job.
+Soft pastel fills on cool white, a kraft envelope, and one saturated periwinkle for action.
 
 ### Primary
-- **Calendar Deep Green** (`primary`, #104f29 rendered): The band across the top of the sign-in and app screens, primary actions, today's cell in the month grid, focus rings, text selection, the text caret and the browser theme color.
-- **Band Paper** (`primary-foreground`, #fafcfb rendered): Everything set on deep green, at 9.4:1.
+- **Ink Periwinkle** (#4a5bc4): every primary action. Used for the Record bar and its docked twin, Save, Sign in and Start cycle, and also for the focus outline, the text caret and links. It always carries white text (5.86:1). Hover darkens it 10% toward black in OKLCH.
 
 ### Secondary
-- **Sunday Red** (`destructive`, #c2181d rendered): Sundays in the calendar, negative money and errors, at 6:1 on paper and 5.5:1 on the tinted pane. Error messages, invalid field borders and their rings all use it.
+- **Pastel Periwinkle** (#bcc8f6): selection and secondary actions. Used for the checked type tab and Fund chip, "Save & add another", the toast action, text selection, the swipe-to-repeat reveal, and the Needs slice of the donut. It always carries ink text (7.03:1) and never coloured text.
+- **Wants Periwinkle** (#8e9be0): the Wants slice and legend dot in Needs vs Wants. It is a chart fill only and never text.
 
 ### Tertiary
-- **Friday Green** (`friday`, #15803d): The Friday tone on the day numeral, the Friday column head and Friday cells in the month grid, at 4.9:1 on paper.
+- **Kraft** (#ead3b5): the envelope. It owns the shell band, the Quick Record header and the flap edge, plus the browser theme colour and the icon ground. Unallocated money is also kraft, because it is still in the pay envelope. At 50% it fills the rb/jt amount shortcuts.
+- **Kraft Ink** (#5f503f): secondary text on kraft or in the window, such as cycle dates, window labels and the Close control (5.35:1 on kraft).
+- **Address Window** (#fffdfb): the warm white die-cut window inside the band. Use it only for the framed key figure.
+- **Budget Hues**: mint (#9ed4b6), apricot (#f2c08e), lilac (#cdb8ee), sky (#a9d3f0), rose (#f2b8c6), butter (#ecd88a). Each Budget gets one, in sort order. They appear as 10px dots and as progress fills, never as text.
 
 ### Neutral
-- **Calendar Paper** (`background`, #fbfdfb rendered): The page, and the fill of inputs and outline buttons wherever they sit on a tint.
-- **Ink** (`foreground`, #0e1913 rendered): Text, ordinary weekdays and the 1px rule that opens a block of data.
-- **Tinted Pane** (`muted`, #edf4ee rendered): The sign-in pane on large screens, blank cells in the month grid, loading placeholders and hover on outline buttons.
-- **Soft Ink** (`muted-foreground`, #47534c rendered): Secondary text such as column heads, the month and year, and empty-state messages, at 7.9:1 on paper.
-- **Hairline** (`border`, #cad4cc rendered): Decorative rules and grid lines between rows and cells, at 1.5:1.
-- **Field Edge** (`input`, #77847b rendered): The outline of text inputs and the scrollbar thumb, at 3.8:1 on paper and 3.5:1 on the tinted pane.
+- **Cool Paper** (#f6f7fb): the page and sheet background, and the toast text.
+- **Warm Ink** (#3d3832): all primary text and figures. Inverted, it is the toast surface and the 35% sheet backdrop.
+- **Panel Tint** (#edeef4): the grouped-list panel, the chip at rest, the segmented control track and the outline button.
+- **Hover Tint** (#e3e6f3): hover fill for quiet and outline controls.
+- **Divider** (#e0e2ea): the 1px rule between rows inside a panel. It is the only line in the system.
+- **Track** (#dcdee7): empty progress tracks, the donut ring, the scrollbar thumb, and the dot for unassigned records.
+- **Field White** (#ffffff): input and select fills, and the highlighted suggestion row.
+- **Muted Ink** (#66615b): row metadata, field labels, unselected chips and empty states (5.29:1 on panel).
+- **Quiet Control** (#85807a): icon-only secondary controls that sit inside a row, currently the Recent repeat button. At 3.38:1 on panel it meets the 3:1 non-text floor. Use it for icons only, never for text, and turn it to Warm Ink on hover.
+- **Amount Placeholder** (#8a7b6a): the "0" placeholder in the address-window amount field. It passes only because that text is large (40px/600, 4.04:1 on the window). Do not use it at body sizes.
+- **Unclassified Stone** (#c8c2bb): the Unclassified slice and dot in Needs vs Wants. It is a chart fill only.
+
+### Error
+- **Deep Red** (#b3261e): negative figures, "over" labels, field errors and alert text (5.65:1 on panel).
+- **Pastel Red** (#f2b8b5): the destructive button fill, over-budget bar fills, and alert panels at 50% under Deep Red text.
 
 ### Named Rules
-**The Calendar Red Rule.** Red belongs to Sundays, negative money and errors, and to no other meaning. M1 renders no negative amount because no balances exist yet; when one ships it takes this red.
+**The Fills-Only Pastel Rule.** Pastels (secondary, Budget hues, kraft, pastel red, chart fills) are surfaces, dots and bars. Text on or beside them is Warm Ink, Kraft Ink, Muted Ink or Deep Red, always at AA.
 
-**The Friday Green Rule.** The brighter green (#15803d) is the Friday tone and has no other job. The band, primary actions, today's cell, focus and selection use deep green.
+**The One Action Colour Rule.** Solid Ink Periwinkle with white text marks an action you take. Nothing decorative uses it.
 
-**The Minus Sign Rule.** State stays readable without color. Negative money keeps its minus sign, weekday tones sit in labelled columns, and errors are stated in words.
+**The Kraft Means Envelope Rule.** Kraft appears only where the pay envelope is: the top band, its flap, and Unallocated money. Work areas are never kraft.
 
-**The Unmarked Holiday Rule.** National holidays are left unmarked because no holiday data exists. They take no red until real data backs them.
+**The Fixed Hue Rule.** A Budget keeps one hue on every surface it appears on: its bar, its Recent dot, its suggestion dot.
 
 ## Typography
 
-**Display Font:** Archivo variable with the width axis (with sans-serif)
-**Body Font:** Archivo (with sans-serif)
+**Display Font:** Hanken Grotesk (with ui-sans-serif, system-ui)
+**Body Font:** Hanken Grotesk
+**Label/Mono Font:** Hanken Grotesk, with tabular figures applied to the whole body
 
-**Character:** One grotesque family does all the work, and the width axis supplies the contrast. Extra-bold at 75% width gives the blunt figure of a wall calendar, while the normal width stays plain and legible for reading.
+**Character:** A plain, friendly workhorse grotesk with low weight contrast. Figures line up in columns because `tnum` is on everywhere and the `.figure` class adds weight 500 and no-wrap.
 
 ### Hierarchy
-- **Display** (800, 75% width, 96px, line height 1, -0.02em): Today's date on the sign-in screen.
-- **Display Page** (800, 75% width, 72px, line height 1, -0.02em): Today's date at the right of a page head.
-- **Numeral Grid** (800, 75% width, 30px, line height 1.2, -0.02em): Day numbers in the month grid.
-- **Figure** (800, 75% width, 16px, line height 1.5, -0.02em): Money in table rows, right aligned and never wrapped.
-- **Wordmark** (800, 75% width, 18px, 0.01em): The lowercase fintrace name in the band.
-- **Headline** (600, 24px, line height 1.333): The page title.
-- **Title** (600, 18px, line height 1.556): Section headings, and the weekday beside the large numeral.
-- **Body** (400, 16px, line height 1.5): Messages and empty states, capped at the prose measure of 65ch.
-- **Body Small** (400, 14px, line height 1.429): Table and list content, the band's account email, and error messages. Row labels and the current nav item step up to 600.
-- **Label** (500, 14px, line height 1): Form field labels.
-- **Caption** (400, 12px, line height 1.333): Notes under list items, in Soft Ink. The month grid's weekday letters use this size at 600.
+- **Display** (600, 40px, -0.025em): the typed amount in the Quick Record address window, next to a 32px/500 "Rp" in Kraft Ink. This is the largest type in the product.
+- **Headline** (600, 34px, line-height 1.25, -0.01em): usable funds in the Overview address window.
+- **Headline Page** (500, 28px): the login "Sign in" heading.
+- **Title Action** (600, 19px): the mobile Record bar label. The docked twin is 17px and the desktop band button is 15px/500.
+- **Title** (600, 14px): section headings (Funds, Budgets, Needs vs Wants, Recent). The wordmark "fintrace" is 16px/600, and the sheet title is 16px/500.
+- **Body** (400, 15px): list rows, empty states, chips and tabs. Inputs use 16px to stop iOS zoom, and the item field uses 18px.
+- **Figure** (500, tabular, no-wrap): every money amount in rows.
+- **Label** (500, 13px): field labels and window labels. Secondary window text and dates also sit at 13px/400.
+- **Caption** (400, 12px): row metadata such as "Sat, Nov 7 · Cash", minimum-balance notes and percentages.
 
 ### Named Rules
-**The Condensed Figure Rule.** The condensed extra-bold cut sets figures and the wordmark. Headings, labels and running text stay at normal width.
+**The Low Contrast Weight Rule.** Use only 400, 500 and 600. Never 700 or above. Reserve 600 for headline figures, section titles, the wordmark and the Record label.
 
-**The Tabular Rule.** Tabular figures are on for the whole page, so amounts align by digit in any column.
+**The Size Carries Rank Rule.** A key figure outranks its label by size: 34-40px against 13px. Don't separate them with bolding or colour.
 
 ## Layout
 
-The shell is a 56px band over a single content column, 1024px at most and centered, with 24px side padding and 32px vertical padding. Sections stack 40px apart, a heading sits 12px above its content, and form fields sit 16px apart with 8px between label and input. Spacing moves through the steps in the frontmatter, and the rhythm stays compact.
+The layout is a single column on phones and becomes two columns at the `lg` breakpoint (1024px). The container is capped at 1024px. Page gutters are 20px on phones and 32px on desktop, and the login column is capped at 384px.
 
-Lines arrange the data. A block of data opens with a 1px ink rule, and hairlines separate the rows beneath it. The envelope list flows through two columns, then three from 640px and four from 1024px. Tables drop their least important column below 640px, and the band drops the account email at the same width.
+The spacing rhythm is 4px: 4, 8, 12 and 16px inside panels and between controls, and 20px around sheet content. The one deliberate exception is the 22px gap above every section heading and above the Record bar. It was set so the bar sits exactly one section-gap below the flap. Section headings sit 8px above their panel. On desktop the two columns are 32px apart: Funds and Budgets on the left, Needs vs Wants and Recent on the right.
 
-The sign-in screen is the one split layout. From 1024px it sets a flexible calendar column against a fixed 30rem tinted pane divided by a hairline, with 48px padding on both. Below that it becomes one column on paper, with the numeral above the form and the month grid omitted. The sign-in band aligns to the screen edge with 24px padding, widening to 48px, so that the wordmark lines up with the calendar below it.
+The band runs full width with its content inside the container. On desktop the address window is capped at 448px and the Record button moves into the band top-right with an "R" key hint. On phones the full-width Record bar follows the flap, and once it scrolls away it docks bottom-centre above the safe area.
 
-### Named Rules
-**The Ruled Ledger Rule.** Ink opens a block of data and hairlines divide it, at 1px each. Rows and cells get their structure from these lines, with no boxes or shadows around them.
+Quick Record opens as a near-full-height bottom sheet on phones (full height minus the top inset). On desktop it is a centred 512px dialog up to 736px tall. Its own kraft header holds the item field and the amount window. The save footer is pinned and lifts with the virtual keyboard.
 
 ## Elevation & Depth
 
-The system is flat and has no shadow vocabulary. Depth comes only from tonal layering: paper for the page, Tinted Pane for a recessed area or an empty grid cell, and deep green for the band and today's cell. Controls keep to one plane, and the sole physical response is a 1px downward press on buttons.
+The system is flat. Depth comes from tonal layering: Cool Paper page, Panel Tint group, Field White input, and the kraft band holding a warm white window. Shadows appear only on elements that float above the page, and are always tinted rather than grey.
+
+### Shadow Vocabulary
+- **Docked Record lift** (`box-shadow: 0 8px 20px -6px rgb(74 91 196 / 0.55)`): only on the bottom-docked Record bar, tinted with its own periwinkle.
+- **Popover lift** (`box-shadow: 0 8px 24px -8px rgb(61 56 50 / 0.3)`): the item suggestion popup, tinted with Warm Ink.
+- **Sheet backdrop** (Warm Ink at 35%): sits behind the Quick Record sheet and fades with the swipe.
 
 ### Named Rules
-**The Flat Paper Rule.** Every surface lies flat on the sheet, at rest and in every state. Focus and hover change color or draw a ring, and nothing lifts.
+**The Flat At Rest Rule.** Panels, chips, inputs, buttons and the address window never cast a shadow. Only something floating over scrolled content (the docked bar, a popover) may lift, and only with a tinted shadow.
 
 ## Shapes
 
-Corners are nearly square, in keeping with a printed sheet. Buttons and inputs take a small 4px radius, and focus outlines on band links follow a tighter 2.4px. Structural surfaces such as the band, panes, grid cells, table rows and loading placeholders have no radius at all. Lines are always 1px and solid.
+Corners are soft, and they get rounder as the container gets bigger. Fields are 10px, buttons, chips and segmented controls are 14px, panels, windows and toasts are 16px, and sheets are 24px (top corners only on phones). Dots, progress tracks and fills are fully round. The kraft band is square at the bottom and ends in the **flap**: a 10px-tall wave tile 24px wide, repeated with `background-repeat: round`, so the edge always holds a whole number of waves and both ends sit at the same depth at any width.
 
-### Named Rules
-**The Square Cell Rule.** Anything that belongs to the sheet stays square-cornered, and the 4px corner marks a control a person can operate.
+There are no borders. The only line is the 1px Divider between rows inside a panel, and the first row has none.
+
+**The Whole Wave Rule.** The flap edge always uses whole waves (`round`), never a clipped tile, and only ever under kraft.
 
 ## Components
 
 ### Buttons
-Plain, firm and sized for a thumb.
-- **Shape:** Slightly softened rectangle (4px), 44px tall in every shipped use, with a 1px transparent or colored border.
-- **Primary:** Deep green with Band Paper text at weight 500. In a form it spans the full width at 16px with 10px side padding. Standing alone on the error page, it takes its content width at 14px with 16px side padding.
-- **Hover / Focus:** Primary lightens to 80% opacity on hover, which keeps 5.6:1 text contrast. Focus sets a deep green border with a 3px ring at 50%. Buttons press down by 1px when active and drop to 50% opacity when disabled. Color and transform transitions run at the framework's default 150ms.
-- **Outline:** Calendar Paper with a hairline border and ink text at 14px and weight 500, filling with Tinted Pane on hover. It serves the secondary action beside a field.
-- **Band:** Transparent with Band Paper text and 12px side padding, used for Sign out in the band. Hover adds a 15% Band Paper wash, and focus uses a 70% Band Paper ring.
+- **Shape:** gently rounded (14px), no border.
+- **Primary:** Ink Periwinkle with white 15px/500 text. The large size (48px tall, 20px padding) is the one used for Save, Sign in and Start cycle. Hover darkens it 10% in OKLCH, and press moves it 1px down.
+- **Secondary:** Pastel Periwinkle with ink text. It pairs with Primary as "Save & add another" and "Send link".
+- **Quiet:** transparent with Muted Ink or Kraft Ink text, 44px tall. Hover fills it with Hover Tint (or Kraft Ink at 10% on kraft). Used for Sign out and Close.
+- **Destructive:** Pastel Red fill with Deep Red text.
+- **Focus:** a 2px Ink Periwinkle outline at 2px offset on every focusable element.
 
-### Inputs / Fields
-- **Style:** 1px Field Edge outline, 4px radius, 44px tall, filled with Calendar Paper so it stands out on the tinted pane. Text is 16px on small screens, which prevents phone zoom on focus, and 14px from 768px up.
-- **Focus:** The border turns deep green with a 3px deep green ring at 50%.
-- **Error / Disabled:** Invalid fields take a red border with a 3px red ring at 20%, and a red 14px message below them that the field references. Disabled fields drop to 50% opacity on a faint Field Edge tint.
+### Record Bar
+This is the signature action. On phones it is full width, 60px tall, with a 19px/600 label and a 24px filled plus-circle icon. When it scrolls out of view a 56px twin docks bottom-centre. The twin slides up 16px and fades in over 300ms on `cubic-bezier(0.22, 1, 0.36, 1)`. The label is always "Record".
 
-### Navigation
-- **Style:** The band holds the wordmark, the nav links and, at its right edge, the account email and Sign out. Links are 14px at 600 on deep green, with 44px tall targets.
-- **States:** The current page carries an underline offset by 8px. Focus draws a 2px Band Paper outline offset by 2px, because the deep green ring would vanish on the band.
-- **Mobile:** The band keeps its 56px height and its links, and hides the email below 640px.
+### Chips and Segmented Control
+- **Fund chips:** 44px, Panel Tint, Muted Ink at rest, in a horizontally scrolling row that bleeds to the gutter. When checked they turn Pastel Periwinkle with ink text at 500.
+- **Type tabs:** a four-up segmented control. The track is Panel Tint with 4px padding at 14px radius, and the checked segment is Pastel Periwinkle at 10px radius.
+- **Amount shortcuts (rb, jt):** 44px Kraft at 50% with Kraft Ink text, turning full Kraft on hover.
 
-### Day Numeral
-The signature of the system: today's date as one heavy condensed figure, in its weekday tone, with the weekday in 600 and the month and year in Soft Ink stacked and bottom-aligned at its right. It runs at 96px with an 18px caption on the sign-in screen, and at 72px with a 14px caption at the right of a page head.
+### Panels and Lists
+- **Corner Style:** 16px.
+- **Background:** Panel Tint, with rows separated by 1px Divider.
+- **Shadow Strategy:** none (see Elevation).
+- **Internal Padding:** 12px by 16px per row, 16px for single-block panels and empty states.
+- **Rows:** a 15px name over 12px Muted Ink metadata, with a tabular figure right-aligned. A Budget or record row leads with a 10px hue dot. Budget rows add a 8px rounded progress bar on Track, filled with the Budget hue, or Pastel Red when over budget.
+- **Recent rows:** tap to edit. Swipe left past 72px to reveal a Pastel Periwinkle "Record again" strip, or use the 44px Quiet Control repeat icon.
 
-### Month Grid
-A hairline wall calendar sheet with Sunday-first columns, single-letter weekday heads and heavy condensed day numbers top-left in each cell. Rows stretch to fill the available height. Sundays and Fridays carry their tones through heads and days, today's cell fills with deep green and Band Paper, and blank cells outside the month take Tinted Pane. Screen readers receive the grid as one image with a label that names the month and today.
+### Address Window
+A warm white 16px-radius window inside the kraft band. It holds a 13px/500 Kraft Ink label, the key figure in Headline or Display type, and supporting 13px pairs underneath. Quick Record's window holds the amount input itself. That input is transparent with no focus box, so the window is the field.
 
-### Ledger Table
-Full width at 14px, with Soft Ink column heads at weight 500 over a 1px ink rule and hairlines between rows. Row names are 600, secondary columns are Soft Ink, amounts use the Figure style right aligned, and rows have 12px vertical padding.
+### Inputs and Fields
+- **Style:** Field White fill, no border, 10px radius, 44px tall (56px for the item field), 16px text.
+- **Focus:** a 2px inset Ink Periwinkle ring drawn with box-shadow, no outline offset.
+- **Error:** a 2px Deep Red ring with a 14px Deep Red message below.
+- **Labels:** 13px/500 Muted Ink, 8px above the field.
 
-### Ruled List
-A multi-column list with a 1px ink rule on top and hairlines under each item, using 14px text and 12px vertical padding. An item may add a caption line beneath its name.
+### Needs vs Wants Donut
+A 112px ring with a 16px stroke on Track. Needs is Pastel Periwinkle, Wants is Wants Periwinkle and Unclassified is Unclassified Stone. A legend with amounts and percentages always sits beside it, so colour is never the only key.
 
-### Status and Empty States
-Empty states are one Soft Ink sentence that says what happens next or what to do, placed where the content will appear. Loading uses square Tinted Pane blocks with a soft pulse.
+### Toast and Sheet
+- **Toast:** an inverted Warm Ink panel (16px radius, 56px minimum) with Cool Paper text and a Pastel Periwinkle action button. Toasts stack above the docked Record bar.
+- **Sheet:** Cool Paper with 24px corners. It slides on `cubic-bezier(0.32, 0.72, 0, 1)` over 400ms and follows the swipe.
 
 ## Do's and Don'ts
 
 ### Do:
-- **Do** keep red for Sundays, negative money and errors, and keep the minus sign on every negative amount.
-- **Do** use deep green for the band, primary actions, today's cell, focus and selection.
-- **Do** set money and dates in the condensed extra-bold figure style, with tabular figures on.
-- **Do** make every control at least 44px tall, including links in the band.
-- **Do** open a block of data with a 1px ink rule and divide its rows with hairlines.
-- **Do** keep field outlines in Field Edge, at 3:1 or better, and leave Hairline to decorative rules.
-- **Do** give every empty state a sentence in Soft Ink saying what comes next.
+- **Do** start every top-level surface with the kraft band and its whole-wave flap, and put the surface's key figure in a white address window.
+- **Do** group content into Panel Tint panels at 16px with 1px Divider rows.
+- **Do** give every primary action solid Ink Periwinkle with white text, and every selected state Pastel Periwinkle with ink text.
+- **Do** keep each Budget's hue fixed and show it as a dot or bar wherever the Budget appears. Unallocated is kraft.
+- **Do** set money in `.figure` (500, tabular, no-wrap) and negatives in Deep Red.
+- **Do** keep touch targets at 44px or more and keep Record in thumb reach.
+- **Do** say Fund, Budget and Record in the UI.
 
 ### Don't:
-- **Don't** use the Friday green (#15803d) for anything other than the Friday tone.
-- **Don't** mark national holidays in red until real holiday data exists.
-- **Don't** put a hero balance on a dark gradient card.
-- **Don't** add shadows or gradients to any surface.
-- **Don't** set headings, labels or running text in the condensed cut.
-- **Don't** round grid cells, panes, rows or the band.
-- **Don't** let color carry a state by itself.
+- **Don't** use weights of 700 or more, or pure black text.
+- **Don't** put coloured text on a pastel fill, or use a pastel as text.
+- **Don't** add borders or outlines to panels, inputs, chips or buttons, or give a resting surface a shadow.
+- **Don't** use kraft for work areas, cards or decoration away from the envelope band.
+- **Don't** make the floating Record a pill FAB. It keeps the 14px button corner and only docks after the in-flow bar scrolls away.
+- **Don't** bring back white cards on grey with a hero balance, spreadsheet-grey tables, or the wall-calendar world.
+- **Don't** use Quiet Control or Amount Placeholder for body-size text.

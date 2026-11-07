@@ -209,3 +209,84 @@ describe("scopedTo", () => {
     expect(await db.select().from(subcategories)).toHaveLength(108);
   });
 });
+
+describe("Quick Record write path", () => {
+  const ids = async (user: string) => {
+    const dal = scopedTo(db, user);
+    const accts = await dal.accounts();
+    return {
+      dal,
+      cash: accts.find((a) => a.name === "Cash")!.id,
+      external: accts.find((a) => a.kind === "external")!.id,
+      unallocated: (await dal.envelopes()).find((e) => e.isSystem)!.id,
+    };
+  };
+  const entry = (a: { cash: string; external: string }, over: object = {}) => ({
+    id: crypto.randomUUID(),
+    item: "Kopi susu",
+    type: "expense",
+    sourceAccountId: a.cash,
+    destAccountId: a.external,
+    amount: 18_000,
+    date: "2032-03-01",
+    ...over,
+  });
+
+  it("asks for a cycle, then starts one that ends the day before the next pay day", async () => {
+    const a = await ids(alice);
+    expect(await a.dal.addTransaction(entry(a))).toEqual({ ok: false, needsCycle: true });
+    expect(await a.dal.startCycle("2032-03-02", "2032-03-01", 25)).toMatch(/on or before/);
+    expect(await a.dal.startCycle("2032-02-25", "2032-03-01", 25)).toBeNull();
+    const cycle = await a.dal.cycleOn("2032-03-01");
+    expect([cycle?.startDate, cycle?.endDate, cycle?.name]).toEqual(["2032-02-25", "2032-03-24", "25 Feb – 24 Mar 2032"]);
+  });
+
+  it("closes the gap to the cycle before when the next one starts", async () => {
+    const a = await ids(alice);
+    expect(await a.dal.startCycle("2032-04-23", "2032-04-24", 25)).toBeNull();
+    expect((await a.dal.cycleOn("2032-03-30"))?.endDate).toBe("2032-04-22");
+    expect((await a.dal.cycleOn("2032-04-24"))?.endDate).toBe("2032-05-24");
+  });
+
+  it("saves once per id and stores Unallocated for an empty Budget", async () => {
+    const a = await ids(alice);
+    const input = entry(a);
+    expect(await a.dal.addTransaction(input)).toEqual({ ok: true });
+    expect(await a.dal.addTransaction(input)).toEqual({ ok: true });
+    const rows = (await db.select().from(transactions).where(eq(transactions.id, input.id)));
+    expect(rows).toHaveLength(1);
+    expect([rows[0].sourceEnvelopeId, rows[0].destEnvelopeId]).toEqual([a.unallocated, a.unallocated]);
+  });
+
+  it("refuses another user's Fund and won't let them edit or undo the record", async () => {
+    const a = await ids(alice);
+    const b = await ids(bob);
+    const theirs = await a.dal.addTransaction(entry(a, { sourceAccountId: b.cash }));
+    expect(theirs.ok).toBe(false);
+    expect("error" in theirs && theirs.error?.issues.map((i) => i.path[0])).toContain("sourceAccountId");
+
+    const input = entry(a, { item: "Mine" });
+    await a.dal.addTransaction(input);
+    expect(await b.dal.updateTransaction({ ...entry(b), id: input.id })).toEqual({ ok: false, missing: true });
+    await b.dal.deleteTransaction(input.id);
+    expect(await db.select().from(transactions).where(eq(transactions.id, input.id))).toHaveLength(1);
+    await a.dal.deleteTransaction(input.id);
+    expect(await db.select().from(transactions).where(eq(transactions.id, input.id))).toHaveLength(0);
+  });
+
+  it("suggests past items fuzzily, ranked by use, each with its latest row", async () => {
+    const a = await ids(alice);
+    await a.dal.addTransaction(entry(a, { item: "Kopi susu", amount: 20_000, date: "2032-03-05" }));
+    await a.dal.addTransaction(entry(a, { item: "Kopi hitam", date: "2032-03-02" }));
+    const { history } = await a.dal.suggestItems("kopi", "2032-03-06", undefined);
+    expect(history.map((h) => h.item)).toEqual(["Kopi susu", "Kopi hitam"]);
+    expect(history[0].amount).toBe(20_000);
+    expect((await a.dal.suggestItems("kopi susuu", "2032-03-06", undefined)).history[0]?.item).toBe("Kopi susu");
+    expect((await scopedTo(db, bob).suggestItems("kopi", "2032-03-06", undefined)).history).toEqual([]);
+  });
+
+  it("refuses a cycle start that would orphan records of the cycle before", async () => {
+    const a = await ids(alice);
+    expect(await a.dal.startCycle("2032-03-04", "2032-03-30", 25)).toMatch(/already starts|records on or after/);
+  });
+});

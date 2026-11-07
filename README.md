@@ -2,7 +2,7 @@
 
 Personal envelope budgeting by pay cycle, across several wallets and bank accounts. It replaces a Google Sheet, and the main goal is that recording a transaction takes seconds. [docs/SPEC.md](docs/SPEC.md) is the source of truth and defines the milestones.
 
-Milestones M1 (Foundation) and M2 (Calculation engine) exist today: the schema and migrations, seed data, login, the user-scoped data layer, the id-ID formatter and amount parser, an app shell, and `lib/finance.ts` with every SPEC section 4 formula. Quick Record and the other screens come in later milestones.
+Milestones M1 to M3 exist today: the schema and migrations, seed data, login, the user-scoped data layer, the id-ID formatter and amount parser, `lib/finance.ts` with every SPEC section 4 formula, the Overview home screen, and Quick Record (as a sheet from any app page and at `/record`), installable as a PWA with an offline queue. The management and supporting screens come in M4 and M5.
 
 ## Local development
 
@@ -73,6 +73,11 @@ After you change `.env`, run `docker compose up -d app` to recreate the containe
 | `lib/session.ts` | `getDal()`, which binds those queries to the signed-in user |
 | `lib/finance.ts` | SPEC section 4 formulas as pure functions over DAL rows, tested on a fixture cycle in `lib/finance.test.ts` |
 | `lib/format.ts` | Money, quantity, percent and date formatters, and `parseAmount` |
+| `lib/record.ts` | Quick Record's Zod schema: section 3 pairings, ownership of every referenced id, and the defaults it fills in |
+| `app/(app)/actions.ts`, `app/api/suggest` | Save, edit, undo and start-cycle actions; item suggestions |
+| `components/record/` | Quick Record form, item combobox, sheet, toasts and offline sync |
+| `components/overview/` | Overview parts: the Record bar, Needs vs Wants donut, recent records |
+| `lib/offline-queue.ts`, `public/sw.js`, `app/manifest.ts` | The PWA: entries saved offline, the service worker, the manifest with its Record shortcut |
 | `auth.ts`, `proxy.ts` | Auth.js config and route protection |
 
 Server components and actions should get data through `getDal()`. `plan_items`, `transactions` and `reconciliations` have no `user_id`, so their queries are scoped through the cycle they belong to.
@@ -103,3 +108,14 @@ Server components and actions should get data through `getDal()`. `plan_items`, 
 - **Unclassified spending.** Saving subcategories have no Needs or Wants default, so Needs vs Wants gets a third group for rows with no classification.
 - **Reconciliation.** The latest count per account is compared with the balance the caller passes in, normally the current one.
 - **Borrows.** The person in a borrow row is whichever of lender and lendee is not the user, so `borrowBalances` takes the user's own name.
+- **Item suggestions.** `/api/suggest` is a GET route rather than a Server Action, because it runs on every keystroke and Server Actions run one at a time. Past item names match with `ilike` or the pg_trgm `%` operator and rank by count × word similarity ÷ (1 + days since last use ÷ 14). With an empty field, Quick Record lists the top past items for one-tap repeats; plan items of the current cycle and unacquired wishlist items join once you type. A plan item wins a name clash, so the record links to it.
+- **Write path.** `lib/dal.ts` checks every account, envelope, subcategory and plan item id against the user's own rows through `recordSchema` in `lib/record.ts`, which also validates the section 3 pairings. An empty Budget is stored as the subcategory's default envelope, or Unallocated, on both sides of the row.
+- **Offline queue.** Quick Record makes each record's id in the browser. Entries saved offline wait in `localStorage` and are sent when the browser comes back online or the app next opens; the insert ignores an id it already has, so a resend is saved once. An entry the server refuses opens a toast with a Fix button that reopens it in the form. Edits need a connection.
+- **Service worker.** `public/sw.js` registers in production builds only. It caches hashed build assets on first use, and the Overview and `/record` pages each time they load online, so the installed app opens offline. A navigation that lands on the login page clears the cached pages. Offline behaviour can't be tested in `next dev`.
+- **Starting a cycle from Quick Record.** A record dated outside every cycle asks for a start date (the default pay date on or before it) and creates the cycle. The cycle before it is shortened or extended to end the day before, and the new one runs to the day before the next pay date at least 15 days later, so a pay day moved a few days early still ends at next month's. It refuses a start that would leave the cycle before with records on or after it. Closing a cycle with opening rows is M4.
+- **Amount keypad.** The amount field uses `inputmode="numeric"`, as SPEC section 5 asks, and phone number pads have no letters, so rb and jt buttons sit under the field. Plain digits gain thousands dots as you type.
+- **Shortcuts.** Read from `settings.shortcuts` over the defaults in `lib/shortcuts.ts`. Bindings look like `r`, `mod+enter` (Ctrl, or Cmd on a Mac) and `escape`. The editor comes with Settings in M5.
+- **Undo.** The toast after saving a new record offers Undo, which deletes it, or takes it out of the offline queue. Saved edits have no Undo.
+- **Budget colours.** Each envelope's pastel comes from its sort order, so reordering envelopes in Settings will recolour them. Unallocated is always kraft.
+- **Needs vs Wants donut.** Drawn as a small SVG. Recharts arrives with the Analytics charts in M5.
+- **Icons.** Phosphor (`@phosphor-icons/react`, fill weight) replaced lucide-react.

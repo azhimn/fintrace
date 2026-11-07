@@ -1,379 +1,664 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-11-07T08:42:55+00:00",
+  "generatedAt": "2026-11-07T12:15:26+00:00",
   "title": "Design System: fintrace",
   "extensions": {
     "colorMeta": {
       "primary": {
         "role": "primary",
-        "displayName": "Calendar Deep Green",
-        "canonical": "oklch(0.38 0.09 152)",
+        "displayName": "Ink Periwinkle",
+        "purpose": "Every primary action, focus outline, caret, links; always white text.",
+        "canonical": "#4a5bc4",
         "tonalRamp": [
-          "oklch(0.15 0.09 152)",
-          "oklch(0.264 0.09 152)",
-          "oklch(0.379 0.09 152)",
-          "oklch(0.493 0.09 152)",
-          "oklch(0.607 0.09 152)",
-          "oklch(0.721 0.09 152)",
-          "oklch(0.836 0.09 152)",
-          "oklch(0.95 0.09 152)"
+          "#050627",
+          "#161d51",
+          "#2b377f",
+          "#4352b1",
+          "#6376cb",
+          "#889ae0",
+          "#b3c2f6",
+          "#e4edff"
         ]
       },
       "primary-foreground": {
         "role": "primary",
-        "displayName": "Band Paper",
-        "canonical": "oklch(0.99 0.003 150)",
+        "displayName": "White On Periwinkle",
+        "purpose": "Text and icons on primary actions.",
+        "canonical": "#ffffff",
         "tonalRamp": [
-          "oklch(0.15 0.003 150)",
-          "oklch(0.264 0.003 150)",
-          "oklch(0.379 0.003 150)",
-          "oklch(0.493 0.003 150)",
-          "oklch(0.607 0.003 150)",
-          "oklch(0.721 0.003 150)",
-          "oklch(0.836 0.003 150)",
-          "oklch(0.95 0.003 150)"
+          "#0b0b0b",
+          "#242424",
+          "#404040",
+          "#5d5d5d",
+          "#7d7d7d",
+          "#9e9e9e",
+          "#c4c4c4",
+          "#eeeeee"
         ]
       },
-      "destructive": {
+      "secondary": {
         "role": "secondary",
-        "displayName": "Sunday Red",
-        "canonical": "oklch(0.52 0.2 27)",
+        "displayName": "Pastel Periwinkle",
+        "purpose": "Selected and secondary states, Needs slice; always ink text.",
+        "canonical": "#bcc8f6",
         "tonalRamp": [
-          "oklch(0.15 0.2 27)",
-          "oklch(0.264 0.2 27)",
-          "oklch(0.379 0.2 27)",
-          "oklch(0.493 0.2 27)",
-          "oklch(0.607 0.2 27)",
-          "oklch(0.721 0.2 27)",
-          "oklch(0.836 0.2 27)",
-          "oklch(0.95 0.2 27)"
+          "#050626",
+          "#1a2043",
+          "#353d62",
+          "#525b83",
+          "#707ba5",
+          "#919cc8",
+          "#b6c2f0",
+          "#e5edff"
         ]
       },
-      "friday": {
+      "kraft": {
         "role": "tertiary",
-        "displayName": "Friday Green",
-        "canonical": "#15803d",
+        "displayName": "Kraft",
+        "purpose": "The pay envelope: shell band, sheet header, flap, Unallocated.",
+        "canonical": "#ead3b5",
         "tonalRamp": [
-          "oklch(0.15 0.137 150.1)",
-          "oklch(0.264 0.137 150.1)",
-          "oklch(0.379 0.137 150.1)",
-          "oklch(0.493 0.137 150.1)",
-          "oklch(0.607 0.137 150.1)",
-          "oklch(0.721 0.137 150.1)",
-          "oklch(0.836 0.137 150.1)",
-          "oklch(0.95 0.137 150.1)"
+          "#160700",
+          "#312006",
+          "#4f3c22",
+          "#6e5a3f",
+          "#8e7a5e",
+          "#b09b7e",
+          "#d7c0a3",
+          "#ffebd0"
+        ]
+      },
+      "kraft-ink": {
+        "role": "tertiary",
+        "displayName": "Kraft Ink",
+        "purpose": "Secondary text on kraft and in the address window.",
+        "canonical": "#5f503f",
+        "tonalRamp": [
+          "#140800",
+          "#2e2112",
+          "#4b3d2c",
+          "#6a5b49",
+          "#8a7a68",
+          "#ac9b89",
+          "#d2c1ad",
+          "#fdebd7"
+        ]
+      },
+      "window": {
+        "role": "tertiary",
+        "displayName": "Address Window",
+        "purpose": "Die-cut window framing the key figure.",
+        "canonical": "#fffdfb",
+        "tonalRamp": [
+          "#0c0b0a",
+          "#252422",
+          "#413f3e",
+          "#5f5d5c",
+          "#7f7d7b",
+          "#a09e9c",
+          "#c5c4c2",
+          "#f0eeec"
         ]
       },
       "background": {
         "role": "neutral",
-        "displayName": "Calendar Paper",
-        "canonical": "oklch(0.992 0.003 150)",
+        "displayName": "Cool Paper",
+        "purpose": "Page and sheet background.",
+        "canonical": "#f6f7fb",
         "tonalRamp": [
-          "oklch(0.15 0.003 150)",
-          "oklch(0.264 0.003 150)",
-          "oklch(0.379 0.003 150)",
-          "oklch(0.493 0.003 150)",
-          "oklch(0.607 0.003 150)",
-          "oklch(0.721 0.003 150)",
-          "oklch(0.836 0.003 150)",
-          "oklch(0.95 0.003 150)"
+          "#0a0b0d",
+          "#232427",
+          "#3f4043",
+          "#5d5d61",
+          "#7c7d80",
+          "#9d9ea2",
+          "#c3c4c8",
+          "#edeef2"
         ]
       },
       "foreground": {
         "role": "neutral",
-        "displayName": "Ink",
-        "canonical": "oklch(0.2 0.02 160)",
+        "displayName": "Warm Ink",
+        "purpose": "All primary text and figures; toast surface; backdrop.",
+        "canonical": "#3d3832",
         "tonalRamp": [
-          "oklch(0.15 0.02 160)",
-          "oklch(0.264 0.02 160)",
-          "oklch(0.379 0.02 160)",
-          "oklch(0.493 0.02 160)",
-          "oklch(0.607 0.02 160)",
-          "oklch(0.721 0.02 160)",
-          "oklch(0.836 0.02 160)",
-          "oklch(0.95 0.02 160)"
+          "#0e0a06",
+          "#28231e",
+          "#443f39",
+          "#625d56",
+          "#827c75",
+          "#a39d96",
+          "#c9c3bc",
+          "#f4ede6"
         ]
       },
-      "muted": {
+      "panel": {
         "role": "neutral",
-        "displayName": "Tinted Pane",
-        "canonical": "oklch(0.96 0.01 150)",
+        "displayName": "Panel Tint",
+        "purpose": "Grouped panels, resting chips, segmented track.",
+        "canonical": "#edeef4",
         "tonalRamp": [
-          "oklch(0.15 0.01 150)",
-          "oklch(0.264 0.01 150)",
-          "oklch(0.379 0.01 150)",
-          "oklch(0.493 0.01 150)",
-          "oklch(0.607 0.01 150)",
-          "oklch(0.721 0.01 150)",
-          "oklch(0.836 0.01 150)",
-          "oklch(0.95 0.01 150)"
+          "#0a0b0f",
+          "#232428",
+          "#3f3f44",
+          "#5c5d62",
+          "#7c7d82",
+          "#9d9ea3",
+          "#c3c4c9",
+          "#edeef4"
+        ]
+      },
+      "accent": {
+        "role": "neutral",
+        "displayName": "Hover Tint",
+        "purpose": "Hover fill for quiet and outline controls.",
+        "canonical": "#e3e6f3",
+        "tonalRamp": [
+          "#090b13",
+          "#21232d",
+          "#3d3f49",
+          "#5b5d68",
+          "#7a7d88",
+          "#9b9eaa",
+          "#c1c3d0",
+          "#ebeefb"
+        ]
+      },
+      "divider": {
+        "role": "neutral",
+        "displayName": "Divider",
+        "purpose": "1px rule between rows; the only line.",
+        "canonical": "#e0e2ea",
+        "tonalRamp": [
+          "#0a0b10",
+          "#222429",
+          "#3e3f46",
+          "#5c5d64",
+          "#7b7d84",
+          "#9c9ea5",
+          "#c2c4cb",
+          "#eceef6"
+        ]
+      },
+      "track": {
+        "role": "neutral",
+        "displayName": "Track",
+        "purpose": "Empty progress tracks, donut ring, unassigned dot.",
+        "canonical": "#dcdee7",
+        "tonalRamp": [
+          "#0a0b10",
+          "#22242a",
+          "#3e3f46",
+          "#5b5d65",
+          "#7b7d85",
+          "#9c9ea6",
+          "#c2c4cc",
+          "#eceef7"
+        ]
+      },
+      "field": {
+        "role": "neutral",
+        "displayName": "Field White",
+        "purpose": "Input and select fills.",
+        "canonical": "#ffffff",
+        "tonalRamp": [
+          "#0b0b0b",
+          "#242424",
+          "#404040",
+          "#5d5d5d",
+          "#7d7d7d",
+          "#9e9e9e",
+          "#c4c4c4",
+          "#eeeeee"
         ]
       },
       "muted-foreground": {
         "role": "neutral",
-        "displayName": "Soft Ink",
-        "canonical": "oklch(0.43 0.02 160)",
+        "displayName": "Muted Ink",
+        "purpose": "Metadata, labels, unselected chips, empty states.",
+        "canonical": "#66615b",
         "tonalRamp": [
-          "oklch(0.15 0.02 160)",
-          "oklch(0.264 0.02 160)",
-          "oklch(0.379 0.02 160)",
-          "oklch(0.493 0.02 160)",
-          "oklch(0.607 0.02 160)",
-          "oklch(0.721 0.02 160)",
-          "oklch(0.836 0.02 160)",
-          "oklch(0.95 0.02 160)"
+          "#0e0a06",
+          "#27231e",
+          "#443f39",
+          "#625d57",
+          "#827c76",
+          "#a39d97",
+          "#c9c3bc",
+          "#f3ede6"
         ]
       },
-      "border": {
+      "quiet-control": {
         "role": "neutral",
-        "displayName": "Hairline",
-        "canonical": "oklch(0.86 0.015 150)",
+        "displayName": "Quiet Control",
+        "purpose": "Icon-only in-row controls (Recent repeat); 3.38:1 on panel, icons only.",
+        "canonical": "#85807a",
         "tonalRamp": [
-          "oklch(0.15 0.015 150)",
-          "oklch(0.264 0.015 150)",
-          "oklch(0.379 0.015 150)",
-          "oklch(0.493 0.015 150)",
-          "oklch(0.607 0.015 150)",
-          "oklch(0.721 0.015 150)",
-          "oklch(0.836 0.015 150)",
-          "oklch(0.95 0.015 150)"
+          "#0e0a07",
+          "#27231e",
+          "#433f3a",
+          "#615d57",
+          "#817c76",
+          "#a39d97",
+          "#c8c3bd",
+          "#f3ede7"
         ]
       },
-      "input": {
+      "amount-placeholder": {
         "role": "neutral",
-        "displayName": "Field Edge",
-        "canonical": "oklch(0.6 0.02 155)",
+        "displayName": "Amount Placeholder",
+        "purpose": "Large 40px amount placeholder only; 4.04:1 on window.",
+        "canonical": "#8a7b6a",
         "tonalRamp": [
-          "oklch(0.15 0.02 155)",
-          "oklch(0.264 0.02 155)",
-          "oklch(0.379 0.02 155)",
-          "oklch(0.493 0.02 155)",
-          "oklch(0.607 0.02 155)",
-          "oklch(0.721 0.02 155)",
-          "oklch(0.836 0.02 155)",
-          "oklch(0.95 0.02 155)"
+          "#130900",
+          "#2e2113",
+          "#4a3d2e",
+          "#695b4b",
+          "#897a69",
+          "#ab9c8a",
+          "#d1c1af",
+          "#fcebd9"
+        ]
+      },
+      "destructive": {
+        "role": "error",
+        "displayName": "Deep Red",
+        "purpose": "Negative figures, over labels, errors.",
+        "canonical": "#b3261e",
+        "tonalRamp": [
+          "#200000",
+          "#480705",
+          "#731b15",
+          "#a13027",
+          "#bf5a4e",
+          "#d88579",
+          "#f1b2a9",
+          "#ffe5de"
+        ]
+      },
+      "destructive-soft": {
+        "role": "error",
+        "displayName": "Pastel Red",
+        "purpose": "Destructive fill, over-budget bars, alert panels at 50%.",
+        "canonical": "#f2b8b5",
+        "tonalRamp": [
+          "#200001",
+          "#3f1415",
+          "#5f302f",
+          "#804e4c",
+          "#a26d6b",
+          "#c58e8b",
+          "#edb3b0",
+          "#ffe4e2"
+        ]
+      },
+      "hue-mint": {
+        "role": "budget-hue",
+        "displayName": "Mint",
+        "purpose": "Budget hue, fill only.",
+        "canonical": "#9ed4b6",
+        "tonalRamp": [
+          "#001303",
+          "#002e18",
+          "#164b33",
+          "#376a50",
+          "#578a6f",
+          "#78ac90",
+          "#9dd3b5",
+          "#d7f8e5"
+        ]
+      },
+      "hue-apricot": {
+        "role": "budget-hue",
+        "displayName": "Apricot",
+        "purpose": "Budget hue, fill only.",
+        "canonical": "#f2c08e",
+        "tonalRamp": [
+          "#1c0300",
+          "#3e1800",
+          "#5e3400",
+          "#7e5321",
+          "#a07342",
+          "#c39463",
+          "#e6bb90",
+          "#ffead1"
+        ]
+      },
+      "hue-lilac": {
+        "role": "budget-hue",
+        "displayName": "Lilac",
+        "purpose": "Budget hue, fill only.",
+        "canonical": "#cdb8ee",
+        "tonalRamp": [
+          "#110222",
+          "#2c1843",
+          "#483562",
+          "#665382",
+          "#8672a4",
+          "#a893c7",
+          "#cdb9ed",
+          "#f4e8ff"
+        ]
+      },
+      "hue-sky": {
+        "role": "budget-hue",
+        "displayName": "Sky",
+        "purpose": "Budget hue, fill only.",
+        "canonical": "#a9d3f0",
+        "tonalRamp": [
+          "#000d21",
+          "#00273d",
+          "#1d445c",
+          "#3c637c",
+          "#5b839d",
+          "#7ca4c0",
+          "#a1cae7",
+          "#d5f3ff"
+        ]
+      },
+      "hue-rose": {
+        "role": "budget-hue",
+        "displayName": "Rose",
+        "purpose": "Budget hue, fill only.",
+        "canonical": "#f2b8c6",
+        "tonalRamp": [
+          "#1f0009",
+          "#3e1321",
+          "#5d2f3c",
+          "#7e4d5a",
+          "#a06c79",
+          "#c48d9a",
+          "#ecb2c0",
+          "#ffe3ec"
+        ]
+      },
+      "hue-butter": {
+        "role": "budget-hue",
+        "displayName": "Butter",
+        "purpose": "Budget hue, fill only.",
+        "canonical": "#ecd88a",
+        "tonalRamp": [
+          "#140900",
+          "#322100",
+          "#503e00",
+          "#6f5c00",
+          "#907c2e",
+          "#b19e51",
+          "#d3c48c",
+          "#f7efcf"
+        ]
+      },
+      "wants": {
+        "role": "chart",
+        "displayName": "Wants Periwinkle",
+        "purpose": "Wants slice and dot in Needs vs Wants.",
+        "canonical": "#8e9be0",
+        "tonalRamp": [
+          "#060527",
+          "#191c51",
+          "#323875",
+          "#4e5797",
+          "#6c78ba",
+          "#8c99de",
+          "#b6c1f5",
+          "#e6edff"
+        ]
+      },
+      "unclassified": {
+        "role": "chart",
+        "displayName": "Unclassified Stone",
+        "purpose": "Unclassified slice and dot in Needs vs Wants.",
+        "canonical": "#c8c2bb",
+        "tonalRamp": [
+          "#0e0a06",
+          "#28231e",
+          "#443f39",
+          "#625d56",
+          "#827c76",
+          "#a39d97",
+          "#c9c3bc",
+          "#f4ede6"
         ]
       }
     },
     "typographyMeta": {
       "display": {
         "displayName": "Display",
-        "purpose": "Today's date on the sign-in screen."
-      },
-      "display-page": {
-        "displayName": "Display Page",
-        "purpose": "Today's date at the right of a page head."
-      },
-      "numeral-grid": {
-        "displayName": "Numeral Grid",
-        "purpose": "Day numbers in the month grid."
-      },
-      "figure": {
-        "displayName": "Figure",
-        "purpose": "Money in table rows, right aligned and never wrapped."
-      },
-      "wordmark": {
-        "displayName": "Wordmark",
-        "purpose": "The lowercase fintrace name in the band."
+        "purpose": "Typed amount in the Quick Record address window."
       },
       "headline": {
         "displayName": "Headline",
-        "purpose": "The page title."
+        "purpose": "Usable funds in the Overview address window."
+      },
+      "headline-page": {
+        "displayName": "Headline Page",
+        "purpose": "Login heading."
+      },
+      "title-action": {
+        "displayName": "Title Action",
+        "purpose": "Mobile Record bar label."
       },
       "title": {
         "displayName": "Title",
-        "purpose": "Section headings, and the weekday beside the large numeral."
+        "purpose": "Section headings."
       },
       "body": {
         "displayName": "Body",
-        "purpose": "Messages and empty states, capped at the prose measure of 65ch."
+        "purpose": "Rows, chips, tabs, empty states."
       },
-      "body-sm": {
-        "displayName": "Body Small",
-        "purpose": "Table and list content, the band's account email, and error messages. Row labels and the current nav item step up to 600."
+      "figure": {
+        "displayName": "Figure",
+        "purpose": "Every money amount in rows; tabular, no-wrap."
       },
       "label": {
         "displayName": "Label",
-        "purpose": "Form field labels."
+        "purpose": "Field and window labels."
       },
       "caption": {
         "displayName": "Caption",
-        "purpose": "Notes under list items, in Soft Ink. The month grid's weekday letters use this size at 600."
+        "purpose": "Row metadata, notes, percentages."
       }
     },
-    "shadows": [],
+    "shadows": [
+      {
+        "name": "docked-record-lift",
+        "value": "0 8px 20px -6px rgb(74 91 196 / 0.55)",
+        "purpose": "Only the bottom-docked Record bar."
+      },
+      {
+        "name": "popover-lift",
+        "value": "0 8px 24px -8px rgb(61 56 50 / 0.3)",
+        "purpose": "Item suggestion popup."
+      },
+      {
+        "name": "focus-ring-field",
+        "value": "0 0 0 2px var(--primary)",
+        "purpose": "Inset focus ring on inputs; Deep Red variant for invalid fields."
+      },
+      {
+        "name": "sheet-backdrop",
+        "value": "rgb(61 56 50 / 0.35)",
+        "purpose": "Backdrop behind the Quick Record sheet; fades with swipe."
+      }
+    ],
     "motion": [
       {
-        "name": "state-transition",
-        "value": "150ms cubic-bezier(0.4, 0, 0.2, 1)",
-        "purpose": "Color, border and ring changes on buttons and inputs."
+        "name": "ease-out-expo",
+        "value": "cubic-bezier(0.22, 1, 0.36, 1) 300ms",
+        "purpose": "Docked Record bar reveal (16px rise and fade) and toast enter/exit."
       },
       {
-        "name": "button-press",
+        "name": "ease-sheet",
+        "value": "cubic-bezier(0.32, 0.72, 0, 1) 400ms",
+        "purpose": "Quick Record sheet slide and backdrop fade; follows swipe."
+      },
+      {
+        "name": "swipe-settle",
+        "value": "ease-out 200ms",
+        "purpose": "Recent row snapping back after a swipe."
+      },
+      {
+        "name": "press",
         "value": "translateY(1px)",
-        "purpose": "Active state on buttons."
-      },
-      {
-        "name": "loading-pulse",
-        "value": "pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite",
-        "purpose": "Tinted Pane placeholders while a page loads."
+        "purpose": "Active state on buttons and the Record bar."
       }
     ],
     "breakpoints": [
       {
-        "name": "sm",
-        "value": "640px"
-      },
-      {
-        "name": "md",
-        "value": "768px"
-      },
-      {
         "name": "lg",
         "value": "1024px"
       }
-    ]
+    ],
+    "flap": {
+      "tile": "24px x 10px wave, kraft fill",
+      "repeat": "round no-repeat",
+      "purpose": "Bottom edge of every kraft band; whole waves at every width."
+    }
   },
   "components": [
     {
       "name": "Primary Button",
       "kind": "button",
       "refersTo": "button-primary",
-      "description": "The main action in a form, in deep green at 44px.",
-      "html": "<button class=\"ds-btn-primary\">Sign in</button>",
-      "css": ".ds-btn-primary { font-family: var(--font-sans, Archivo, sans-serif); display: inline-flex; align-items: center; justify-content: center; height: 44px; border: 1px solid transparent; border-radius: 4px; font-weight: 500; white-space: nowrap; cursor: pointer; outline: none; transition: all 150ms cubic-bezier(0.4, 0, 0.2, 1); padding: 0 10px; min-width: 240px; font-size: 1rem; background: var(--primary); border-color: var(--primary); color: var(--primary-foreground); } .ds-btn-primary:hover { background: color-mix(in oklab, var(--primary) 80%, transparent); } .ds-btn-primary:focus-visible { border-color: var(--primary); box-shadow: 0 0 0 3px color-mix(in oklab, var(--primary) 50%, transparent); } .ds-btn-primary:active { transform: translateY(1px); }"
+      "description": "Solid periwinkle action: Save, Sign in, Start cycle.",
+      "html": "<button class=\"ds-btn-primary\">Save</button>",
+      "css": ".ds-btn-primary{font-family:'Hanken Grotesk',ui-sans-serif,system-ui,sans-serif;height:48px;padding:0 20px;border:0;border-radius:14px;background:var(--primary,#4a5bc4);color:#fff;font-size:16px;font-weight:500;cursor:pointer;transition:background .15s,transform .1s}.ds-btn-primary:hover{background:color-mix(in oklch,var(--primary,#4a5bc4),black 10%)}.ds-btn-primary:active{transform:translateY(1px)}.ds-btn-primary:focus-visible{outline:2px solid var(--primary,#4a5bc4);outline-offset:2px}"
     },
     {
-      "name": "Outline Button",
+      "name": "Secondary Button",
       "kind": "button",
-      "refersTo": "button-outline",
-      "description": "The secondary action beside a field.",
-      "html": "<button class=\"ds-btn-outline\">Send link</button>",
-      "css": ".ds-btn-outline { font-family: var(--font-sans, Archivo, sans-serif); display: inline-flex; align-items: center; justify-content: center; height: 44px; border: 1px solid transparent; border-radius: 4px; font-weight: 500; white-space: nowrap; cursor: pointer; outline: none; transition: all 150ms cubic-bezier(0.4, 0, 0.2, 1); padding: 0 10px; font-size: 0.875rem; background: var(--background); border-color: var(--border); color: var(--foreground); } .ds-btn-outline:hover { background: var(--muted); } .ds-btn-outline:focus-visible { border-color: var(--primary); box-shadow: 0 0 0 3px color-mix(in oklab, var(--primary) 50%, transparent); } .ds-btn-outline:active { transform: translateY(1px); }"
+      "refersTo": "button-secondary",
+      "description": "Pastel periwinkle with ink text; pairs with Primary.",
+      "html": "<button class=\"ds-btn-secondary\">Save &amp; add another</button>",
+      "css": ".ds-btn-secondary{font-family:'Hanken Grotesk',ui-sans-serif,system-ui,sans-serif;height:48px;padding:0 20px;border:0;border-radius:14px;background:var(--secondary,#bcc8f6);color:var(--foreground,#3d3832);font-size:16px;font-weight:500;cursor:pointer;transition:background .15s}.ds-btn-secondary:hover{background:color-mix(in oklch,var(--secondary,#bcc8f6),var(--foreground,#3d3832) 6%)}.ds-btn-secondary:focus-visible{outline:2px solid var(--primary,#4a5bc4);outline-offset:2px}"
     },
     {
-      "name": "Text Input",
+      "name": "Record Bar",
+      "kind": "button",
+      "refersTo": "record-bar",
+      "description": "Full-width mobile Record action under the flap; docks bottom-centre when scrolled away.",
+      "html": "<button class=\"ds-record\"><svg width=\"24\" height=\"24\" viewBox=\"0 0 256 256\" fill=\"currentColor\" aria-hidden=\"true\"><path d=\"M128 24a104 104 0 1 0 104 104A104.13 104.13 0 0 0 128 24Zm40 112h-32v32a8 8 0 0 1-16 0v-32H88a8 8 0 0 1 0-16h32V88a8 8 0 0 1 16 0v32h32a8 8 0 0 1 0 16Z\"/></svg>Record</button>",
+      "css": ".ds-record{font-family:'Hanken Grotesk',ui-sans-serif,system-ui,sans-serif;display:flex;align-items:center;justify-content:center;gap:10px;width:100%;height:60px;border:0;border-radius:14px;background:var(--primary,#4a5bc4);color:#fff;font-size:19px;font-weight:600;cursor:pointer}.ds-record:hover{background:color-mix(in oklch,var(--primary,#4a5bc4),black 10%)}.ds-record:active{transform:translateY(1px)}.ds-record:focus-visible{outline:2px solid var(--primary,#4a5bc4);outline-offset:2px}"
+    },
+    {
+      "name": "Input",
       "kind": "input",
       "refersTo": "input",
-      "description": "Labelled 44px field with a 3:1 outline and a deep green focus ring.",
-      "html": "<label class=\"ds-field\"><span class=\"ds-label\">Email</span><input class=\"ds-input\" type=\"email\" /></label>",
-      "css": ".ds-field { font-family: var(--font-sans, Archivo, sans-serif); display: flex; flex-direction: column; gap: 8px; width: 320px; } .ds-label { font-size: 0.875rem; font-weight: 500; line-height: 1; color: var(--foreground); } .ds-input { font-family: var(--font-sans, Archivo, sans-serif); height: 44px; padding: 4px 10px; font-size: 1rem; background: var(--background); color: var(--foreground); border: 1px solid var(--input); border-radius: 4px; outline: none; transition: color 150ms, border-color 150ms, box-shadow 150ms; } .ds-input:focus-visible { border-color: var(--primary); box-shadow: 0 0 0 3px color-mix(in oklab, var(--primary) 50%, transparent); } .ds-input[aria-invalid=true] { border-color: var(--destructive); box-shadow: 0 0 0 3px color-mix(in oklab, var(--destructive) 20%, transparent); }"
+      "description": "Borderless white field, 10px corners, inset periwinkle focus ring.",
+      "html": "<input class=\"ds-input\" placeholder=\"Item\" />",
+      "css": ".ds-input{font-family:'Hanken Grotesk',ui-sans-serif,system-ui,sans-serif;height:44px;width:100%;padding:0 12px;border:0;border-radius:10px;background:var(--field,#fff);color:var(--foreground,#3d3832);font-size:16px;outline:none;transition:box-shadow .15s}.ds-input::placeholder{color:var(--muted-foreground,#66615b)}.ds-input:focus-visible{box-shadow:0 0 0 2px var(--primary,#4a5bc4)}"
     },
     {
-      "name": "App Band",
+      "name": "Fund Chips",
+      "kind": "chip",
+      "refersTo": "chip",
+      "description": "Radio chips for Paid from / Paid into; checked turns pastel periwinkle.",
+      "html": "<div class=\"ds-chips\"><span class=\"ds-chip ds-chip-on\">Cash</span><span class=\"ds-chip\">Mandiri</span><span class=\"ds-chip\">Jago</span></div>",
+      "css": ".ds-chips{display:flex;gap:8px}.ds-chip{font-family:'Hanken Grotesk',ui-sans-serif,system-ui,sans-serif;display:flex;align-items:center;height:44px;padding:0 16px;border-radius:14px;background:var(--panel,#edeef4);color:var(--muted-foreground,#66615b);font-size:15px;cursor:pointer}.ds-chip:hover{color:var(--foreground,#3d3832)}.ds-chip-on{background:var(--secondary,#bcc8f6);color:var(--foreground,#3d3832);font-weight:500}"
+    },
+    {
+      "name": "Envelope Band",
+      "kind": "custom",
+      "refersTo": "address-window",
+      "description": "Kraft band with the white address window and the whole-wave flap edge.",
+      "html": "<div class=\"ds-band\"><div class=\"ds-band-top\"><b>fintrace</b><span>25 Oct – 24 Nov · 17 days left</span></div><div class=\"ds-window\"><span class=\"ds-wlabel\">Usable funds · Cash, Mandiri</span><span class=\"ds-wfig\">Rp 3.571.316</span></div></div><div class=\"ds-flap\"></div>",
+      "css": ".ds-band{font-family:'Hanken Grotesk',ui-sans-serif,system-ui,sans-serif;background:var(--kraft,#ead3b5);color:var(--foreground,#3d3832);padding:20px}.ds-band-top{display:flex;justify-content:space-between;align-items:center;font-size:13px;color:var(--kraft-ink,#5f503f)}.ds-band-top b{font-size:16px;font-weight:600;color:var(--foreground,#3d3832)}.ds-window{margin-top:16px;border-radius:16px;background:var(--window,#fffdfb);padding:14px 16px 16px;display:flex;flex-direction:column}.ds-wlabel{font-size:12px;font-weight:500;color:var(--kraft-ink,#5f503f)}.ds-wfig{font-size:34px;font-weight:600;letter-spacing:-0.01em;line-height:1.25;font-variant-numeric:tabular-nums}.ds-flap{height:10px;background:url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='10'%3E%3Cpath d='M0 0H24V3C18 3 18 9 12 9S6 3 0 3Z' fill='%23EAD3B5'/%3E%3C/svg%3E\") 0 0/24px 10px;background-repeat:round no-repeat}"
+    },
+    {
+      "name": "Budget List Panel",
+      "kind": "card",
+      "refersTo": "panel",
+      "description": "Tinted grouped panel with divider rows, hue dots and progress bars.",
+      "html": "<ul class=\"ds-panel\"><li><div class=\"ds-row\"><span><i style=\"background:#9ed4b6\"></i>Groceries</span><span><b>Rp 420.000</b> <small>left</small></span></div><div class=\"ds-track\"><div style=\"width:40%;background:#9ed4b6\"></div></div></li><li><div class=\"ds-row\"><span><i style=\"background:#ead3b5\"></i>Unallocated</span><span><b>Rp 3.608.316</b> <small>left</small></span></div><div class=\"ds-track\"><div style=\"width:8%;background:#ead3b5\"></div></div></li></ul>",
+      "css": ".ds-panel{font-family:'Hanken Grotesk',ui-sans-serif,system-ui,sans-serif;list-style:none;margin:0;padding:0;border-radius:16px;background:var(--panel,#edeef4);color:var(--foreground,#3d3832)}.ds-panel li{padding:12px 16px;border-top:1px solid var(--divider,#e0e2ea)}.ds-panel li:first-child{border-top:0}.ds-row{display:flex;justify-content:space-between;font-size:15px}.ds-row span{display:flex;align-items:center;gap:8px}.ds-row i{width:10px;height:10px;border-radius:9999px}.ds-row b{font-weight:500;font-variant-numeric:tabular-nums}.ds-row small{font-size:14px;color:var(--muted-foreground,#66615b)}.ds-track{margin-top:8px;height:8px;border-radius:9999px;background:var(--track,#dcdee7);overflow:hidden}.ds-track div{height:100%;border-radius:9999px}"
+    },
+    {
+      "name": "Type Segmented Control",
       "kind": "nav",
-      "refersTo": "app-band",
-      "description": "The 56px deep green band with wordmark, nav and Sign out.",
-      "html": "<header class=\"ds-band\"><a class=\"ds-wordmark\" href=\"#\">fintrace</a><a class=\"ds-nav\" href=\"#\" aria-current=\"page\">Overview</a><span class=\"ds-email\">you@example.com</span><button class=\"ds-band-btn\">Sign out</button></header>",
-      "css": ".ds-band { font-family: var(--font-sans, Archivo, sans-serif); display: flex; align-items: center; gap: 24px; height: 56px; padding: 0 24px; background: var(--primary); color: var(--primary-foreground); } .ds-wordmark { display: flex; align-items: center; height: 44px; font-size: 1.125rem; font-weight: 800; font-stretch: 75%; letter-spacing: 0.01em; color: inherit; text-decoration: none; border-radius: 2.4px; } .ds-nav { display: flex; align-items: center; height: 44px; font-size: 0.875rem; font-weight: 600; color: inherit; text-decoration: underline; text-underline-offset: 8px; border-radius: 2.4px; } .ds-wordmark:focus-visible, .ds-nav:focus-visible { outline: 2px solid var(--primary-foreground); outline-offset: 2px; } .ds-email { margin-left: auto; font-size: 0.875rem; } .ds-band-btn { font-family: var(--font-sans, Archivo, sans-serif); display: inline-flex; align-items: center; justify-content: center; height: 44px; border: 1px solid transparent; border-radius: 4px; font-weight: 500; white-space: nowrap; cursor: pointer; outline: none; transition: all 150ms cubic-bezier(0.4, 0, 0.2, 1); padding: 0 12px; font-size: 0.875rem; background: transparent; color: var(--primary-foreground); } .ds-band-btn:hover { background: color-mix(in oklab, var(--primary-foreground) 15%, transparent); } .ds-band-btn:focus-visible { box-shadow: 0 0 0 3px color-mix(in oklab, var(--primary-foreground) 70%, transparent); } .ds-band-btn:active { transform: translateY(1px); }"
+      "refersTo": "chip-selected",
+      "description": "Four-up record type switch on a panel track.",
+      "html": "<div class=\"ds-seg\"><span class=\"ds-seg-on\">Expense</span><span>Income</span><span>Transfer</span><span>Saving</span></div>",
+      "css": ".ds-seg{font-family:'Hanken Grotesk',ui-sans-serif,system-ui,sans-serif;display:grid;grid-template-columns:repeat(4,1fr);gap:4px;padding:4px;border-radius:14px;background:var(--panel,#edeef4)}.ds-seg span{display:flex;align-items:center;justify-content:center;height:44px;border-radius:10px;font-size:15px;color:var(--muted-foreground,#66615b);cursor:pointer}.ds-seg span:hover{color:var(--foreground,#3d3832)}.ds-seg .ds-seg-on{background:var(--secondary,#bcc8f6);color:var(--foreground,#3d3832);font-weight:500}"
     },
     {
-      "name": "Day Numeral",
+      "name": "Toast",
       "kind": "custom",
-      "refersTo": "display",
-      "description": "Today's date as one heavy condensed figure in its weekday tone.",
-      "html": "<p class=\"ds-numeral\"><span class=\"ds-numeral-fig\">6</span><span class=\"ds-numeral-cap\"><span class=\"ds-numeral-day\">Friday</span><span class=\"ds-numeral-mon\">November 2026</span></span></p>",
-      "css": ".ds-numeral { font-family: var(--font-sans, Archivo, sans-serif); display: flex; align-items: flex-end; gap: 12px; margin: 0; } .ds-numeral-fig { font-weight: 800; font-stretch: 75%; letter-spacing: -0.02em; font-size: 6rem; line-height: 1; color: var(--friday); } .ds-numeral-cap { padding-bottom: 4px; font-size: 1.125rem; line-height: 1.25; } .ds-numeral-day { display: block; font-weight: 600; color: var(--foreground); } .ds-numeral-mon { display: block; color: var(--muted-foreground); }"
-    },
-    {
-      "name": "Month Grid",
-      "kind": "custom",
-      "refersTo": "month-cell-today",
-      "description": "Hairline calendar sheet with weekday tones and today filled deep green.",
-      "html": "<div class=\"ds-month\"><div class=\"ds-hd\" style=\"color:var(--destructive)\">S</div><div class=\"ds-hd\" style=\"color:var(--foreground)\">M</div><div class=\"ds-hd\" style=\"color:var(--foreground)\">T</div><div class=\"ds-hd\" style=\"color:var(--foreground)\">W</div><div class=\"ds-hd\" style=\"color:var(--foreground)\">T</div><div class=\"ds-hd\" style=\"color:var(--friday)\">F</div><div class=\"ds-hd\" style=\"color:var(--foreground)\">S</div><div class=\"ds-blank\"></div><div class=\"ds-day\" style=\"color:var(--foreground)\">1</div><div class=\"ds-day\" style=\"color:var(--foreground)\">2</div><div class=\"ds-day\" style=\"color:var(--foreground)\">3</div><div class=\"ds-day\" style=\"color:var(--foreground)\">4</div><div class=\"ds-day\" style=\"color:var(--friday)\">5</div><div class=\"ds-day\" style=\"color:var(--foreground)\">6</div><div class=\"ds-today\">7</div><div class=\"ds-day\" style=\"color:var(--foreground)\">8</div><div class=\"ds-day\" style=\"color:var(--foreground)\">9</div><div class=\"ds-day\" style=\"color:var(--foreground)\">10</div><div class=\"ds-day\" style=\"color:var(--foreground)\">11</div><div class=\"ds-day\" style=\"color:var(--friday)\">12</div><div class=\"ds-day\" style=\"color:var(--foreground)\">13</div></div>",
-      "css": ".ds-month { font-family: var(--font-sans, Archivo, sans-serif); display: grid; grid-template-columns: repeat(7, 72px); border-top: 1px solid var(--border); border-left: 1px solid var(--border); } .ds-hd, .ds-day, .ds-today, .ds-blank { border-right: 1px solid var(--border); border-bottom: 1px solid var(--border); } .ds-hd { padding: 8px 12px; font-size: 0.75rem; font-weight: 600; } .ds-day, .ds-today { font-weight: 800; font-stretch: 75%; letter-spacing: -0.02em; padding: 12px; min-height: 72px; font-size: 1.875rem; line-height: 1.2; } .ds-today { background: var(--primary); color: var(--primary-foreground); } .ds-blank { background: var(--muted); }"
-    },
-    {
-      "name": "Ledger Table",
-      "kind": "custom",
-      "refersTo": "figure",
-      "description": "Data table opened by an ink rule, divided by hairlines, with condensed amounts.",
-      "html": "<table class=\"ds-ledger\"><thead><tr><th>Account</th><th>Kind</th><th class=\"ds-r\">Minimum balance</th></tr></thead><tbody><tr><th scope=\"row\">Cash</th><td class=\"ds-soft\">Cash</td><td class=\"ds-money\">Rp 0</td></tr><tr><th scope=\"row\">Mandiri</th><td class=\"ds-soft\">Bank</td><td class=\"ds-money\">Rp 37.000</td></tr></tbody></table>",
-      "css": ".ds-ledger { font-family: var(--font-sans, Archivo, sans-serif); width: 100%; border-collapse: collapse; text-align: left; font-size: 0.875rem; color: var(--foreground); font-variant-numeric: tabular-nums; } .ds-ledger thead tr { border-bottom: 1px solid var(--foreground); color: var(--muted-foreground); } .ds-ledger thead th { padding: 8px 16px 8px 0; font-weight: 500; } .ds-ledger .ds-r { text-align: right; } .ds-ledger tbody tr { border-bottom: 1px solid var(--border); } .ds-ledger tbody th { padding: 12px 16px 12px 0; font-weight: 600; } .ds-soft { padding: 12px 16px 12px 0; color: var(--muted-foreground); } .ds-money { font-weight: 800; font-stretch: 75%; letter-spacing: -0.02em; padding: 12px 0; font-size: 1rem; text-align: right; white-space: nowrap; }"
-    },
-    {
-      "name": "Ruled List",
-      "kind": "custom",
-      "refersTo": "body-sm",
-      "description": "Multi-column list under an ink rule with hairlines between rows.",
-      "html": "<ul class=\"ds-list\"><li>Fuel</li><li>Gifts</li><li>Meal</li><li>Wants</li><li>Investment</li><li>Unallocated<span class=\"ds-note\">Default for new money</span></li></ul>",
-      "css": ".ds-list { font-family: var(--font-sans, Archivo, sans-serif); display: grid; grid-template-columns: repeat(3, 1fr); margin: 0; padding: 0; list-style: none; font-size: 0.875rem; color: var(--foreground); border-top: 1px solid var(--foreground); border-bottom: 1px solid var(--border); } .ds-list li { margin-bottom: -1px; padding: 12px 16px 12px 0; border-bottom: 1px solid var(--border); } .ds-note { display: block; font-size: 0.75rem; color: var(--muted-foreground); }"
+      "refersTo": "toast",
+      "description": "Inverted ink toast with a pastel periwinkle action.",
+      "html": "<div class=\"ds-toast\"><span>Bensin didn't sync</span><button>Fix</button></div>",
+      "css": ".ds-toast{font-family:'Hanken Grotesk',ui-sans-serif,system-ui,sans-serif;display:flex;align-items:center;gap:12px;min-height:56px;padding:8px 8px 8px 16px;border-radius:16px;background:var(--foreground,#3d3832);color:var(--background,#f6f7fb);font-size:15px}.ds-toast span{flex:1}.ds-toast button{height:44px;padding:0 16px;border:0;border-radius:14px;background:var(--secondary,#bcc8f6);color:var(--foreground,#3d3832);font:inherit;font-weight:500;cursor:pointer}.ds-toast button:focus-visible{outline:2px solid var(--secondary,#bcc8f6);outline-offset:2px}"
     }
   ],
   "narrative": {
-    "northStar": "The Kalender Dinding",
-    "overview": "fintrace looks like the printed wall calendar that hangs in an Indonesian kitchen: near-white paper, ink, a deep green band across the top, and a date figure heavy enough to read from across the room. Today's date is the single flourish the system allows itself. Every other surface is a plain, ruled record of what is true now, kept quiet so that the figures carry the screen.\n\nDensity is that of a ledger page. Hairline rules organize the data, one family sets all the type, and the only saturated fields of color are the band, the primary action and today's cell. The system is light only, because the work happens on a phone in daylight, often outdoors.\n\nThe confirmed visual rejection is the fintech default of a dark gradient card with a hero balance. Money appears as a figure in a ruled row, and the largest number on any screen is the date.",
+    "northStar": "Amplop Gaji",
+    "overview": "Each pay cycle is a pay envelope and each Budget an envelope you spend from. The top of every surface is a kraft band, the envelope itself, that ends in a soft wavy flap. Inside the band sits a die-cut white address window that frames the one figure that matters: usable funds on Overview, the typed amount in Quick Record. Below the flap is a faintly cool white work area where content sits in grouped, tinted panels. Nothing is outlined and nothing casts a shadow at rest.\n\nThe palette is soft pastels with firm ink. Pastels are fills only. Text and figures stay in a warm dark ink that is never black, and every text pairing keeps WCAG AA. Action has one colour: a solid periwinkle with white text. Its pastel twin marks selection. One sans with tabular figures carries every level. Hierarchy comes from size and spacing, with little weight contrast. Density is calm and one-handed: 44px minimum targets, a full-width Record bar in thumb reach, and lists you scan rather than tables you read.\n\nThe world replaced a rejected wall-calendar direction. It also turns away from the fintech default of white cards, a hero balance and a floating pill button, and from both \"spreadsheet grey\" and \"too decorative\". UI terms are fixed: **Fund** (an account), **Budget** (an envelope), and the primary action is labelled **Record**.",
     "keyCharacteristics": [
-      "Near-white, faintly green paper with ink text and hairline rules",
-      "A deep green band along the top edge of the sign-in and app screens",
-      "Archivo throughout, with its condensed extra-bold cut reserved for figures and the wordmark",
-      "Calendar weekday tones: red Sundays, green Fridays, ink otherwise",
-      "Flat, square-celled surfaces with 4px corners on controls only"
+      "Kraft band with a wavy flap edge on every top-level surface: Overview, Quick Record sheet, login.",
+      "A white address window inside the kraft frames the key figure.",
+      "Flat tinted panels with 1px soft dividers between rows. No borders and no resting shadows.",
+      "Solid periwinkle for action, pastel periwinkle for selection, warm ink for text.",
+      "One fixed pastel hue per Budget, shown as a dot or bar everywhere that Budget appears.",
+      "Hanken Grotesk at 400/500/600 only, with tabular figures throughout."
     ],
     "rules": [
       {
-        "name": "The Calendar Red Rule",
-        "body": "Red belongs to Sundays, negative money and errors, and to no other meaning. M1 renders no negative amount because no balances exist yet; when one ships it takes this red.",
+        "name": "The Fills-Only Pastel Rule",
+        "body": "Pastels (secondary, Budget hues, kraft, pastel red, chart fills) are surfaces, dots and bars. Text on or beside them is Warm Ink, Kraft Ink, Muted Ink or Deep Red, always at AA.",
         "section": "colors"
       },
       {
-        "name": "The Friday Green Rule",
-        "body": "The brighter green (#15803d) is the Friday tone and has no other job. The band, primary actions, today's cell, focus and selection use deep green.",
+        "name": "The One Action Colour Rule",
+        "body": "Solid Ink Periwinkle with white text marks an action you take. Nothing decorative uses it.",
         "section": "colors"
       },
       {
-        "name": "The Minus Sign Rule",
-        "body": "State stays readable without color. Negative money keeps its minus sign, weekday tones sit in labelled columns, and errors are stated in words.",
+        "name": "The Kraft Means Envelope Rule",
+        "body": "Kraft appears only where the pay envelope is: the top band, its flap, and Unallocated money. Work areas are never kraft.",
         "section": "colors"
       },
       {
-        "name": "The Unmarked Holiday Rule",
-        "body": "National holidays are left unmarked because no holiday data exists. They take no red until real data backs them.",
+        "name": "The Fixed Hue Rule",
+        "body": "A Budget keeps one hue on every surface it appears on: its bar, its Recent dot, its suggestion dot.",
         "section": "colors"
       },
       {
-        "name": "The Condensed Figure Rule",
-        "body": "The condensed extra-bold cut sets figures and the wordmark. Headings, labels and running text stay at normal width.",
+        "name": "The Low Contrast Weight Rule",
+        "body": "Use only 400, 500 and 600. Never 700 or above. Reserve 600 for headline figures, section titles, the wordmark and the Record label.",
         "section": "typography"
       },
       {
-        "name": "The Tabular Rule",
-        "body": "Tabular figures are on for the whole page, so amounts align by digit in any column.",
+        "name": "The Size Carries Rank Rule",
+        "body": "A key figure outranks its label by size: 34-40px against 13px. Don't separate them with bolding or colour.",
         "section": "typography"
       },
       {
-        "name": "The Ruled Ledger Rule",
-        "body": "Ink opens a block of data and hairlines divide it, at 1px each. Rows and cells get their structure from these lines, with no boxes or shadows around them.",
-        "section": "layout"
-      },
-      {
-        "name": "The Flat Paper Rule",
-        "body": "Every surface lies flat on the sheet, at rest and in every state. Focus and hover change color or draw a ring, and nothing lifts.",
+        "name": "The Flat At Rest Rule",
+        "body": "Panels, chips, inputs, buttons and the address window never cast a shadow. Only something floating over scrolled content (the docked bar, a popover) may lift, and only with a tinted shadow.",
         "section": "elevation"
       },
       {
-        "name": "The Square Cell Rule",
-        "body": "Anything that belongs to the sheet stays square-cornered, and the 4px corner marks a control a person can operate.",
+        "name": "The Whole Wave Rule",
+        "body": "The flap edge always uses whole waves (`round`), never a clipped tile, and only ever under kraft.",
         "section": "shapes"
       }
     ],
     "dos": [
-      "Do keep red for Sundays, negative money and errors, and keep the minus sign on every negative amount.",
-      "Do use deep green for the band, primary actions, today's cell, focus and selection.",
-      "Do set money and dates in the condensed extra-bold figure style, with tabular figures on.",
-      "Do make every control at least 44px tall, including links in the band.",
-      "Do open a block of data with a 1px ink rule and divide its rows with hairlines.",
-      "Do keep field outlines in Field Edge, at 3:1 or better, and leave Hairline to decorative rules.",
-      "Do give every empty state a sentence in Soft Ink saying what comes next."
+      "**Do** start every top-level surface with the kraft band and its whole-wave flap, and put the surface's key figure in a white address window.",
+      "**Do** group content into Panel Tint panels at 16px with 1px Divider rows.",
+      "**Do** give every primary action solid Ink Periwinkle with white text, and every selected state Pastel Periwinkle with ink text.",
+      "**Do** keep each Budget's hue fixed and show it as a dot or bar wherever the Budget appears. Unallocated is kraft.",
+      "**Do** set money in `.figure` (500, tabular, no-wrap) and negatives in Deep Red.",
+      "**Do** keep touch targets at 44px or more and keep Record in thumb reach.",
+      "**Do** say Fund, Budget and Record in the UI."
     ],
     "donts": [
-      "Don't use the Friday green (#15803d) for anything other than the Friday tone.",
-      "Don't mark national holidays in red until real holiday data exists.",
-      "Don't put a hero balance on a dark gradient card.",
-      "Don't add shadows or gradients to any surface.",
-      "Don't set headings, labels or running text in the condensed cut.",
-      "Don't round grid cells, panes, rows or the band.",
-      "Don't let color carry a state by itself."
+      "**Don't** use weights of 700 or more, or pure black text.",
+      "**Don't** put coloured text on a pastel fill, or use a pastel as text.",
+      "**Don't** add borders or outlines to panels, inputs, chips or buttons, or give a resting surface a shadow.",
+      "**Don't** use kraft for work areas, cards or decoration away from the envelope band.",
+      "**Don't** make the floating Record a pill FAB. It keeps the 14px button corner and only docks after the in-flow bar scrolls away.",
+      "**Don't** bring back white cards on grey with a hero balance, spreadsheet-grey tables, or the wall-calendar world.",
+      "**Don't** use Quiet Control or Amount Placeholder for body-size text."
     ]
   }
 }

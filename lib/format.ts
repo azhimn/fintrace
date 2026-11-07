@@ -38,3 +38,14 @@ export function parseAmount(input: string): number | null {
   if (Math.abs(value - rounded) > 1e-6 || !Number.isSafeInteger(rounded)) return null;
   return sign && rounded !== 0 ? -rounded : rounded;
 }
+
+/**
+ * Live formatting for amount fields: plain digits get id-ID thousands dots as they are typed
+ * ('1500000' becomes '1.500.000'). Anything with shorthand or a comma is left as typed, since
+ * parseAmount reads it either way.
+ */
+export function formatAmountInput(text: string) {
+  if (!/^[\d.]+$/.test(text)) return text;
+  const digits = text.replaceAll(".", "").replace(/^0+(?=\d)/, "");
+  return digits.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+}

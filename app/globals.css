@@ -9,24 +9,11 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-sans);
   --font-heading: var(--font-sans);
-  --color-sidebar-ring: var(--sidebar-ring);
-  --color-sidebar-border: var(--sidebar-border);
-  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-  --color-sidebar-accent: var(--sidebar-accent);
-  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-  --color-sidebar-primary: var(--sidebar-primary);
-  --color-sidebar-foreground: var(--sidebar-foreground);
-  --color-sidebar: var(--sidebar);
-  --color-chart-5: var(--chart-5);
-  --color-chart-4: var(--chart-4);
-  --color-chart-3: var(--chart-3);
-  --color-chart-2: var(--chart-2);
-  --color-chart-1: var(--chart-1);
   --color-ring: var(--ring);
   --color-input: var(--input);
   --color-border: var(--border);
   --color-destructive: var(--destructive);
-  --color-friday: var(--friday);
+  --color-destructive-soft: var(--destructive-soft);
   --color-accent-foreground: var(--accent-foreground);
   --color-accent: var(--accent);
   --color-muted-foreground: var(--muted-foreground);
@@ -39,50 +26,63 @@
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
-  --radius-sm: calc(var(--radius) * 0.6);
-  --radius-md: calc(var(--radius) * 0.8);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) * 1.4);
-  --radius-2xl: calc(var(--radius) * 1.8);
-  --radius-3xl: calc(var(--radius) * 2.2);
-  --radius-4xl: calc(var(--radius) * 2.6);
+  --color-kraft: var(--kraft);
+  --color-kraft-ink: var(--kraft-ink);
+  --color-window: var(--window);
+  --color-panel: var(--panel);
+  --color-divider: var(--divider);
+  --color-track: var(--track);
+  --color-field: var(--field);
+  --radius-field: 10px;
+  --radius-button: 14px;
+  --radius-panel: 16px;
+  --radius-sheet: 24px;
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 10px;
+  --radius-xl: 14px;
+  --radius-2xl: 16px;
+  --radius-3xl: 24px;
 }
 
+/* Amplop Gaji: soft pastels on cool white, kraft for the pay envelope, periwinkle for action. */
 :root {
   color-scheme: light;
-  --background: oklch(0.992 0.003 150);
-  --foreground: oklch(0.2 0.02 160);
+  --background: #f6f7fb;
+  --foreground: #3d3832;
   --card: var(--background);
   --card-foreground: var(--foreground);
-  --popover: var(--background);
+  --popover: #ffffff;
   --popover-foreground: var(--foreground);
-  --primary: oklch(0.38 0.09 152);
-  --primary-foreground: oklch(0.99 0.003 150);
-  --secondary: oklch(0.955 0.012 150);
+  --primary: #4a5bc4;
+  --primary-foreground: #ffffff;
+  /* Pastel periwinkle: selected and secondary states, always with ink text. */
+  --secondary: #bcc8f6;
   --secondary-foreground: var(--foreground);
-  --muted: oklch(0.96 0.01 150);
-  --muted-foreground: oklch(0.43 0.02 160);
-  --accent: oklch(0.93 0.02 150);
+  --muted: #edeef4;
+  --muted-foreground: #66615b;
+  --accent: #e3e6f3;
   --accent-foreground: var(--foreground);
-  --destructive: oklch(0.52 0.2 27);
-  --friday: #15803d;
-  --border: oklch(0.86 0.015 150);
-  --input: oklch(0.6 0.02 155);
+  --destructive: #b3261e;
+  --destructive-soft: #f2b8b5;
+  --kraft: #ead3b5;
+  --kraft-ink: #5f503f;
+  --window: #fffdfb;
+  --panel: #edeef4;
+  --divider: #e0e2ea;
+  --track: #dcdee7;
+  --field: #ffffff;
+  --border: var(--divider);
+  --input: var(--divider);
   --ring: var(--primary);
-  --chart-1: oklch(0.38 0.09 152);
-  --chart-2: oklch(0.52 0.2 27);
-  --chart-3: oklch(0.6 0.12 152);
-  --chart-4: oklch(0.43 0.02 160);
-  --chart-5: oklch(0.72 0.1 80);
-  --radius: 0.25rem;
-  --sidebar: var(--muted);
-  --sidebar-foreground: var(--foreground);
-  --sidebar-primary: var(--primary);
-  --sidebar-primary-foreground: var(--primary-foreground);
-  --sidebar-accent: var(--accent);
-  --sidebar-accent-foreground: var(--foreground);
-  --sidebar-border: var(--border);
-  --sidebar-ring: var(--ring);
+  /* One fixed pastel per Budget; Unallocated stays kraft because it is still in the pay envelope. */
+  --hue-mint: #9ed4b6;
+  --hue-apricot: #f2c08e;
+  --hue-lilac: #cdb8ee;
+  --hue-sky: #a9d3f0;
+  --hue-rose: #f2b8c6;
+  --hue-butter: #ecd88a;
+  --radius: 10px;
 }
 
 @layer base {
@@ -92,19 +92,17 @@
   body {
     @apply bg-background text-foreground;
     font-variant-numeric: tabular-nums;
-    text-rendering: geometricPrecision;
     caret-color: var(--primary);
-    scrollbar-color: var(--input) transparent;
-  }
-  input,
-  button,
-  textarea,
-  select {
-    text-rendering: inherit;
+    scrollbar-color: var(--track) transparent;
+    -webkit-tap-highlight-color: transparent;
   }
   ::selection {
-    background: var(--primary);
-    color: var(--primary-foreground);
+    background: var(--secondary);
+    color: var(--foreground);
+  }
+  :focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
   }
   html {
     @apply font-sans;
@@ -112,17 +110,17 @@
 }
 
 @layer components {
-  /* The heavy condensed figure of a wall calendar. */
-  .numeral {
-    font-weight: 800;
-    font-stretch: 75%;
-    line-height: 0.85;
-    letter-spacing: -0.02em;
+  /* The bottom edge of the pay envelope's flap. Whole waves only: `round` stretches the tile so
+     both ends sit at the same depth at every width. */
+  .flap {
+    height: 10px;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='10'%3E%3Cpath d='M0 0H24V3C18 3 18 9 12 9S6 3 0 3Z' fill='%23EAD3B5'/%3E%3C/svg%3E")
+      0 0 / 24px 10px;
+    background-repeat: round no-repeat;
   }
-  .wordmark {
-    font-size: 1.125rem;
-    font-weight: 800;
-    font-stretch: 75%;
-    letter-spacing: 0.01em;
+  .figure {
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
   }
 }

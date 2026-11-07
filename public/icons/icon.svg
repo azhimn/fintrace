@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- fintrace: a pay envelope (amplop gaji) with its wavy flap and die-cut address window. Authored by hand. -->
+  <rect width="512" height="512" rx="112" fill="#EAD3B5"/>
+  <path d="M0 0H512V150C480 150 480 194 448 194S384 150 384 150C352 150 352 194 320 194S256 150 256 150C224 150 224 194 192 194S128 150 128 150C96 150 96 194 64 194S0 150 0 150Z" fill="#DDBF98"/>
+  <rect x="104" y="276" width="304" height="124" rx="34" fill="#FFFDFB"/>
+  <rect x="140" y="322" width="150" height="32" rx="16" fill="#4A5BC4"/>
+</svg>
