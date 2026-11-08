@@ -1,5 +1,6 @@
 "use client";
 
+import { CheckCircleIcon } from "@phosphor-icons/react";
 import { useId, useState } from "react";
 import { setPayDay, setShortcuts } from "@/app/(app)/actions";
 import { useIsMac, useAction } from "@/components/shell/action";
@@ -14,6 +15,8 @@ import {
   type ShortcutAction,
   type Shortcuts,
 } from "@/lib/shortcuts";
+import { Tip } from "@/components/ui/tip";
+import { ordinalSuffix } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
 /** The default pay day, typed straight into the address window like Quick Record's amount. */
@@ -34,7 +37,7 @@ export function PayDayWindow({ payDay }: { payDay: number }) {
       <label htmlFor={id} className="text-[0.8125rem] font-medium text-kraft-ink">
         Default pay day
       </label>
-      <div className="flex items-center gap-3">
+      <div className="flex items-baseline">
         <input
           id={id}
           value={text}
@@ -42,13 +45,17 @@ export function PayDayWindow({ payDay }: { payDay: number }) {
           inputMode="numeric"
           autoComplete="off"
           aria-describedby={`${id}-hint`}
-          className="figure h-12 w-12 min-w-0 bg-transparent text-[2.125rem] leading-tight font-semibold tracking-[-0.01em] outline-none"
+          // As wide as the digits typed, so the suffix sits right after them.
+          style={{ width: `${Math.max(text.length, 1)}ch` }}
+          className="figure h-12 min-w-0 bg-transparent text-[2.125rem] leading-tight font-semibold tracking-[-0.01em] outline-none"
         />
-        <span className="text-[0.9375rem] text-kraft-ink">of the month</span>
+        <span className="ml-0.5 text-[0.9375rem] text-kraft-ink">{valid && ordinalSuffix(day)} day of the month</span>
         {valid && day !== payDay && (
-          <Button type="submit" disabled={pending} className="ml-auto h-11 px-4 text-[0.9375rem]">
-            Save
-          </Button>
+          <Tip label="Save pay day">
+            <Button type="submit" disabled={pending} className="ml-auto size-11 self-center px-0">
+              <CheckCircleIcon weight="fill" aria-hidden className="size-5" />
+            </Button>
+          </Tip>
         )}
       </div>
       <p id={`${id}-hint`} className="mt-1 text-[0.8125rem] text-kraft-ink">
@@ -124,14 +131,16 @@ export function ShortcutEditor({ saved }: { saved: Shortcuts }) {
         })}
       </ul>
       <div className="flex flex-wrap items-center gap-2 border-t border-divider px-4 py-3">
-        <Button
-          size="lg"
-          disabled={pending || !changed || conflicts.length > 0}
-          onClick={() => run(() => setShortcuts(draft), "Shortcuts saved")}
-          className="h-11 text-[0.9375rem]"
-        >
-          Save shortcuts
-        </Button>
+        <Tip label="Save shortcuts">
+          <Button
+            size="lg"
+            disabled={pending || !changed || conflicts.length > 0}
+            onClick={() => run(() => setShortcuts(draft), "Shortcuts saved")}
+            className="size-11 px-0"
+          >
+            <CheckCircleIcon weight="fill" aria-hidden className="size-5" />
+          </Button>
+        </Tip>
         <Button
           size="lg"
           variant="ghost"

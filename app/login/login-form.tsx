@@ -1,5 +1,6 @@
 "use client";
 
+import { SignInIcon } from "@phosphor-icons/react";
 import { useActionState, useId } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -23,8 +24,8 @@ export function LoginForm({ magicLink }: { magicLink: boolean }) {
   const linkError = `${id}-link-error`;
 
   return (
-    <div className="flex flex-col gap-4">
-      <form action={passwordAction} className="flex flex-col gap-4 rounded-panel bg-panel p-4">
+    <div className="flex flex-col gap-3">
+      <form action={passwordAction} className="flex flex-col gap-3 rounded-panel bg-panel p-4">
         <div className="flex flex-col gap-2">
           <Label htmlFor={`${id}-email`}>Email</Label>
           <Input
@@ -52,7 +53,8 @@ export function LoginForm({ magicLink }: { magicLink: boolean }) {
           />
         </div>
         <FieldError id={passwordError} message={password.error} />
-        <Button type="submit" size="lg" disabled={signingIn} className="mt-1">
+        <Button type="submit" size="lg" disabled={signingIn}>
+          <SignInIcon weight="fill" aria-hidden className="size-5" />
           {signingIn ? "Signing in…" : "Sign in"}
         </Button>
       </form>

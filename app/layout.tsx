@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Hanken_Grotesk } from "next/font/google";
 import { ServiceWorker } from "@/components/service-worker";
+import { ScrollThumb } from "@/components/shell/scroll-thumb";
 import "./globals.css";
 
 const hanken = Hanken_Grotesk({ subsets: ["latin"], weight: ["400", "500", "600"], variable: "--font-sans" });
@@ -20,6 +21,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     <html lang="en" className={`${hanken.variable} h-full antialiased`}>
       <body className="flex min-h-full flex-col">
         {children}
+        <ScrollThumb />
         <ServiceWorker />
       </body>
     </html>

@@ -64,8 +64,15 @@ export default async function OverviewPage() {
     <>
       <Band>
         <h1 className="sr-only">Overview</h1>
-        <p className="mt-3 text-[0.8125rem] text-kraft-ink">
-          {cycle ? `${cycle.name} · ${daysLeft(cycle.endDate, date)}` : "No pay cycle yet"}
+        <p className="mt-3 text-[0.8125rem]">
+          {cycle ? (
+            <>
+              <span className="font-medium">{cycle.name}</span>
+              <span className="text-kraft-ink"> · {daysLeft(cycle.endDate, date)}</span>
+            </>
+          ) : (
+            <span className="text-kraft-ink">No pay cycle yet</span>
+          )}
         </p>
         <AddressWindow label="Funds at a glance" className="mt-2">
           <p className="text-[0.8125rem] font-medium text-kraft-ink">

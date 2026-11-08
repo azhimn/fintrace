@@ -16,7 +16,7 @@ export function RecordPage() {
         handleEscape
         onDone={home}
         onClose={home}
-        title={<h1 className="text-base font-medium">Record</h1>}
+        title={<h1 className="text-base font-medium">New Record</h1>}
       />
     </div>
   );

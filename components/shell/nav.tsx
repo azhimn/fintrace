@@ -1,9 +1,8 @@
 "use client";
 
-import { GearSixIcon } from "@phosphor-icons/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, ViewTransition } from "react";
 import { cn } from "@/lib/utils";
 
 const TABS = [
@@ -19,7 +18,7 @@ const TABS = [
   { href: "/settings", label: "Settings" },
 ] as const;
 
-/** The app's sections as tabs cut into the envelope band. A row of its own on a phone, inline on a desktop. */
+/** The app's sections as tabs cut into the envelope band. They scroll sideways where they don't fit. */
 export function Nav() {
   const path = usePathname();
   const list = useRef<HTMLUListElement>(null);
@@ -28,8 +27,8 @@ export function Nav() {
     list.current?.querySelector('[aria-current="page"]')?.scrollIntoView({ block: "nearest", inline: "nearest" });
   }, [path]);
   return (
-    <nav aria-label="Sections" className="order-last -mx-5 w-[calc(100%+2.5rem)] lg:order-none lg:mx-0 lg:w-auto lg:min-w-0 lg:flex-1">
-      <ul ref={list} className="flex overflow-x-auto px-3 [scrollbar-width:none] lg:gap-0.5 lg:px-0">
+    <nav aria-label="Sections" className="-mx-5 lg:-mx-2.5">
+      <ul ref={list} className="flex overflow-x-auto px-2.5 [scrollbar-width:none] lg:gap-0.5 lg:px-0">
         {TABS.map((tab) => {
           const current = tab.href === "/" ? path === "/" : path.startsWith(tab.href);
           return (
@@ -38,19 +37,17 @@ export function Nav() {
                 href={tab.href}
                 aria-current={current ? "page" : undefined}
                 className={cn(
-                  "flex h-11 items-center rounded-button px-2.5 text-sm text-kraft-ink lg:px-2 lg:text-[0.9375rem] hover:bg-kraft-ink/8 hover:text-foreground",
-                  current && "bg-kraft-ink/20 font-medium text-foreground hover:bg-kraft-ink/20",
+                  "relative flex h-11 items-center rounded-button px-2.5 text-sm text-kraft-ink transition-colors hover:text-foreground lg:text-[0.9375rem]",
+                  current && "font-medium text-foreground",
                 )}
               >
-                {tab.href === "/settings" ? (
-                  <>
-                    {/* Ten tabs don't fit a desktop band, so Settings becomes its gear there. */}
-                    <span className="lg:sr-only">{tab.label}</span>
-                    <GearSixIcon weight="fill" aria-hidden className="hidden size-5 lg:block" />
-                  </>
-                ) : (
-                  tab.label
+                {current && (
+                  // A short ink rule under the label. Named, so it slides to the new tab on navigation.
+                  <ViewTransition name="nav-current">
+                    <span aria-hidden className="absolute inset-x-2.5 bottom-1.5 h-0.5 rounded-full bg-foreground" />
+                  </ViewTransition>
                 )}
+                {tab.label}
               </Link>
             </li>
           );

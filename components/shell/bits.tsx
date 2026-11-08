@@ -21,7 +21,8 @@ export function Section({
 }) {
   return (
     <section className={cn("mt-[22px]", className)}>
-      <div className="mb-2 flex min-h-6 items-end justify-between gap-3">
+      {/* 8px under a heading; 12px when it carries a button, so the button doesn't crowd the panel. */}
+      <div className={cn("mb-2 flex min-h-6 items-end justify-between gap-3", action && "mb-3")}>
         <h2 className="text-sm font-semibold">{title}</h2>
         {action}
       </div>

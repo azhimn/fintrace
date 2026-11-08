@@ -1,5 +1,7 @@
 import { signOut } from "@/auth";
+import { RecordBar } from "@/components/overview/record-bar";
 import { RecordProvider } from "@/components/record/record-provider";
+import { PageTransition } from "@/components/shell/page-transition";
 import { recordData } from "@/lib/record-data";
 import { getDal, requireUser } from "@/lib/session";
 
@@ -10,8 +12,11 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
   return (
     <RecordProvider data={data}>
       <div className="flex min-h-dvh flex-col">
-        <div className="flex-1">{children}</div>
-        <footer className="mx-auto flex w-full max-w-5xl items-center justify-between gap-3 px-5 pt-8 pb-28 text-sm text-muted-foreground lg:px-8 lg:pb-10">
+        <div className="flex-1">
+          <PageTransition>{children}</PageTransition>
+        </div>
+        <RecordBar placement="float" />
+        <footer className="mx-auto flex w-full max-w-5xl items-center justify-between gap-3 px-5 pt-6 pb-24 text-sm text-muted-foreground lg:px-8">
           <span className="min-w-0 truncate">{user.email}</span>
           <form
             action={async () => {

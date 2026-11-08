@@ -1,5 +1,6 @@
 "use client";
 
+import { ArrowsLeftRightIcon } from "@phosphor-icons/react";
 import { Dialog } from "@base-ui/react/dialog";
 import { createContext, use, useId, useState } from "react";
 import { deleteRecord, saveRecord } from "@/app/(app)/actions";
@@ -20,7 +21,7 @@ type Props = {
 const AllocateContext = createContext<(to?: string) => void>(() => {});
 export const useAllocate = () => use(AllocateContext);
 
-const field = "h-11 w-full min-w-0 rounded-field bg-field px-3 text-base outline-none focus-visible:shadow-[0_0_0_2px_var(--primary)]";
+const field = "h-11 w-full min-w-0 rounded-field bg-field px-3 text-base outline-none focus-visible:shadow-[0_0_0_2px_var(--secondary)]";
 const label = "flex flex-col gap-2 text-[0.8125rem] font-medium text-muted-foreground";
 
 /**
@@ -181,6 +182,7 @@ export function AllocateProvider({ budgets, funds, pairs, date, children }: Prop
                     </p>
                   )}
                   <Button type="submit" size="lg" disabled={busy} className="col-span-2">
+                    <ArrowsLeftRightIcon weight="fill" aria-hidden className="size-5" />
                     Allocate
                   </Button>
                 </div>
@@ -196,18 +198,20 @@ export function AllocateProvider({ budgets, funds, pairs, date, children }: Prop
 /** Opens Allocate, optionally aimed at one Budget. */
 export function AllocateButton({
   to,
-  disabled,
-  className,
   children,
-}: {
-  to?: string;
-  disabled?: boolean;
-  className?: string;
-  children: React.ReactNode;
-}) {
+  ...rest
+}: { to?: string } & Omit<React.ComponentProps<"button">, "type">) {
   const allocate = useAllocate();
+  // The rest (aria-label, ref, pointer handlers) lets a Tip name an icon-only Allocate.
   return (
-    <button type="button" disabled={disabled} onClick={() => allocate(to)} className={className}>
+    <button
+      type="button"
+      {...rest}
+      onClick={(e) => {
+        rest.onClick?.(e);
+        allocate(to);
+      }}
+    >
       {children}
     </button>
   );

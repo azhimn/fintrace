@@ -1,12 +1,13 @@
 "use client";
 
-import { CaretDownIcon } from "@phosphor-icons/react";
+import { CaretDownIcon, CheckCircleIcon } from "@phosphor-icons/react";
 import { useId, useState } from "react";
 import { addCount, deleteCount, deleteRecord, saveRecord } from "@/app/(app)/actions";
 import { toasts } from "@/components/record/toast";
 import { fieldClass, useAction } from "@/components/shell/action";
 import { Money } from "@/components/shell/bits";
 import { Button } from "@/components/ui/button";
+import { Tip } from "@/components/ui/tip";
 import { formatAmountInput, formatDateTime, formatMoney, parseAmount } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
@@ -113,7 +114,7 @@ export function CountRow({ cycleId, account, computed, difference, history, open
       )}
 
       {open && (
-        <form noValidate onSubmit={save} className="mt-3 flex flex-col gap-2">
+        <form noValidate onSubmit={save} className="mt-3 flex flex-col gap-3">
           <label htmlFor={id} className="sr-only">
             Counted balance for {account.name}
           </label>
@@ -132,9 +133,11 @@ export function CountRow({ cycleId, account, computed, difference, history, open
                 className={cn(fieldClass, "figure pl-10")}
               />
             </div>
-            <Button type="submit" size="lg" disabled={pending} className="h-11 text-[0.9375rem]">
-              Save
-            </Button>
+            <Tip label="Save count">
+              <Button type="submit" size="lg" disabled={pending} className="size-11 px-0">
+                <CheckCircleIcon weight="fill" aria-hidden className="size-5" />
+              </Button>
+            </Tip>
           </div>
           {account.kind === "cash" && (
             <button
@@ -200,7 +203,7 @@ function CashCalculator({ onTotal }: { onTotal: (total: number) => void }) {
     <div className="pt-1">
       <div className="grid grid-cols-2 gap-x-3 gap-y-2 sm:grid-cols-4">
         {NOTES.map((note) => (
-          <label key={note} className="flex flex-col gap-1 text-[0.8125rem] font-medium text-muted-foreground">
+          <label key={note} className="flex flex-col gap-2 text-[0.8125rem] font-medium text-muted-foreground">
             <span className="figure">{formatMoney(note)}</span>
             <input
               value={counts[note] ?? ""}
@@ -217,7 +220,7 @@ function CashCalculator({ onTotal }: { onTotal: (total: number) => void }) {
             />
           </label>
         ))}
-        <label htmlFor={`${uid}-coins`} className="flex flex-col gap-1 text-[0.8125rem] font-medium text-muted-foreground">
+        <label htmlFor={`${uid}-coins`} className="flex flex-col gap-2 text-[0.8125rem] font-medium text-muted-foreground">
           Coins, total
           <input
             id={`${uid}-coins`}

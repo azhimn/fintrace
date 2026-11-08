@@ -57,7 +57,7 @@ export default async function ReconcilePage({ searchParams }: PageProps<"/reconc
         <h1 className="mt-3 text-[1.375rem] font-medium">Reconcile</h1>
         {cycle && <CycleStepper cycles={cycles} cycle={cycle} path="/reconcile" date={date} />}
         {cycle && (
-          <AddressWindow label="Difference from what you counted" className="mt-1">
+          <AddressWindow label="Difference from what you counted" className="mt-2">
             <p className="text-[0.8125rem] font-medium text-kraft-ink">
               {result.rows.length ? "Counted minus recorded, all Funds" : "Nothing counted this cycle yet"}
             </p>

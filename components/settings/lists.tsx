@@ -3,7 +3,7 @@
 import { CaretDownIcon, CaretUpIcon } from "@phosphor-icons/react";
 import { useState } from "react";
 import { deleteEnvelope, reorder, saveAccount, saveCategory, saveEnvelope, saveSubcategory } from "@/app/(app)/actions";
-import { fieldClass, RowMenu, ToggleChip, useAction } from "@/components/shell/action";
+import { fieldClass, labelClass, RowMenu, SwitchRow, useAction } from "@/components/shell/action";
 import { HueDot } from "@/components/shell/bits";
 import { Button } from "@/components/ui/button";
 import { formatAmountInput, parseAmount } from "@/lib/format";
@@ -82,7 +82,7 @@ function AddRow({ placeholder, children, onAdd }: { placeholder: string; childre
         e.preventDefault();
         run(() => onAdd(name), `Added ${name.trim()}`, () => setName(""));
       }}
-      className="flex flex-col gap-2 border-t border-divider px-4 py-3"
+      className="flex flex-col gap-3 border-t border-divider px-4 py-3"
     >
       <div className="flex flex-wrap gap-2">
         <label className="min-w-40 flex-1">
@@ -161,7 +161,7 @@ function FundRow({ fund, up, down, order }: { fund: Fund; up: string[] | null; d
         />
       </div>
       {fund.archived && <p className="mb-1 text-xs text-muted-foreground">Archived: hidden from Record and the Overview</p>}
-      <div className="mt-2 grid grid-cols-2 gap-2">
+      <div className="mt-3 grid grid-cols-2 gap-x-2 gap-y-3">
         <label>
           <span className={sr}>Kind of {fund.name}</span>
           <select
@@ -198,10 +198,10 @@ function FundRow({ fund, up, down, order }: { fund: Fund; up: string[] | null; d
           />
         </label>
       </div>
-      <div className="mt-2 flex flex-wrap gap-2">
-        <ToggleChip checked={fund.countsAsUsable} disabled={pending} onChange={(countsAsUsable) => save({ countsAsUsable })}>
-          Counts as usable
-        </ToggleChip>
+      <div className="mt-1">
+        <SwitchRow checked={fund.countsAsUsable} disabled={pending} onChange={(countsAsUsable) => save({ countsAsUsable })}>
+          Count as usable
+        </SwitchRow>
       </div>
       {alert && <div className="mt-2">{alert}</div>}
     </li>
@@ -256,7 +256,7 @@ function BudgetRow({ budget, up, down }: { budget: Budget; up: string[] | null; 
 export function CategorySettings({ categories, budgets }: { categories: Category[]; budgets: Budget[] }) {
   const [kind, setKind] = useState<keyof typeof CATEGORY_KINDS>("expense");
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-[22px]">
       {(Object.keys(CATEGORY_KINDS) as (keyof typeof CATEGORY_KINDS)[]).map((k) => {
         const list = categories.filter((c) => c.kind === k);
         if (!list.length) return null;
@@ -358,9 +358,9 @@ function SubRow({ sub, categoryId, budgets, classified }: { sub: Category["subs"
   return (
     <li className="border-t border-divider px-4 py-3 first:border-t-0">
       <SavedText label="Subcategory name" value={sub.name} onSave={(name) => save({ name }, `Renamed to ${name}`)} />
-      <div className={cn("mt-2 grid gap-2", classified && "grid-cols-2")}>
+      <div className={cn("mt-3 grid gap-x-2 gap-y-3", classified && "grid-cols-2")}>
         {classified && (
-          <label className="flex flex-col gap-1 text-xs text-muted-foreground">
+          <label className={labelClass}>
             Usually
             <select
               value={sub.defaultClassification ?? ""}
@@ -374,7 +374,7 @@ function SubRow({ sub, categoryId, budgets, classified }: { sub: Category["subs"
             </select>
           </label>
         )}
-        <label className="flex flex-col gap-1 text-xs text-muted-foreground">
+        <label className={labelClass}>
           Default Budget
           <select
             value={sub.defaultEnvelopeId ?? ""}

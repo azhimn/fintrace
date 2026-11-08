@@ -5,6 +5,7 @@ import { RecordBar } from "@/components/overview/record-bar";
 import { AddressWindow, Band } from "@/components/shell/band";
 import { Empty, HueDot, Money, Section } from "@/components/shell/bits";
 import { CycleStepper, pickCycle } from "@/components/shell/cycle-stepper";
+import { Tip } from "@/components/ui/tip";
 import { today } from "@/lib/calendar";
 import { envelopeBalances, pairBalances, type EnvelopeBalance } from "@/lib/finance";
 import { formatMoney, formatPercent } from "@/lib/format";
@@ -122,7 +123,8 @@ export default async function BudgetsPage({ searchParams }: PageProps<"/budgets"
               if (!b.planned && !b.allocated && !b.spent && !b.movedOut) {
                 return (
                   <tr key={e.id} className="border-t border-divider">
-                    <td className="py-1.5 pl-4">
+                    {/* h-14: as tall as rows holding the 44px Allocate button, so Unallocated matches. */}
+                    <td className="h-14 py-1.5 pl-4">
                       <span className="flex items-center gap-2">
                         <HueDot hue={envelopeHue(e)} />
                         {e.name}
@@ -207,7 +209,7 @@ export default async function BudgetsPage({ searchParams }: PageProps<"/budgets"
         <h1 className="mt-3 text-[1.375rem] font-medium">Budgets</h1>
         {cycle && <CycleStepper cycles={cycles} cycle={cycle} path="/budgets" date={date} />}
         {cycle && unallocated && (
-          <AddressWindow label="Not yet in a Budget" className="mt-1">
+          <AddressWindow label="Not yet in a Budget" className="mt-2">
             <p className="text-[0.8125rem] font-medium text-kraft-ink">Unallocated, still in the envelope</p>
             <Money
               value={balances.get(unallocated.id)!.remaining}
@@ -243,10 +245,11 @@ export default async function BudgetsPage({ searchParams }: PageProps<"/budgets"
           title="Budgets"
           action={
             open && (
-              <AllocateButton className="-mb-1 flex h-11 items-center gap-2 rounded-button bg-primary px-4 text-[0.9375rem] font-medium text-primary-foreground hover:bg-[color-mix(in_oklch,var(--primary),black_10%)]">
-                <ArrowsLeftRightIcon weight="fill" aria-hidden className="size-4" />
-                Allocate
-              </AllocateButton>
+              <Tip label="Allocate">
+                <AllocateButton className="-mb-1 flex size-11 items-center justify-center rounded-button bg-foreground text-window hover:bg-[color-mix(in_oklch,var(--foreground),var(--kraft-ink)_40%)]">
+                  <ArrowsLeftRightIcon weight="fill" aria-hidden className="size-5" />
+                </AllocateButton>
+              </Tip>
             )
           }
         >

@@ -1,13 +1,14 @@
-import { CaretDownIcon, MagnifyingGlassIcon } from "@phosphor-icons/react/ssr";
+import { CaretDownIcon, FunnelIcon, MagnifyingGlassIcon } from "@phosphor-icons/react/ssr";
 import Form from "next/form";
 import Link from "next/link";
+import { Tip } from "@/components/ui/tip";
 import type { TransactionFilters } from "@/lib/dal";
 import { TYPE_LABELS, TYPES } from "@/lib/record";
 
 type Option = { id: string; name: string };
 
 const field =
-  "h-11 w-full min-w-0 rounded-field bg-field px-3 text-base outline-none focus-visible:shadow-[0_0_0_2px_var(--primary)]";
+  "h-11 w-full min-w-0 rounded-field bg-field px-3 text-base outline-none focus-visible:shadow-[0_0_0_2px_var(--secondary)]";
 const label = "flex flex-col gap-2 text-[0.8125rem] font-medium text-muted-foreground";
 
 /** Filters live in the URL: a plain GET form, so every view can be bookmarked and shared with yourself. */
@@ -32,7 +33,7 @@ export function Filters({
   const any = extra || values.q || values.type || values.cycle;
   return (
     <Form action="/transactions" className="rounded-panel bg-panel p-3">
-      <div className="grid grid-cols-2 gap-2 sm:grid-cols-[minmax(0,1fr)_auto_auto_auto]">
+      <div className="grid grid-cols-2 gap-x-2 gap-y-3 sm:grid-cols-[minmax(0,1fr)_auto_auto_auto]">
         <label className="relative col-span-2 sm:col-span-1">
           <span className="sr-only">Search item, location or note</span>
           <MagnifyingGlassIcon weight="fill" aria-hidden className="pointer-events-none absolute top-3.5 left-3 size-4 text-quiet-control" />
@@ -60,15 +61,19 @@ export function Filters({
             ))}
           </select>
         </label>
-        <button type="submit" className="col-span-2 h-11 rounded-button bg-primary px-5 text-[0.9375rem] font-medium text-primary-foreground hover:bg-[color-mix(in_oklch,var(--primary),black_10%)] sm:col-span-1">
-          Apply
-        </button>
+        <Tip label="Apply filters">
+          <button type="submit" className="col-span-2 flex h-11 items-center justify-center rounded-button bg-foreground text-window hover:bg-[color-mix(in_oklch,var(--foreground),var(--kraft-ink)_40%)] sm:col-span-1 sm:w-11">
+            <FunnelIcon weight="fill" aria-hidden className="size-5" />
+            {/* Full width on a phone, so it has room for its name; a 44px square from sm up. */}
+            <span className="ml-2 text-[0.9375rem] font-medium sm:hidden">Apply</span>
+          </button>
+        </Tip>
       </div>
 
-      <details open={!!extra} className="group mt-1">
+      <details open={!!extra} className="disclosure group mt-1">
         <summary className="-mx-1 flex h-11 cursor-pointer list-none items-center gap-2 rounded-button px-1 text-[0.9375rem] [&::-webkit-details-marker]:hidden">
           More filters
-          <CaretDownIcon weight="fill" aria-hidden className="size-4 transition-transform group-open:rotate-180" />
+          <CaretDownIcon weight="fill" aria-hidden className="size-4 transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] group-open:rotate-180" />
           {any && (
             <Link href="/transactions?" className="ml-auto flex h-11 items-center rounded-button px-3 text-muted-foreground hover:bg-accent hover:text-foreground">
               Clear all

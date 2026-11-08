@@ -1,5 +1,6 @@
 "use client";
 
+import { CheckCircleIcon } from "@phosphor-icons/react";
 import { useId, useRef, useState } from "react";
 import { deleteRecord, saveRecord } from "@/app/(app)/actions";
 import { ItemCombobox } from "@/components/record/item-combobox";
@@ -7,13 +8,14 @@ import { blank, fromInput, toInput, useFunds, withType, type State } from "@/com
 import { useRecord } from "@/components/record/record-provider";
 import { toasts } from "@/components/record/toast";
 import { Button } from "@/components/ui/button";
+import { Tip } from "@/components/ui/tip";
 import { formatAmountInput, formatMoney } from "@/lib/format";
 import { lineTotal } from "@/lib/finance";
 import { fieldErrors, recordInput, TYPE_LABELS, TYPES, type RecordType, type Suggestion } from "@/lib/record";
 import { matchesShortcut } from "@/lib/shortcuts";
 import { cn } from "@/lib/utils";
 
-const cell = "h-11 w-full min-w-0 rounded-field bg-field px-3 text-base outline-none focus-visible:shadow-[0_0_0_2px_var(--primary)] aria-invalid:shadow-[0_0_0_2px_var(--destructive)]";
+const cell = "h-11 w-full min-w-0 rounded-field bg-field px-3 text-base outline-none focus-visible:shadow-[0_0_0_2px_var(--secondary)] aria-invalid:shadow-[0_0_0_2px_var(--destructive)]";
 
 /**
  * The spreadsheet-style row on top of the Transactions table: the five required fields and Save.
@@ -130,7 +132,7 @@ export function QuickEntry() {
           submit();
         }
       }}
-      className="hidden rounded-panel bg-panel p-2 lg:block"
+      className="hidden rounded-panel bg-panel p-3 lg:block"
     >
       <div className="grid grid-cols-[minmax(0,2.2fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1.2fr)_auto_auto] items-center gap-2">
         <ItemCombobox
@@ -175,9 +177,11 @@ export function QuickEntry() {
         <Button type="button" variant="ghost" onClick={more} className="h-11 px-3 text-[0.9375rem] text-muted-foreground">
           More
         </Button>
-        <Button type="submit" disabled={busy} className="h-11 px-4 text-[0.9375rem]">
-          Save
-        </Button>
+        <Tip label="Save">
+          <Button type="submit" disabled={busy} className="size-11 px-0">
+            <CheckCircleIcon weight="fill" aria-hidden className="size-5" />
+          </Button>
+        </Tip>
       </div>
       {message && (
         <p role="alert" className="px-2 pt-2 pb-1 text-sm text-destructive">

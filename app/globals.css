@@ -101,12 +101,12 @@
 @layer base {
   * {
     @apply border-border outline-ring/50;
+    scrollbar-width: thin;
   }
   body {
     @apply bg-background text-foreground;
     font-variant-numeric: tabular-nums;
     caret-color: var(--primary);
-    scrollbar-color: var(--track) transparent;
     -webkit-tap-highlight-color: transparent;
   }
   ::selection {
@@ -119,6 +119,11 @@
   }
   html {
     @apply font-sans;
+    /* The page scrollbar takes no width, so every screen is the same width whether it scrolls or
+       not; components/shell/scroll-thumb.tsx draws a floating one instead. */
+    scrollbar-width: none;
+    /* Inner scrollers inherit the colour. */
+    scrollbar-color: color-mix(in oklch, var(--track), var(--kraft-ink) 25%) transparent;
   }
 }
 
@@ -131,9 +136,74 @@
       0 0 / 24px 10px;
     background-repeat: round no-repeat;
   }
+  /* A <details> that slides open. Browsers without ::details-content or interpolate-size just open
+     it instantly. Only the block axis clips, and the content keeps 4px top and bottom for focus rings. */
+  .disclosure {
+    interpolate-size: allow-keywords;
+  }
+  .disclosure::details-content {
+    block-size: 0;
+    overflow-y: clip;
+    opacity: 0;
+    transition:
+      block-size 300ms cubic-bezier(0.22, 1, 0.36, 1),
+      opacity 200ms ease-out,
+      content-visibility 300ms allow-discrete;
+  }
+  .disclosure[open]::details-content {
+    block-size: auto;
+    opacity: 1;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .disclosure::details-content {
+      transition: none;
+    }
+  }
   .figure {
     font-weight: 500;
     font-variant-numeric: tabular-nums;
     white-space: nowrap;
+  }
+}
+
+/* Screen changes (components/shell/page-transition.tsx): a short crossfade, and the current tab's
+   fill slides to the new tab. */
+::view-transition-group(page) {
+  animation-duration: 200ms;
+}
+::view-transition-group(nav-current),
+::view-transition-group(band),
+::view-transition-group(flap),
+::view-transition-group(window),
+::view-transition-group(main) {
+  animation-duration: 300ms;
+  animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+}
+/* The band, window and content grow or shrink as boxes; their snapshots are clipped, not stretched.
+   Each box is painted in its own colour, so the part only one snapshot covers mid-crossfade
+   never shows the page through. */
+::view-transition-group(band),
+::view-transition-group(main) {
+  overflow: clip;
+}
+::view-transition-group(band) {
+  background: var(--kraft);
+  /* Also fill the seam above the flap while it moves. */
+  box-shadow: 0 1px 0 var(--kraft);
+}
+::view-transition-group(window) {
+  overflow: clip;
+  border-radius: 16px;
+  background: var(--window);
+}
+/* Every screen's content below the flap, and the loading skeleton's, pair up as one box. */
+main {
+  view-transition-name: main;
+}
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
   }
 }

@@ -62,3 +62,8 @@ const dateTime = new Intl.DateTimeFormat("en-US", {
 
 /** A moment as 'Sun, Nov 8, 14:05' in Jakarta time. */
 export const formatDateTime = (moment: Date) => dateTime.format(moment);
+
+const ordinals = new Intl.PluralRules("en-US", { type: "ordinal" });
+const suffixes: Record<string, string> = { one: "st", two: "nd", few: "rd", other: "th" };
+/** The English ordinal suffix for a day of the month: 1 → "st", 12 → "th", 23 → "rd". */
+export const ordinalSuffix = (n: number) => suffixes[ordinals.select(n)];

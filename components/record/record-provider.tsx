@@ -115,7 +115,7 @@ export function RecordProvider({ data, children }: { data: RecordData; children:
                               : "Plan item"
                             : sheet.mode === "edit"
                               ? "Edit record"
-                              : "Record"}
+                              : "New Record"}
                         </Drawer.Title>
                       }
                     />

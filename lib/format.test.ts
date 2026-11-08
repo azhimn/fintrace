@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { formatAmountInput, formatDate, formatMoney, formatPercent, formatQuantity, parseAmount } from "./format";
+import { formatAmountInput, formatDate, formatMoney, formatPercent, formatQuantity, ordinalSuffix, parseAmount } from "./format";
 
 describe("id-ID formatters", () => {
   it("formats money with dot thousands and no decimals", () => {
@@ -89,5 +89,13 @@ describe("formatAmountInput", () => {
     ["1.500rb", "1.500rb"],
   ])("%s becomes %s", (input, expected) => {
     expect(formatAmountInput(input)).toBe(expected);
+  });
+});
+
+describe("ordinalSuffix", () => {
+  it("handles the teens and the 21st to 31st", () => {
+    expect([1, 2, 3, 4, 11, 12, 13, 21, 22, 23, 25, 31].map((n) => `${n}${ordinalSuffix(n)}`)).toEqual([
+      "1st", "2nd", "3rd", "4th", "11th", "12th", "13th", "21st", "22nd", "23rd", "25th", "31st",
+    ]);
   });
 });

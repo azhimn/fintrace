@@ -1,6 +1,6 @@
 "use client";
 
-import { DotsThreeIcon, PlusCircleIcon } from "@phosphor-icons/react";
+import { DotsThreeIcon, ListPlusIcon } from "@phosphor-icons/react";
 import { Menu } from "@base-ui/react/menu";
 import { useState } from "react";
 import { copyPreviousPlan, deletePlanItem, savePlanItem } from "@/app/(app)/actions";
@@ -9,6 +9,7 @@ import { useRecord } from "@/components/record/record-provider";
 import { toasts } from "@/components/record/toast";
 import { Empty, HueDot } from "@/components/shell/bits";
 import { Button } from "@/components/ui/button";
+import { Tip } from "@/components/ui/tip";
 import { formatMoney } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
@@ -69,10 +70,11 @@ export function PlanTable({ rows, cycle, recordDate }: { rows: PlanRow[]; cycle:
 
   const tools = !cycle.closed && (
     <div className="flex flex-wrap gap-2">
-      <Button size="lg" onClick={() => open({ plan })} className="h-11 text-[0.9375rem]">
-        <PlusCircleIcon weight="fill" className="size-5" />
-        Add item
-      </Button>
+      <Tip label="Add item">
+        <Button size="lg" onClick={() => open({ plan })} className="size-11 px-0">
+          <ListPlusIcon weight="fill" aria-hidden className="size-5" />
+        </Button>
+      </Tip>
       {cycle.hasPrevious && (
         <Button size="lg" variant="outline" disabled={copying} onClick={copy} className="h-11 text-[0.9375rem]">
           Copy from previous cycle

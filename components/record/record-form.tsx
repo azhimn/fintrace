@@ -1,9 +1,11 @@
 "use client";
 
-import { CaretDownIcon } from "@phosphor-icons/react";
+import { CaretDownIcon, CheckCircleIcon, PlayIcon, XIcon } from "@phosphor-icons/react";
 import { useEffect, useId, useRef, useState } from "react";
 import { deletePlanItem, deleteRecord, savePlanItem, saveRecord, startCycleAndSave, type SaveResult } from "@/app/(app)/actions";
+import { SlidingPill } from "@/components/shell/action";
 import { Button } from "@/components/ui/button";
+import { Tip } from "@/components/ui/tip";
 import { today } from "@/lib/calendar";
 import { lineTotal } from "@/lib/finance";
 import { formatAmountInput, formatDate, formatMoney, formatQuantity, parseAmount } from "@/lib/format";
@@ -354,13 +356,15 @@ export function RecordForm({ data, initial, plan, mode = "add", onDone, onClose,
         <div className="bg-kraft px-5 pt-4 pb-5">
           <div className="flex items-center justify-between">
             {title}
-            <button
-              type="button"
-              onClick={onClose}
-              className="-mr-3 h-11 rounded-button px-3 text-[0.9375rem] text-kraft-ink hover:bg-kraft-ink/10"
-            >
-              Close
-            </button>
+            <Tip label="Close">
+              <button
+                type="button"
+                onClick={onClose}
+                className="-mr-2.5 flex size-11 items-center justify-center rounded-button text-kraft-ink hover:bg-kraft-ink/10 hover:text-foreground"
+              >
+                <XIcon aria-hidden className="size-5" />
+              </button>
+            </Tip>
           </div>
 
           <label htmlFor={fid("item")} className="mt-3 mb-2 block text-[0.8125rem] font-medium text-kraft-ink">
@@ -381,68 +385,80 @@ export function RecordForm({ data, initial, plan, mode = "add", onDone, onClose,
           />
           {err("item")}
 
-          {started && (
-            <div className="mt-4 rounded-panel bg-window px-4 pt-3 pb-3">
-              <div className="flex items-baseline justify-between gap-3">
-                <label htmlFor={fid("amount")} className="text-[0.8125rem] font-medium text-kraft-ink">
-                  Amount
-                </label>
-                {amount !== null && /[a-z,]/i.test(state.amount) && (
-                  <span className="figure text-sm text-kraft-ink">{formatMoney(amount)}</span>
-                )}
+          {/* Grows open once something is typed, so the header expands rather than jumps. */}
+          <div
+            className={cn(
+              "grid transition-[grid-template-rows] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none",
+              started ? "grid-rows-[1fr]" : "grid-rows-[0fr]",
+            )}
+            inert={!started}
+          >
+            <div className="min-h-0 overflow-hidden">
+              <div className="mt-4 rounded-panel bg-window px-4 pt-3 pb-3">
+                <div className="flex items-baseline justify-between gap-3">
+                  <label htmlFor={fid("amount")} className="text-[0.8125rem] font-medium text-kraft-ink">
+                    Amount
+                  </label>
+                  {amount !== null && /[a-z,]/i.test(state.amount) && (
+                    <span className="figure text-sm text-kraft-ink">{formatMoney(amount)}</span>
+                  )}
+                </div>
+                <div className="flex items-center gap-2">
+                  <span aria-hidden className="text-[2rem] font-medium text-kraft-ink">
+                    Rp
+                  </span>
+                  <input
+                    id={fid("amount")}
+                    ref={amountRef}
+                    value={state.amount}
+                    onChange={(e) => set("amount", formatAmountInput(e.target.value))}
+                    inputMode="numeric"
+                    enterKeyHint="done"
+                    autoComplete="off"
+                    placeholder="0"
+                    aria-invalid={!!errors.amount || undefined}
+                    aria-describedby={described("amount")}
+                    className="figure h-14 min-w-0 flex-1 bg-transparent text-[2.5rem] font-semibold tracking-tight outline-none placeholder:text-amount-placeholder"
+                  />
+                </div>
+                <div className="mt-1 flex gap-2">
+                  {[
+                    ["rb", "thousand"],
+                    ["jt", "million"],
+                  ].map(([suffix, word]) => (
+                    <button
+                      key={suffix}
+                      type="button"
+                      aria-label={`Add ${suffix}, ${word}`}
+                      onClick={() => {
+                        const base = state.amount.replace(/(rb|k|jt)$/i, "");
+                        set("amount", base ? `${base}${suffix}` : state.amount);
+                        amountRef.current?.focus();
+                      }}
+                      className="h-11 min-w-14 rounded-button bg-kraft/50 px-3 text-[0.9375rem] font-medium text-kraft-ink hover:bg-kraft"
+                    >
+                      {suffix}
+                    </button>
+                  ))}
+                  {showTotal && <span className="figure ml-auto self-center text-sm text-kraft-ink">Total {formatMoney(total)}</span>}
+                </div>
+                {err("amount")}
               </div>
-              <div className="flex items-center gap-2">
-                <span aria-hidden className="text-[2rem] font-medium text-kraft-ink">
-                  Rp
-                </span>
-                <input
-                  id={fid("amount")}
-                  ref={amountRef}
-                  value={state.amount}
-                  onChange={(e) => set("amount", formatAmountInput(e.target.value))}
-                  inputMode="numeric"
-                  enterKeyHint="done"
-                  autoComplete="off"
-                  placeholder="0"
-                  aria-invalid={!!errors.amount || undefined}
-                  aria-describedby={described("amount")}
-                  className="figure h-14 min-w-0 flex-1 bg-transparent text-[2.5rem] font-semibold tracking-tight outline-none placeholder:text-amount-placeholder"
-                />
-              </div>
-              <div className="mt-1 flex gap-2">
-                {[
-                  ["rb", "thousand"],
-                  ["jt", "million"],
-                ].map(([suffix, word]) => (
-                  <button
-                    key={suffix}
-                    type="button"
-                    aria-label={`Add ${suffix}, ${word}`}
-                    onClick={() => {
-                      const base = state.amount.replace(/(rb|k|jt)$/i, "");
-                      set("amount", base ? `${base}${suffix}` : state.amount);
-                      amountRef.current?.focus();
-                    }}
-                    className="h-11 min-w-14 rounded-button bg-kraft/50 px-3 text-[0.9375rem] font-medium text-kraft-ink hover:bg-kraft"
-                  >
-                    {suffix}
-                  </button>
-                ))}
-                {showTotal && <span className="figure ml-auto self-center text-sm text-kraft-ink">Total {formatMoney(total)}</span>}
-              </div>
-              {err("amount")}
             </div>
-          )}
+          </div>
         </div>
         <div className="flap" aria-hidden />
 
         {!started ? (
-          <QuickPicks items={picks.items} onPick={pick} envelopes={data.envelopes} heading={plan ? "Plan from a past item" : "Record again"} />
+          <div className="animate-in fade-in-0 slide-in-from-bottom-2 duration-300 ease-out motion-reduce:animate-none">
+            <QuickPicks items={picks.items} onPick={pick} envelopes={data.envelopes} heading={plan ? "Plan from a past item" : "Record again"} />
+          </div>
         ) : (
-          <div className="flex flex-col gap-5 px-5 pt-4 pb-6">
+          <div className="flex flex-col gap-5 px-5 pt-4 pb-6 animate-in fade-in-0 slide-in-from-bottom-2 duration-300 ease-out motion-reduce:animate-none">
             <fieldset>
               <legend className="sr-only">Type</legend>
-              <div className="grid grid-cols-4 gap-1 rounded-button bg-panel p-1">
+              <div className="relative grid grid-cols-4 gap-1 rounded-button bg-panel p-1">
+                <SlidingPill count={TYPES.length} index={TYPES.indexOf(state.type)} />
                 {TYPES.map((t) => (
                   <label key={t} className="relative">
                     <input
@@ -462,7 +478,7 @@ export function RecordForm({ data, initial, plan, mode = "add", onDone, onClose,
                       }}
                       className="peer sr-only"
                     />
-                    <span className="flex h-11 cursor-pointer items-center justify-center rounded-field text-[0.9375rem] text-muted-foreground peer-checked:bg-secondary peer-checked:font-medium peer-checked:text-foreground peer-focus-visible:outline-2 peer-focus-visible:outline-primary">
+                    <span className="flex h-11 cursor-pointer items-center justify-center rounded-field text-[0.9375rem] text-muted-foreground transition-colors duration-300 peer-checked:font-medium peer-checked:text-foreground peer-focus-visible:outline-2 peer-focus-visible:outline-primary">
                       {TYPE_LABELS[t]}
                     </span>
                   </label>
@@ -505,154 +521,167 @@ export function RecordForm({ data, initial, plan, mode = "add", onDone, onClose,
                 </span>
                 <CaretDownIcon weight="fill" aria-hidden className={cn("size-4 transition-transform", more && "rotate-180")} />
               </button>
-              {more && (
-                <div id={fid("more")} className="grid grid-cols-2 gap-x-3 gap-y-4 px-4 pt-1 pb-4">
-                  <Field label={plan ? "Date (optional)" : "Date"} htmlFor={fid("date")} error={err("date")} wide={!plan}>
-                    <DateField
-                      id={fid("date")}
-                      value={state.date}
-                      onChange={(v) => set("date", v)}
-                      onClear={plan ? () => set("date", "") : undefined}
-                    />
-                  </Field>
-                  {plan && (
-                    <Field label="Frequency" htmlFor={fid("frequency")}>
-                      <select
-                        id={fid("frequency")}
-                        value={state.frequency}
-                        onChange={(e) => set("frequency", e.target.value as Frequency)}
-                        className={cn(fieldClass, "capitalize")}
-                      >
-                        {FREQUENCIES.map((f) => (
-                          <option key={f} value={f}>
-                            {f === "semiweekly" ? "Twice a week" : f[0].toUpperCase() + f.slice(1)}
-                          </option>
-                        ))}
-                      </select>
+              {/* Always rendered so it can grow and shrink; inert while closed so nothing in it takes focus. */}
+              <div
+                className={cn(
+                  "grid transition-[grid-template-rows] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none",
+                  more ? "grid-rows-[1fr]" : "grid-rows-[0fr]",
+                )}
+                inert={!more}
+              >
+                <div className="min-h-0 overflow-hidden">
+                  <div id={fid("more")} className="grid grid-cols-2 gap-x-3 gap-y-4 px-4 pt-1 pb-4">
+                    <Field label={plan ? "Date (optional)" : "Date"} htmlFor={fid("date")} error={err("date")} wide={!plan}>
+                      <DateField
+                        id={fid("date")}
+                        value={state.date}
+                        onChange={(v) => set("date", v)}
+                        onClear={plan ? () => set("date", "") : undefined}
+                      />
                     </Field>
-                  )}
-                  {(state.type === "expense" || state.type === "saving" || state.type === "transfer") && (
-                    <EnvelopeSelect
-                      id={fid("source-envelope")}
-                      label={state.type === "transfer" ? "From Budget" : "Budget"}
-                      envelopes={data.envelopes}
-                      value={state.sourceEnvelopeId}
-                      onChange={(v) => set("sourceEnvelopeId", v)}
-                      error={err("sourceEnvelopeId")}
-                      wide={state.type !== "transfer"}
-                    />
-                  )}
-                  {(state.type === "income" || state.type === "transfer") && (
-                    <EnvelopeSelect
-                      id={fid("dest-envelope")}
-                      label={state.type === "transfer" ? "To Budget" : "Budget"}
-                      envelopes={data.envelopes}
-                      value={state.destEnvelopeId}
-                      onChange={(v) => set("destEnvelopeId", v)}
-                      error={err("destEnvelopeId")}
-                      wide={state.type !== "transfer"}
-                    />
-                  )}
-                  {categories.length > 0 && (
-                    <Field label="Category" htmlFor={fid("sub")} error={err("subcategoryId")} wide>
-                      <select
-                        id={fid("sub")}
-                        value={state.subcategoryId}
-                        onChange={(e) => set("subcategoryId", e.target.value)}
+                    {plan && (
+                      <Field label="Frequency" htmlFor={fid("frequency")}>
+                        <select
+                          id={fid("frequency")}
+                          value={state.frequency}
+                          onChange={(e) => set("frequency", e.target.value as Frequency)}
+                          className={cn(fieldClass, "capitalize")}
+                        >
+                          {FREQUENCIES.map((f) => (
+                            <option key={f} value={f}>
+                              {f === "semiweekly" ? "Twice a week" : f[0].toUpperCase() + f.slice(1)}
+                            </option>
+                          ))}
+                        </select>
+                      </Field>
+                    )}
+                    {(state.type === "expense" || state.type === "saving" || state.type === "transfer") && (
+                      <EnvelopeSelect
+                        id={fid("source-envelope")}
+                        label={state.type === "transfer" ? "From Budget" : "Budget"}
+                        envelopes={data.envelopes}
+                        value={state.sourceEnvelopeId}
+                        onChange={(v) => set("sourceEnvelopeId", v)}
+                        error={err("sourceEnvelopeId")}
+                        wide={state.type !== "transfer"}
+                      />
+                    )}
+                    {(state.type === "income" || state.type === "transfer") && (
+                      <EnvelopeSelect
+                        id={fid("dest-envelope")}
+                        label={state.type === "transfer" ? "To Budget" : "Budget"}
+                        envelopes={data.envelopes}
+                        value={state.destEnvelopeId}
+                        onChange={(v) => set("destEnvelopeId", v)}
+                        error={err("destEnvelopeId")}
+                        wide={state.type !== "transfer"}
+                      />
+                    )}
+                    {categories.length > 0 && (
+                      <Field label="Category" htmlFor={fid("sub")} error={err("subcategoryId")} wide>
+                        <select
+                          id={fid("sub")}
+                          value={state.subcategoryId}
+                          onChange={(e) => set("subcategoryId", e.target.value)}
+                          className={fieldClass}
+                        >
+                          <option value="">Uncategorised</option>
+                          {categories.map((c) => (
+                            <optgroup key={c.id} label={c.name}>
+                              {c.subs.map((s) => (
+                                <option key={s.id} value={s.id}>
+                                  {s.name}
+                                </option>
+                              ))}
+                            </optgroup>
+                          ))}
+                        </select>
+                      </Field>
+                    )}
+                    {(state.type === "expense" || state.type === "saving") && (
+                      <fieldset className="col-span-2">
+                        <legend className={labelClass}>Needs or Wants</legend>
+                        <div className="relative mt-2 grid grid-cols-2 gap-1 rounded-button bg-field p-1">
+                          <SlidingPill
+                            count={2}
+                            index={({ needs: 0, wants: 1 } as const)[(state.classification || subcategory?.defaultClassification) as "needs" | "wants"] ?? null}
+                          />
+                          {(["needs", "wants"] as const).map((c) => {
+                            const shown = (state.classification || subcategory?.defaultClassification) === c;
+                            return (
+                              <button
+                                key={c}
+                                type="button"
+                                aria-pressed={shown}
+                                onClick={() => set("classification", state.classification === c ? "" : c)}
+                                className={cn(
+                                  "relative h-10 rounded-field text-[0.9375rem] capitalize transition-colors duration-300",
+                                  shown ? "font-medium" : "text-muted-foreground",
+                                )}
+                              >
+                                {c}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </fieldset>
+                    )}
+                    <Field label="Quantity" htmlFor={fid("qty")} error={err("quantity")}>
+                      <input
+                        id={fid("qty")}
+                        value={state.quantity}
+                        onChange={(e) => set("quantity", e.target.value)}
+                        inputMode="decimal"
                         className={fieldClass}
-                      >
-                        <option value="">Uncategorised</option>
-                        {categories.map((c) => (
-                          <optgroup key={c.id} label={c.name}>
-                            {c.subs.map((s) => (
-                              <option key={s.id} value={s.id}>
-                                {s.name}
-                              </option>
-                            ))}
-                          </optgroup>
-                        ))}
-                      </select>
+                      />
                     </Field>
-                  )}
-                  {(state.type === "expense" || state.type === "saving") && (
-                    <fieldset className="col-span-2">
-                      <legend className={labelClass}>Needs or Wants</legend>
-                      <div className="mt-2 grid grid-cols-2 gap-1 rounded-button bg-field p-1">
-                        {(["needs", "wants"] as const).map((c) => {
-                          const shown = (state.classification || subcategory?.defaultClassification) === c;
-                          return (
-                            <button
-                              key={c}
-                              type="button"
-                              aria-pressed={shown}
-                              onClick={() => set("classification", state.classification === c ? "" : c)}
-                              className={cn(
-                                "h-10 rounded-field text-[0.9375rem] capitalize",
-                                shown ? "bg-secondary font-medium" : "text-muted-foreground",
-                              )}
-                            >
-                              {c}
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </fieldset>
-                  )}
-                  <Field label="Quantity" htmlFor={fid("qty")} error={err("quantity")}>
-                    <input
-                      id={fid("qty")}
-                      value={state.quantity}
-                      onChange={(e) => set("quantity", e.target.value)}
-                      inputMode="decimal"
-                      className={fieldClass}
-                    />
-                  </Field>
-                  <Field label="Unit" htmlFor={fid("unit")}>
-                    <input
-                      id={fid("unit")}
-                      value={state.unit}
-                      onChange={(e) => set("unit", e.target.value)}
-                      placeholder="liter, pcs"
-                      className={fieldClass}
-                    />
-                  </Field>
-                  <Field label="Discount" htmlFor={fid("discount")} error={err("discount")}>
-                    <input
-                      id={fid("discount")}
-                      value={state.discount}
-                      onChange={(e) => set("discount", formatAmountInput(e.target.value))}
-                      inputMode="numeric"
-                      placeholder="0"
-                      className={cn(fieldClass, "figure")}
-                    />
-                  </Field>
-                  <Field label="Location" htmlFor={fid("location")}>
-                    <input
-                      id={fid("location")}
-                      value={state.location}
-                      onChange={(e) => set("location", e.target.value)}
-                      className={fieldClass}
-                    />
-                  </Field>
-                  <Field label="Tags" htmlFor={fid("tags")} wide hint="Separate with commas">
-                    <input
-                      id={fid("tags")}
-                      value={state.tags}
-                      onChange={(e) => set("tags", e.target.value)}
-                      className={fieldClass}
-                    />
-                  </Field>
-                  <Field label="Note" htmlFor={fid("note")} wide>
-                    <textarea
-                      id={fid("note")}
-                      value={state.note}
-                      onChange={(e) => set("note", e.target.value)}
-                      rows={2}
-                      className={cn(fieldClass, "h-auto py-2.5")}
-                    />
-                  </Field>
+                    <Field label="Unit" htmlFor={fid("unit")}>
+                      <input
+                        id={fid("unit")}
+                        value={state.unit}
+                        onChange={(e) => set("unit", e.target.value)}
+                        placeholder="liter, pcs"
+                        className={fieldClass}
+                      />
+                    </Field>
+                    <Field label="Discount" htmlFor={fid("discount")} error={err("discount")}>
+                      <input
+                        id={fid("discount")}
+                        value={state.discount}
+                        onChange={(e) => set("discount", formatAmountInput(e.target.value))}
+                        inputMode="numeric"
+                        placeholder="0"
+                        className={cn(fieldClass, "figure")}
+                      />
+                    </Field>
+                    <Field label="Location" htmlFor={fid("location")}>
+                      <input
+                        id={fid("location")}
+                        value={state.location}
+                        onChange={(e) => set("location", e.target.value)}
+                        className={fieldClass}
+                      />
+                    </Field>
+                    <Field label="Tags" htmlFor={fid("tags")} wide hint="Separate with commas">
+                      <input
+                        id={fid("tags")}
+                        value={state.tags}
+                        onChange={(e) => set("tags", e.target.value)}
+                        className={fieldClass}
+                      />
+                    </Field>
+                    <Field label="Note" htmlFor={fid("note")} wide>
+                      <textarea
+                        id={fid("note")}
+                        value={state.note}
+                        onChange={(e) => set("note", e.target.value)}
+                        rows={2}
+                        className={cn(fieldClass, "h-auto py-2.5")}
+                      />
+                    </Field>
+                  </div>
                 </div>
-              )}
+              </div>
             </div>
 
             {cycle && (
@@ -669,6 +698,7 @@ export function RecordForm({ data, initial, plan, mode = "add", onDone, onClose,
                   />
                 </Field>
                 <Button type="button" size="lg" disabled={busy} onClick={confirmCycle}>
+                  <PlayIcon weight="fill" aria-hidden className="size-5" />
                   Start cycle and save
                 </Button>
               </div>
@@ -683,18 +713,20 @@ export function RecordForm({ data, initial, plan, mode = "add", onDone, onClose,
       </div>
 
       {started && (
-        <div className="flex shrink-0 gap-2 bg-background px-5 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom)+var(--drawer-keyboard-inset,0px))]">
+        <div className="flex shrink-0 gap-2 bg-background px-5 pt-3 animate-in fade-in-0 slide-in-from-bottom-4 duration-300 ease-out motion-reduce:animate-none pb-[calc(0.75rem+env(safe-area-inset-bottom)+var(--drawer-keyboard-inset,0px))]">
           {mode === "add" ? (
             <>
               <Button type="button" variant="secondary" size="lg" disabled={busy} onClick={() => submit(true)} className="flex-1">
                 Save & add another
               </Button>
               <Button type="submit" size="lg" disabled={busy} className="flex-1">
+                <CheckCircleIcon weight="fill" aria-hidden className="size-5" />
                 {plan ? "Add to plan" : "Save"}
               </Button>
             </>
           ) : (
             <Button type="submit" size="lg" disabled={busy} className="flex-1">
+              <CheckCircleIcon weight="fill" aria-hidden className="size-5" />
               Save changes
             </Button>
           )}
@@ -706,7 +738,7 @@ export function RecordForm({ data, initial, plan, mode = "add", onDone, onClose,
 
 const labelClass = "text-[0.8125rem] font-medium text-muted-foreground";
 const fieldClass =
-  "h-11 w-full min-w-0 rounded-field bg-field px-3 text-base outline-none focus-visible:shadow-[0_0_0_2px_var(--primary)]";
+  "h-11 w-full min-w-0 rounded-field bg-field px-3 text-base outline-none focus-visible:shadow-[0_0_0_2px_var(--secondary)]";
 
 function Field({
   label,
@@ -795,7 +827,7 @@ function FundChips({
   return (
     <fieldset>
       <legend className={cn(labelClass, "mb-2")}>{legend}</legend>
-      <div className="-mx-5 flex gap-2 overflow-x-auto px-5 [scrollbar-width:none]">
+      <div className="-mx-5 flex gap-2 overflow-x-auto px-5 [scrollbar-width:none] lg:mx-0 lg:flex-wrap lg:overflow-visible lg:px-0">
         {funds.map((a) => (
           <label key={a.id} className="shrink-0">
             <input
@@ -881,7 +913,7 @@ export function DateField({
 }) {
   return (
     <div className="flex gap-1">
-      <div className="relative flex h-11 min-w-0 flex-1 items-center rounded-field bg-field px-3 focus-within:shadow-[0_0_0_2px_var(--primary)]">
+      <div className="relative flex h-11 min-w-0 flex-1 items-center rounded-field bg-field px-3 focus-within:shadow-[0_0_0_2px_var(--secondary)]">
         <span aria-hidden className={cn(!value && "text-muted-foreground")}>{value ? formatDate(value) : onClear ? "No date" : "Pick a date"}</span>
         <input
           id={id}

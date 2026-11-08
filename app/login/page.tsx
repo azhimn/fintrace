@@ -27,7 +27,7 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
       </header>
       <div className="flap" aria-hidden />
 
-      <main className="mx-auto flex w-full max-w-sm flex-col gap-4 px-5 pt-6 pb-10">
+      <main className="mx-auto flex w-full max-w-sm flex-col gap-3 px-5 pt-6 pb-10">
         {sent ? (
           <p role="status" className="rounded-panel bg-panel p-4">
             Check your email. If that address has an account, a sign-in link is on its way.

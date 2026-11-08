@@ -7,10 +7,10 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-primary text-primary-foreground hover:bg-[color-mix(in_oklch,var(--primary),black_10%)]",
+        default: "bg-foreground text-window hover:bg-[color-mix(in_oklch,var(--foreground),var(--kraft-ink)_40%)]",
         outline: "bg-panel text-foreground hover:bg-accent aria-expanded:bg-accent",
         secondary:
-          "bg-secondary text-secondary-foreground hover:bg-[color-mix(in_oklch,var(--secondary),var(--foreground)_6%)] aria-expanded:bg-secondary",
+          "bg-kraft text-foreground hover:bg-[color-mix(in_oklch,var(--kraft),var(--kraft-ink)_12%)] aria-expanded:bg-kraft",
         ghost:
           "hover:bg-accent hover:text-foreground aria-expanded:bg-accent",
         destructive:

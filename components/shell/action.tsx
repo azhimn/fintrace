@@ -2,12 +2,13 @@
 
 import { DotsThreeIcon } from "@phosphor-icons/react";
 import { Menu } from "@base-ui/react/menu";
+import { Switch } from "@base-ui/react/switch";
 import { useState, useSyncExternalStore, useTransition } from "react";
 import { toasts } from "@/components/record/toast";
 import { cn } from "@/lib/utils";
 
 export const fieldClass =
-  "h-11 w-full min-w-0 rounded-field bg-field px-3 text-base outline-none focus-visible:shadow-[0_0_0_2px_var(--primary)] aria-invalid:shadow-[0_0_0_2px_var(--destructive)]";
+  "h-11 w-full min-w-0 rounded-field bg-field px-3 text-base transition-shadow outline-none focus-visible:shadow-[0_0_0_2px_var(--secondary)] aria-invalid:shadow-[0_0_0_2px_var(--destructive)]";
 export const labelClass = "flex flex-col gap-2 text-[0.8125rem] font-medium text-muted-foreground";
 
 /**
@@ -71,8 +72,12 @@ const noSubscribe = () => () => {};
 export const useIsMac = () =>
   useSyncExternalStore(noSubscribe, () => /Mac|iPhone|iPad/.test(navigator.userAgent), () => false);
 
-/** A checkbox drawn as a chip: Panel Tint at rest, Pastel Periwinkle when on. */
-export function ToggleChip({
+/**
+ * An on/off setting: the label on the left, a switch on the right, the whole 44px row clickable.
+ * Off is a Track groove; on slides the thumb right and fills the groove Kraft, the secondary
+ * colour. The thumb stays white either way.
+ */
+export function SwitchRow({
   checked,
   disabled,
   onChange,
@@ -84,11 +89,37 @@ export function ToggleChip({
   children: React.ReactNode;
 }) {
   return (
-    <label className="relative inline-block">
-      <input type="checkbox" checked={checked} disabled={disabled} onChange={(e) => onChange(e.target.checked)} className="peer sr-only" />
-      <span className="flex h-11 cursor-pointer items-center rounded-button bg-background px-4 text-[0.9375rem] whitespace-nowrap text-muted-foreground hover:bg-accent peer-checked:bg-secondary peer-checked:text-foreground peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-primary peer-disabled:cursor-default peer-disabled:opacity-50">
-        {children}
-      </span>
+    <label className="flex min-h-11 cursor-pointer items-center justify-between gap-3 text-[0.9375rem] has-disabled:cursor-default has-disabled:opacity-50">
+      {children}
+      <Switch.Root
+        checked={checked}
+        disabled={disabled}
+        onCheckedChange={(on) => onChange(on)}
+        className="relative h-7 w-12 shrink-0 rounded-full bg-track p-0.5 transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary data-checked:bg-kraft"
+      >
+        <Switch.Thumb className="block size-6 rounded-full bg-field transition-[translate,background-color] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] data-checked:translate-x-5" />
+      </Switch.Root>
     </label>
+  );
+}
+
+/**
+ * The selection pill of a segmented control: one Kraft fill that slides to the chosen segment.
+ * Put it first inside the control's `relative` track (4px padding, 4px gaps) and make each segment
+ * `relative` so it paints above. `index` null hides it (nothing chosen).
+ */
+export function SlidingPill({ count, index }: { count: number; index: number | null }) {
+  return (
+    <span
+      aria-hidden
+      style={{
+        width: `calc((100% - 0.5rem - ${count - 1} * 0.25rem) / ${count})`,
+        transform: `translateX(calc(${index ?? 0} * (100% + 0.25rem)))`,
+      }}
+      className={cn(
+        "absolute inset-y-1 left-1 rounded-field bg-kraft transition-[transform,opacity] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none",
+        index === null && "opacity-0",
+      )}
+    />
   );
 }

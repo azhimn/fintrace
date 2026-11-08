@@ -21,7 +21,7 @@ const GROUPS = [
   { key: null, label: "Unclassified", hue: "var(--unclassified)" },
 ] as const;
 
-const field = "h-11 min-w-0 rounded-field bg-field px-3 text-base outline-none focus-visible:shadow-[0_0_0_2px_var(--primary)]";
+const field = "h-11 min-w-0 rounded-field bg-field px-3 text-base outline-none focus-visible:shadow-[0_0_0_2px_var(--secondary)]";
 
 export default async function AnalyticsPage({ searchParams }: PageProps<"/analytics">) {
   const dal = await getDal();
@@ -94,7 +94,7 @@ export default async function AnalyticsPage({ searchParams }: PageProps<"/analyt
         <h1 className="mt-3 text-[1.375rem] font-medium">Analytics</h1>
         {cycle && <CycleStepper cycles={cycles} cycle={cycle} path="/analytics" date={date} />}
         {cycle && (
-          <AddressWindow label="Spending this cycle" className="mt-1">
+          <AddressWindow label="Spending this cycle" className="mt-2">
             <p className="text-[0.8125rem] font-medium text-kraft-ink">Spent this cycle</p>
             <Money value={spent} className="mt-0.5 block text-[2.125rem] leading-tight font-semibold tracking-[-0.01em]" />
             <dl className="mt-2 grid grid-cols-3 gap-3 text-[0.8125rem]">
@@ -149,7 +149,7 @@ export default async function AnalyticsPage({ searchParams }: PageProps<"/analyt
               {split.length === 0 ? (
                 <Empty>No spending or saving recorded this cycle yet.</Empty>
               ) : (
-                <div className="grid gap-4 lg:grid-cols-2 lg:items-start">
+                <div className="grid gap-3 lg:grid-cols-2 lg:items-start lg:gap-x-8">
                   {GROUPS.map((g) => {
                     const group = split.find((s) => s.classification === g.key);
                     if (!group) return null;

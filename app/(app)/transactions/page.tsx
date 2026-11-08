@@ -81,7 +81,7 @@ export default async function TransactionsPage({ searchParams }: PageProps<"/tra
         </Section>
 
         <Section title="Records">
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col gap-3">
             <QuickEntry />
             {rows.length === 0 ? (
               <Empty>

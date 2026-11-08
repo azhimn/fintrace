@@ -73,7 +73,7 @@ export function ItemCombobox({ id, value, onChange, onPick, inputRef, invalid, d
         placeholder={placeholder ?? (compact ? "Item" : "What did you pay for?")}
         aria-invalid={invalid || undefined}
         aria-describedby={describedBy}
-        className={`${compact ? "h-11 px-3 text-base" : "h-14 px-4 text-lg"} w-full rounded-field bg-field outline-none placeholder:text-muted-foreground focus-visible:shadow-[0_0_0_2px_var(--primary)] aria-invalid:shadow-[0_0_0_2px_var(--destructive)]`}
+        className={`${compact ? "h-11 px-3 text-base" : "h-14 px-4 text-lg"} w-full rounded-field bg-field outline-none placeholder:text-muted-foreground focus-visible:shadow-[0_0_0_2px_var(--secondary)] aria-invalid:shadow-[0_0_0_2px_var(--destructive)]`}
       />
       <Autocomplete.Portal>
         <Autocomplete.Positioner sideOffset={6} align="start" className="z-[60] w-(--anchor-width)">

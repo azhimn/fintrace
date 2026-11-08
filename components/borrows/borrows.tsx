@@ -1,9 +1,10 @@
 "use client";
 
+import { CheckCircleIcon } from "@phosphor-icons/react";
 import { useId, useState } from "react";
 import { addBorrow, deleteBorrow, settleBorrows } from "@/app/(app)/actions";
 import { DateField } from "@/components/record/record-form";
-import { fieldClass, labelClass, RowMenu, useAction } from "@/components/shell/action";
+import { fieldClass, labelClass, RowMenu, SlidingPill, useAction } from "@/components/shell/action";
 import { Button } from "@/components/ui/button";
 import { today } from "@/lib/calendar";
 import { formatAmountInput, formatDate, formatMoney, parseAmount } from "@/lib/format";
@@ -49,7 +50,8 @@ export function BorrowForm({ people, funds, budgets }: { people: string[]; funds
     <form noValidate onSubmit={submit} className="grid grid-cols-2 gap-x-3 gap-y-4 rounded-panel bg-panel p-4">
       <fieldset className="col-span-2">
         <legend className="mb-2 text-[0.8125rem] font-medium text-muted-foreground">Which way</legend>
-        <div className="grid grid-cols-2 gap-1 rounded-button bg-background p-1">
+        <div className="relative grid grid-cols-2 gap-1 rounded-button bg-background p-1">
+          <SlidingPill count={2} index={form.direction === "out" ? 0 : 1} />
           {DIRECTIONS.map((d) => (
             <label key={d.value} className="relative">
               <input
@@ -60,7 +62,7 @@ export function BorrowForm({ people, funds, budgets }: { people: string[]; funds
                 onChange={() => set("direction", d.value)}
                 className="peer sr-only"
               />
-              <span className="flex min-h-11 cursor-pointer flex-col justify-center rounded-field px-3 py-1.5 text-[0.9375rem] text-muted-foreground peer-checked:bg-secondary peer-checked:text-foreground peer-focus-visible:outline-2 peer-focus-visible:outline-primary">
+              <span className="flex min-h-11 cursor-pointer flex-col justify-center rounded-field px-3 py-1.5 text-[0.9375rem] text-muted-foreground transition-colors duration-300 peer-checked:text-foreground peer-focus-visible:outline-2 peer-focus-visible:outline-primary">
                 <span className="font-medium">{d.label}</span>
                 <span className="text-xs">{d.hint}</span>
               </span>
@@ -126,7 +128,8 @@ export function BorrowForm({ people, funds, budgets }: { people: string[]; funds
         </select>
       </label>
       {alert && <div className="col-span-2">{alert}</div>}
-      <Button type="submit" size="lg" disabled={pending} className="col-span-2 text-[0.9375rem]">
+      <Button type="submit" size="lg" disabled={pending} className="col-span-2">
+        <CheckCircleIcon weight="fill" aria-hidden className="size-5" />
         Save
       </Button>
       <p className="col-span-2 text-xs text-muted-foreground">

@@ -52,7 +52,7 @@ export default async function PlanPage({ searchParams }: PageProps<"/plan">) {
       <Band>
         <h1 className="mt-3 text-[1.375rem] font-medium">Plan</h1>
         <CycleStepper cycles={cycles} cycle={cycle} path="/plan" date={date} />
-        <AddressWindow label="Projected remainder" className="mt-1">
+        <AddressWindow label="Projected remainder" className="mt-2">
           <p className="text-[0.8125rem] font-medium text-kraft-ink">Projected remainder</p>
           <Money
             value={projectedRemainder(plan)}

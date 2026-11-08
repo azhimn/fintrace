@@ -1,6 +1,6 @@
 "use client";
 
-import { CaretDownIcon, ShoppingBagIcon } from "@phosphor-icons/react";
+import { CaretDownIcon, CheckCircleIcon, PlusCircleIcon, ShoppingBagIcon } from "@phosphor-icons/react";
 import { useId, useRef, useState } from "react";
 import { deleteWish, saveWish, setAcquired } from "@/app/(app)/actions";
 import { useRecord } from "@/components/record/record-provider";
@@ -337,7 +337,8 @@ function WishForm({
       </p>
       {alert && <div className="col-span-2">{alert}</div>}
       <div className="col-span-2 flex gap-2">
-        <Button type="submit" size="lg" disabled={pending} className="flex-1 text-[0.9375rem]">
+        <Button type="submit" size="lg" disabled={pending} className="flex-1">
+          {editing ? <CheckCircleIcon weight="fill" aria-hidden className="size-5" /> : <PlusCircleIcon weight="fill" aria-hidden className="size-5" />}
           {editing ? "Save" : "Add"}
         </Button>
         {editing && (

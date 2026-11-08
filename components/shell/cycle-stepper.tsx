@@ -29,20 +29,22 @@ export function CycleStepper({ cycles, cycle, path, date }: { cycles: Cycle[]; c
           : left === 0
             ? "Last day"
             : `${left} ${left === 1 ? "day" : "days"} left`;
-  const step = "flex size-11 shrink-0 items-center justify-center rounded-button text-kraft-ink hover:bg-kraft-ink/10 hover:text-foreground";
+  const step = "-my-3 flex size-11 shrink-0 items-center justify-center rounded-button text-kraft-ink hover:bg-kraft-ink/10 hover:text-foreground";
   return (
-    <div className="mt-2 -ml-3 flex items-center gap-1">
+    // The line starts on the gutter like Overview's; the carets follow it, a missing one keeping its
+    // space. Negative margins keep their 44px targets from making the line taller.
+    <div className="mt-1.5 flex items-center gap-1">
+      <p className="mr-1 min-w-0 text-[0.8125rem]">
+        <span className="font-medium">{cycle.name}</span>
+        <span className="text-kraft-ink"> · {status}</span>
+      </p>
       {older ? (
         <Link href={`${path}?cycle=${older.id}`} aria-label={`Previous cycle, ${older.name}`} className={step}>
           <CaretLeftIcon weight="fill" className="size-4" />
         </Link>
       ) : (
-        <span className="size-11" />
+        <span className="-my-3 size-11" />
       )}
-      <p className="min-w-0 text-[0.8125rem]">
-        <span className="font-medium">{cycle.name}</span>
-        <span className="text-kraft-ink"> · {status}</span>
-      </p>
       {newer && (
         <Link href={`${path}?cycle=${newer.id}`} aria-label={`Next cycle, ${newer.name}`} className={step}>
           <CaretRightIcon weight="fill" className="size-4" />
