@@ -255,7 +255,7 @@ Soft pastel fills on cool white, a kraft envelope, and one saturated periwinkle 
 - **Hover Tint** (#e3e6f3): hover fill for quiet and outline controls, the row menu trigger, and editable desktop table rows.
 - **Divider** (#e0e2ea): the 1px rule between rows inside a panel. It is the only line in the system.
 - **Track** (#dcdee7): empty progress tracks, the donut ring, the dot for unassigned records, and the closed cycle badge.
-- **Scrollbar:** the page scrollbar is hidden so it never takes width, and every screen keeps the same width whether it scrolls or not. In its place a floating thumb (`components/shell/scroll-thumb.tsx`) of Track mixed 30% toward Kraft Ink, 6px wide and fully round, sits 2px from the right edge. It fades in while scrolling or when the pointer nears the edge, widens to 8px, can be dragged, and fades out a second after scrolling stops. Inner scrollers keep a thin native scrollbar in the same colour.
+- **Scrollbar:** the page scrollbar is hidden so it never takes width, and every screen keeps the same width whether it scrolls or not. In its place a floating thumb (`components/shell/scroll-thumb.tsx`) of Track mixed 30% toward Kraft Ink, 6px wide and fully round, sits 2px from the right edge. It fades in while scrolling or when the pointer nears the edge, widens to 8px, can be dragged, and fades out a second after scrolling stops. The Quick Record sheet uses the same floating thumb over its own scroller (`<ScrollThumb target={ref} />` inside a `relative` parent). Other inner scrollers keep a thin native scrollbar in the same colour.
 - **Field White** (#ffffff): input and select fills, the quick-entry cells, and the highlighted suggestion row or menu item.
 - **Muted Ink** (#66615b): row metadata, field labels, unselected chips and empty states (5.29:1 on panel).
 - **Quiet Control** (#85807a): icon-only secondary controls that sit inside a row or field: the Recent repeat button, the row menu "⋯" and the search magnifier. At 3.38:1 on panel it meets the 3:1 non-text floor. Use it for icons only, never for text, and turn it to Warm Ink on hover.
@@ -404,6 +404,9 @@ A warm white 16px-radius window inside the kraft band. It holds a 13px/500 Kraft
 - **Focus:** a soft 2px Pastel Periwinkle ring drawn with box-shadow just outside the field (`0 0 0 2px`), no outline. It stays quiet because the caret already marks a typing field; buttons and chips keep the Ink Periwinkle outline.
 - **Error:** a 2px Deep Red ring with a 14px Deep Red message below.
 - **Labels:** 13px/500 Muted Ink, 8px above the field.
+
+### Borrows People
+Each person is an accordion row in the People panel, closed by default: name over "N items", the unsigned net with "owes you" or "you owe" (Deep Red), and a Quiet Control caret that turns over. It grows open over 300ms (0fr↔1fr, inert while closed). Open, it lists the 5 newest rows and a quiet "Show N more" (then "Show fewer"). A person at zero shows Mark settled beside the header. Each row leads with a 28px round direction badge: apricot with ↗ for money out, mint with ↙ for money in (Phosphor fill, Warm Ink). Amounts stay unsigned and never red.
 
 ### Switch Row
 An on/off setting as a 44px row: the label in 15px Warm Ink on the left, a 48×28px switch on the right, and the whole row clickable. Off is a Track groove with a white thumb. On slides the thumb right over 300ms on `cubic-bezier(0.22, 1, 0.36, 1)`, fills the groove Kraft, the secondary colour. The thumb stays white on and off. Used for a Fund's "Count as usable". Archiving goes in the row menu instead.
