@@ -33,7 +33,7 @@ function SwipeRow({ row, onEdit, onDuplicate }: { row: Row; onEdit: () => void; 
   const swiped = useRef(false);
 
   return (
-    <li className="relative border-t border-divider first:border-t-0">
+    <li data-no-page-swipe className="relative border-t border-divider first:border-t-0">
       <span
         aria-hidden
         className="absolute inset-y-0 right-0 flex items-center gap-2 bg-secondary pr-4 pl-6 text-sm font-medium"

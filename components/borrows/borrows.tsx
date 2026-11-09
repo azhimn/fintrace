@@ -156,13 +156,13 @@ export function PersonGroup({ person, net, rows }: { person: string; net: number
   const shown = all ? rows : rows.slice(0, RECENT);
   return (
     <li className="border-t border-divider first:border-t-0">
-      <div className="flex items-center gap-2 pr-2">
+      <div className="flex items-center gap-2 pr-4">
         <button
           type="button"
           aria-expanded={open}
           aria-controls={id}
           onClick={() => setOpen((o) => !o)}
-          className="flex min-h-14 min-w-0 flex-1 items-center justify-between gap-3 rounded-panel py-2 pl-4 text-left"
+          className="-mr-4 flex min-h-14 min-w-0 flex-1 items-center justify-between gap-3 rounded-panel py-2 pr-4 pl-4 text-left"
         >
           <span className="min-w-0">
             <span className="block truncate text-[0.9375rem] font-medium">{person}</span>

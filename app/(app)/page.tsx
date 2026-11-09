@@ -97,7 +97,7 @@ export default async function OverviewPage() {
       <main className="mx-auto max-w-5xl px-5 lg:px-8">
         <RecordBar placement="page" />
 
-        <div className="grid gap-x-8 lg:grid-cols-2">
+        <div className="grid grid-cols-1 gap-x-8 lg:grid-cols-2">
           <div>
             <Section title="Funds">
               {own.length === 0 ? (

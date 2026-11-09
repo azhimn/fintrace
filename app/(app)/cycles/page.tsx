@@ -44,7 +44,7 @@ export default async function CyclesPage() {
 
       <main className="mx-auto max-w-5xl px-5 lg:px-8">
         <RecordBar placement="page" />
-        <div className="grid gap-x-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+        <div className="grid grid-cols-1 gap-x-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
           <Section title="All cycles">
             {cycles.length === 0 ? (
               <StartFirstCycle suggested={payDateOnOrBefore(date, payDay)} />

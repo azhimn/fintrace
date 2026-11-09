@@ -313,6 +313,8 @@ Spacing has fixed roles, so the same relationship always gets the same gap:
 - **22px:** above every section or group heading.
 - **32px:** between desktop columns.
 
+Page grids set `grid-cols-1` on phones, so one long name or figure can never stretch a column past the screen.
+
 The band runs full width with its content inside the container. The address window spans the container on every screen: on desktop the label and key figure sit on the left and the supporting line or pairs on the right, aligned to the bottom of the figure. On desktop Record floats bottom-right on every screen, and the page ends with 96px of room to scroll past it. On phones the full-width Record bar follows the flap on every app screen, and once it scrolls away it docks bottom-centre above the safe area. The page scrollbar floats over the content (see Scrollbar), so short and long screens are the same width. While the band animates, its box is painted kraft, so no page colour shows through.
 
 Every app screen opens with the same band, which starts with the section tabs. Secondary screens add their page title, then the cycle stepper where the screen is per cycle, then the address window. Below the flap, tabular content is a table on desktop and a list on phones, and the desktop Transactions table gets a quick-entry row above it.
@@ -356,7 +358,7 @@ There are no borders. The only line is the 1px Divider between rows inside a pan
 - **Section tabs:** all ten sections (Overview, Transactions, Plan, Budgets, Reconcile, Analytics, Cycles, Borrows, Wishlist, Settings) as 44px text tabs at the top of the band, 10px padding, Kraft Ink text with no fill. There is no wordmark in the band.
 - **Hover:** the text turns Warm Ink. No fill.
 - **Current:** Warm Ink text at 500 over a 2px fully round Warm Ink rule, inset to the label width and 6px above the tab's bottom, marked with `aria-current="page"`.
-- **Phones:** 14px, bleeding to the band edges and scrolling sideways with no scrollbar. The current tab is scrolled into view.
+- **Phones:** 14px, bleeding to the band edges and scrolling sideways with no scrollbar. The current tab is scrolled into view. A quick sideways swipe anywhere on the page (at least 70px, mostly horizontal, under 600ms) moves to the next tab (swipe left) or the previous one (swipe right), wrapping from Settings to Overview and back. It is ignored while a sheet is open and when the swipe starts on something that already scrolls or swipes sideways: the tab strip, chip rows, wide tables, form fields, and Recent rows (`data-no-page-swipe`).
 - **Desktop:** 15px, 2px apart, all on one row.
 - **Switching screens:** the screen crossfades over 200ms, and the band, its flap, the address window and the content below (`main`) resize and move as boxes over 300ms on `cubic-bezier(0.22, 1, 0.36, 1)`, with their snapshots clipped rather than stretched. The current tab's rule slides to the new tab on the same curve. All of it uses React `<ViewTransition>` (plus a CSS `view-transition-name` on `main`). The same happens when the loading skeleton gives way to the screen. Same-screen refreshes don't animate, and reduced motion turns it all off.
 - **Loading:** the skeleton sits inside the real band with the tabs, and its window is built from placeholder lines at the real type sizes, so it is as tall as a loaded one.
@@ -404,6 +406,7 @@ A warm white 16px-radius window inside the kraft band. It holds a 13px/500 Kraft
 - **Focus:** a soft 2px Pastel Periwinkle ring drawn with box-shadow just outside the field (`0 0 0 2px`), no outline. It stays quiet because the caret already marks a typing field; buttons and chips keep the Ink Periwinkle outline.
 - **Error:** a 2px Deep Red ring with a 14px Deep Red message below.
 - **Labels:** 13px/500 Muted Ink, 8px above the field.
+- **Selects:** the native arrow is replaced by a 16px Phosphor fill caret in Quiet Control, inset 12px from the right like the text on the left (36px right padding).
 
 ### Borrows People
 Each person is an accordion row in the People panel, closed by default: name over "N items", the unsigned net with "owes you" or "you owe" (Deep Red), and a Quiet Control caret that turns over. It grows open over 300ms (0fr↔1fr, inert while closed). Open, it lists the 5 newest rows and a quiet "Show N more" (then "Show fewer"). A person at zero shows Mark settled beside the header. Each row leads with a 28px round direction badge: apricot with ↗ for money out, mint with ↙ for money in (Phosphor fill, Warm Ink). Amounts stay unsigned and never red.

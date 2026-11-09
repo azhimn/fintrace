@@ -127,7 +127,7 @@ export default async function AnalyticsPage({ searchParams }: PageProps<"/analyt
           </Section>
         ) : (
           <>
-            <div className="grid gap-x-8 lg:grid-cols-2">
+            <div className="grid grid-cols-1 gap-x-8 lg:grid-cols-2">
               <Section title="Spending by category">
                 {expenses.length ? (
                   <div className="rounded-panel bg-panel px-2 py-3">
@@ -188,7 +188,7 @@ export default async function AnalyticsPage({ searchParams }: PageProps<"/analyt
               )}
             </Section>
 
-            <div className="grid gap-x-8 lg:grid-cols-2">
+            <div className="grid grid-cols-1 gap-x-8 lg:grid-cols-2">
               <Section
                 title="Expenses by subcategory"
               >

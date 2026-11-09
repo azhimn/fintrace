@@ -55,7 +55,7 @@ export default async function BorrowsPage() {
 
       <main className="mx-auto max-w-5xl px-5 lg:px-8">
         <RecordBar placement="page" />
-        <div className="grid gap-x-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+        <div className="grid grid-cols-1 gap-x-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
           <div>
             <Section title="People">
               {people.length === 0 ? (

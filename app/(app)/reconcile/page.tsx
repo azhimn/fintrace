@@ -88,7 +88,7 @@ export default async function ReconcilePage({ searchParams }: PageProps<"/reconc
           </Section>
         ) : (
           <>
-            <div className="grid gap-x-8 lg:grid-cols-2">
+            <div className="grid grid-cols-1 gap-x-8 lg:grid-cols-2">
               <Section title="Usable Funds">{usable.length ? rows(usable) : <Empty>No Fund counts as usable. Change that in Settings.</Empty>}</Section>
               {others.length > 0 && <Section title="Other Funds">{rows(others)}</Section>}
             </div>
