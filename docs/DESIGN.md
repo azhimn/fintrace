@@ -408,6 +408,12 @@ A warm white 16px-radius window inside the kraft band. It holds a 13px/500 Kraft
 - **Labels:** 13px/500 Muted Ink, 8px above the field.
 - **Selects:** the native arrow is replaced by a 16px Phosphor fill caret in Quiet Control, inset 12px from the right like the text on the left (36px right padding).
 
+### Record Type Badge
+Transaction rows (the phone list and the desktop Item column) lead with a 28px round badge naming the record type with a Phosphor fill icon in Warm Ink: Expense apricot ↗, Income mint ↙, Transfer sky ⇄, Saving lilac piggy bank. The type is also in the badge's screen-reader text. The Budget keeps its 10px hue dot in the desktop Budget column.
+
+### Accordions
+Every expanding section animates over 300ms on `cubic-bezier(0.22, 1, 0.36, 1)` with its fill caret turning in step: native `<details>` use `.disclosure` (More filters, Settings categories, Reconcile count history, Wishlist More details, Borrows Settled), and stateful ones use the 0fr↔1fr grid with `inert` while closed (Quick Record More, the cash calculator, Borrows people). Reduced motion opens them instantly.
+
 ### Borrows People
 Each person is an accordion row in the People panel, closed by default: name over "N items", the unsigned net with "owes you" or "you owe" (Deep Red), and a Quiet Control caret that turns over. It grows open over 300ms (0fr↔1fr, inert while closed). Open, it lists the 5 newest rows and a quiet "Show N more" (then "Show fewer"). A person at zero shows Mark settled beside the header. Each row leads with a 28px round direction badge: apricot with ↗ for money out, mint with ↙ for money in (Phosphor fill, Warm Ink). Amounts stay unsigned and never red.
 

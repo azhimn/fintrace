@@ -297,7 +297,7 @@ function WishForm({
         Why
         <input value={form.reason} onChange={(e) => set("reason", e.target.value)} autoComplete="off" placeholder="Optional" className={fieldClass} />
       </label>
-      <details open={editing || undefined} className="group col-span-2">
+      <details open={editing || undefined} className="disclosure group col-span-2">
         <summary className="-ml-3 flex h-11 w-fit cursor-pointer list-none items-center gap-1.5 rounded-button px-3 text-[0.9375rem] text-muted-foreground hover:bg-accent hover:text-foreground [&::-webkit-details-marker]:hidden">
           More details
           <CaretDownIcon weight="fill" aria-hidden className="size-4 transition-transform group-open:rotate-180" />

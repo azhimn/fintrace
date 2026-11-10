@@ -147,19 +147,32 @@ export function CountRow({ cycleId, account, computed, difference, history, open
               className="-ml-3 flex h-11 items-center gap-1.5 self-start rounded-button px-3 text-[0.9375rem] text-muted-foreground hover:bg-accent hover:text-foreground"
             >
               Count notes and coins
-              <CaretDownIcon weight="fill" aria-hidden className={cn("size-4 transition-transform", calculator && "rotate-180")} />
+              <CaretDownIcon weight="fill" aria-hidden className={cn("size-4 transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]", calculator && "rotate-180")} />
             </button>
           )}
-          {calculator && <CashCalculator onTotal={(total) => setText(formatAmountInput(String(total)))} />}
+          {account.kind === "cash" && (
+            // Always rendered so it can grow and shrink; inert while closed so nothing in it takes focus.
+            <div
+              inert={!calculator}
+              className={cn(
+                "grid transition-[grid-template-rows] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none",
+                calculator ? "grid-rows-[1fr]" : "grid-rows-[0fr]",
+              )}
+            >
+              <div className="min-h-0 overflow-hidden">
+                <CashCalculator onTotal={(total) => setText(formatAmountInput(String(total)))} />
+              </div>
+            </div>
+          )}
           {alert}
         </form>
       )}
 
       {history.length > 1 && (
-        <details className="group mt-1">
+        <details className="disclosure group mt-1">
           <summary className="-ml-3 flex h-11 w-fit cursor-pointer list-none items-center gap-1.5 rounded-button px-3 text-[0.9375rem] text-muted-foreground hover:bg-accent hover:text-foreground [&::-webkit-details-marker]:hidden">
             {history.length} counts this cycle
-            <CaretDownIcon weight="fill" aria-hidden className="size-4 transition-transform group-open:rotate-180" />
+            <CaretDownIcon weight="fill" aria-hidden className="size-4 transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] group-open:rotate-180" />
           </summary>
           <ul className="mt-1 mb-1 overflow-hidden rounded-field bg-field">
             {history.map((c, i) => (

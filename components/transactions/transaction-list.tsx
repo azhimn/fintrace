@@ -1,6 +1,6 @@
 "use client";
 
-import { DotsThreeIcon } from "@phosphor-icons/react";
+import { ArrowDownLeftIcon, ArrowsLeftRightIcon, ArrowUpRightIcon, DotsThreeIcon, PiggyBankIcon } from "@phosphor-icons/react";
 import { Menu } from "@base-ui/react/menu";
 import { deleteRecord, saveRecord } from "@/app/(app)/actions";
 import { useRecord } from "@/components/record/record-provider";
@@ -8,7 +8,7 @@ import { toasts } from "@/components/record/toast";
 import { HueDot } from "@/components/shell/bits";
 import { today } from "@/lib/calendar";
 import { formatMoney } from "@/lib/format";
-import type { RecordInput } from "@/lib/record";
+import { TYPE_LABELS, type RecordInput, type RecordType } from "@/lib/record";
 import { cn } from "@/lib/utils";
 
 export type TransactionRow = {
@@ -22,6 +22,24 @@ export type TransactionRow = {
   category: string | null;
   detail: string;
 };
+
+/** Each record type's badge: money out apricot ↗, in mint ↙, moved between Funds sky ⇄, saved lilac. */
+const TYPE_BADGE = {
+  expense: { Icon: ArrowUpRightIcon, hue: "var(--hue-apricot)" },
+  income: { Icon: ArrowDownLeftIcon, hue: "var(--hue-mint)" },
+  transfer: { Icon: ArrowsLeftRightIcon, hue: "var(--hue-sky)" },
+  saving: { Icon: PiggyBankIcon, hue: "var(--hue-lilac)" },
+} satisfies Record<RecordType, unknown>;
+
+function TypeBadge({ type }: { type: RecordType }) {
+  const { Icon, hue } = TYPE_BADGE[type];
+  return (
+    <span className="flex size-7 shrink-0 items-center justify-center rounded-full text-foreground" style={{ background: hue }}>
+      <Icon weight="fill" aria-hidden className="size-4" />
+      <span className="sr-only">{TYPE_LABELS[type]}</span>
+    </span>
+  );
+}
 
 /** The Transactions table on a desktop and a list on a phone. Tap a row to edit it; ⋯ holds the rest. */
 export function TransactionList({ rows }: { rows: TransactionRow[] }) {
@@ -67,8 +85,8 @@ export function TransactionList({ rows }: { rows: TransactionRow[] }) {
               onClick={() => actions.edit(row)}
               className="flex min-w-0 flex-1 items-center justify-between gap-3 rounded-panel py-3 pl-4 text-left disabled:cursor-default"
             >
-              <span className="flex min-w-0 items-center gap-2.5">
-                <HueDot hue={row.budget?.hue ?? "var(--track)"} />
+              <span className="flex min-w-0 items-center gap-3">
+                <TypeBadge type={row.input.type} />
                 <span className="min-w-0">
                   <span className="block truncate text-[0.9375rem]">{row.input.item}</span>
                   <span className="mt-px block truncate text-xs text-muted-foreground">
@@ -83,7 +101,7 @@ export function TransactionList({ rows }: { rows: TransactionRow[] }) {
         ))}
       </ul>
 
-      <div className="hidden overflow-hidden rounded-panel bg-panel lg:block">
+      <div className="hidden overflow-x-auto rounded-panel bg-panel lg:block">
         <table className="w-full text-left text-[0.9375rem]">
           <thead className="text-[0.8125rem] text-muted-foreground">
             <tr>
@@ -108,15 +126,20 @@ export function TransactionList({ rows }: { rows: TransactionRow[] }) {
                 className={cn("border-t border-divider align-middle", editable(row) && "cursor-pointer hover:bg-accent")}
               >
                 <td className="py-2.5 pl-4 whitespace-nowrap text-muted-foreground">{row.date}</td>
-                <td className="max-w-64 px-3 py-2.5">
-                  {editable(row) ? (
-                    <button type="button" onClick={() => actions.edit(row)} className="block max-w-full truncate rounded-sm text-left">
-                      {row.input.item}
-                    </button>
-                  ) : (
-                    <span className="block truncate">{row.input.item}</span>
-                  )}
-                  {row.detail && <span className="block truncate text-xs text-muted-foreground">{row.detail}</span>}
+                <td className="max-w-72 px-3 py-2.5">
+                  <span className="flex items-center gap-3">
+                    <TypeBadge type={row.input.type} />
+                    <span className="min-w-0">
+                      {editable(row) ? (
+                        <button type="button" onClick={() => actions.edit(row)} className="block max-w-full truncate rounded-sm text-left">
+                          {row.input.item}
+                        </button>
+                      ) : (
+                        <span className="block truncate">{row.input.item}</span>
+                      )}
+                      {row.detail && <span className="block truncate text-xs text-muted-foreground">{row.detail}</span>}
+                    </span>
+                  </span>
                 </td>
                 <td className="px-3 py-2.5 whitespace-nowrap">{row.funds}</td>
                 <td className="px-3 py-2.5">

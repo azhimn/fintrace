@@ -74,10 +74,10 @@ export default async function BorrowsPage() {
               )}
             </Section>
             {settled.length > 0 && (
-              <details className="group mt-[22px]">
+              <details className="disclosure group mt-[22px]">
                 <summary className="-ml-3 flex h-11 w-fit cursor-pointer list-none items-center gap-1.5 rounded-button px-3 text-sm font-semibold hover:bg-accent [&::-webkit-details-marker]:hidden">
                   Settled · {settled.length}
-                  <CaretDownIcon weight="fill" aria-hidden className="size-4 transition-transform group-open:rotate-180" />
+                  <CaretDownIcon weight="fill" aria-hidden className="size-4 transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] group-open:rotate-180" />
                 </summary>
                 <ul className="mt-2 rounded-panel bg-panel py-1">
                   {settled.map((b) => (

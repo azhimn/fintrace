@@ -302,7 +302,7 @@ function CategoryRow({ category, budgets, up, down }: { category: Category; budg
   const unset = category.kind === "expense" && category.subs.filter((s) => !s.defaultEnvelopeId).length;
   return (
     <li className="border-t border-divider first:border-t-0">
-      <details className="group">
+      <details className="disclosure group">
         <summary className="flex min-h-14 cursor-pointer list-none items-center justify-between gap-3 rounded-panel px-4 py-2 hover:bg-accent [&::-webkit-details-marker]:hidden">
           <span className="min-w-0">
             <span className={cn("block truncate text-[0.9375rem]", category.archived && "text-muted-foreground")}>{category.name}</span>
@@ -316,7 +316,7 @@ function CategoryRow({ category, budgets, up, down }: { category: Category; budg
                 .join(" · ")}
             </span>
           </span>
-          <CaretDownIcon weight="fill" aria-hidden className="size-4 shrink-0 text-quiet-control transition-transform group-open:rotate-180" />
+          <CaretDownIcon weight="fill" aria-hidden className="size-4 shrink-0 text-quiet-control transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] group-open:rotate-180" />
         </summary>
         <div className="px-4 pb-3">
           <span className="text-xs text-muted-foreground">Name</span>
