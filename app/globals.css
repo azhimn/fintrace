@@ -2,7 +2,17 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
-@custom-variant dark (&:is(.dark *));
+/* Dark when chosen in Settings, or when the system is dark and Light was not chosen. */
+@custom-variant dark {
+  &:where([data-theme="dark"], [data-theme="dark"] *) {
+    @slot;
+  }
+  @media (prefers-color-scheme: dark) {
+    &:where(:root:not([data-theme="light"]), :root:not([data-theme="light"]) *) {
+      @slot;
+    }
+  }
+}
 
 @theme inline {
   --color-background: var(--background);
@@ -51,51 +61,58 @@
 
 /* Amplop Gaji: soft pastels on cool white, kraft for the pay envelope, periwinkle for action. */
 :root {
-  color-scheme: light;
-  --background: #f6f7fb;
-  --foreground: #3d3832;
+  /* Every colour is light-dark(light, dark); data-theme from Settings pins one, otherwise the system decides. */
+  color-scheme: light dark;
+  --background: light-dark(#f6f7fb, #16171c);
+  --foreground: light-dark(#3d3832, #ece6de);
   --card: var(--background);
   --card-foreground: var(--foreground);
-  --popover: #ffffff;
+  --popover: light-dark(#ffffff, #25262d);
   --popover-foreground: var(--foreground);
-  --primary: #4a5bc4;
-  --primary-foreground: #ffffff;
+  --primary: light-dark(#4a5bc4, #a8b4f5);
+  --primary-foreground: light-dark(#ffffff, #16171c);
   /* Pastel periwinkle: selected and secondary states, always with ink text. */
-  --secondary: #bcc8f6;
+  --secondary: light-dark(#bcc8f6, #3b4682);
   --secondary-foreground: var(--foreground);
-  --muted: #edeef4;
-  --muted-foreground: #66615b;
-  --accent: #e3e6f3;
+  --muted: light-dark(#edeef4, #23242b);
+  --muted-foreground: light-dark(#66615b, #a39d95);
+  --accent: light-dark(#e3e6f3, #2d2f39);
   --accent-foreground: var(--foreground);
-  --destructive: #b3261e;
-  --destructive-soft: #f2b8b5;
-  --kraft: #ead3b5;
-  --kraft-ink: #5f503f;
-  --window: #fffdfb;
-  --panel: #edeef4;
-  --divider: #e0e2ea;
-  --track: #dcdee7;
-  --field: #ffffff;
+  --destructive: light-dark(#b3261e, #ffb4ab);
+  --destructive-soft: light-dark(#f2b8b5, #5a2522);
+  --kraft: light-dark(#ead3b5, #4a3d2f);
+  --kraft-ink: light-dark(#5f503f, #e6d0b0);
+  --window: light-dark(#fffdfb, #1f1c19);
+  --panel: light-dark(#edeef4, #212229);
+  --divider: light-dark(#e0e2ea, #30323b);
+  --track: light-dark(#dcdee7, #383a45);
+  --field: light-dark(#ffffff, #1b1c21);
   /* Icon-only controls inside rows (3.38:1 on panel): icons only, never text. */
-  --quiet-control: #85807a;
+  --quiet-control: light-dark(#85807a, #8f8a84);
   /* The address-window amount placeholder; passes only at its 40px size. */
-  --amount-placeholder: #8a7b6a;
+  --amount-placeholder: light-dark(#8a7b6a, #9a8a77);
   /* Needs vs Wants chart fills. */
-  --wants: #8e9be0;
-  --unclassified: #c8c2bb;
+  --wants: light-dark(#8e9be0, #6f7cc4);
+  --unclassified: light-dark(#c8c2bb, #5a554f);
   /* Chart lines: a deeper periwinkle that keeps 3:1 on panel. Never text, never an action. */
-  --chart-line: #6c7bd2;
+  --chart-line: light-dark(#6c7bd2, #8e9be0);
   --border: var(--divider);
   --input: var(--divider);
   --ring: var(--primary);
   /* One fixed pastel per Budget; Unallocated stays kraft because it is still in the pay envelope. */
-  --hue-mint: #9ed4b6;
-  --hue-apricot: #f2c08e;
-  --hue-lilac: #cdb8ee;
-  --hue-sky: #a9d3f0;
-  --hue-rose: #f2b8c6;
-  --hue-butter: #ecd88a;
+  --hue-mint: light-dark(#9ed4b6, #4f8a6c);
+  --hue-apricot: light-dark(#f2c08e, #a8774a);
+  --hue-lilac: light-dark(#cdb8ee, #7f6aa8);
+  --hue-sky: light-dark(#a9d3f0, #4f86ad);
+  --hue-rose: light-dark(#f2b8c6, #a85f72);
+  --hue-butter: light-dark(#ecd88a, #9c8a3e);
   --radius: 10px;
+}
+[data-theme="light"] {
+  color-scheme: light;
+}
+[data-theme="dark"] {
+  color-scheme: dark;
 }
 
 @layer base {
@@ -132,9 +149,9 @@
      both ends sit at the same depth at every width. */
   .flap {
     height: 10px;
-    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='10'%3E%3Cpath d='M0 0H24V3C18 3 18 9 12 9S6 3 0 3Z' fill='%23EAD3B5'/%3E%3C/svg%3E")
-      0 0 / 24px 10px;
-    background-repeat: round no-repeat;
+    background: var(--kraft);
+    mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='10'%3E%3Cpath d='M0 0H24V3C18 3 18 9 12 9S6 3 0 3Z'/%3E%3C/svg%3E")
+      0 0 / 24px 10px round no-repeat;
   }
   /* A <details> that slides open. Browsers without ::details-content or interpolate-size just open
      it instantly. Only the block axis clips, and the content keeps 4px top and bottom for focus rings. */

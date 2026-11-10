@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { RecordBar } from "@/components/overview/record-bar";
 import { BudgetSettings, CategorySettings, FundSettings } from "@/components/settings/lists";
 import { PayDayWindow, ShortcutEditor } from "@/components/settings/preferences";
+import { ThemeChoice } from "@/components/theme";
 import { AddressWindow, Band } from "@/components/shell/band";
 import { Section } from "@/components/shell/bits";
 import { envelopeHue } from "@/lib/hue";
@@ -48,6 +49,9 @@ export default async function SettingsPage() {
               <p className="mt-2 px-1 text-sm text-muted-foreground">
                 Usable funds add up the Funds marked usable, minus what each keeps as a minimum.
               </p>
+            </Section>
+            <Section title="Theme">
+              <ThemeChoice />
             </Section>
             <Section title="Keyboard shortcuts">
               <ShortcutEditor saved={{ ...DEFAULT_SHORTCUTS, ...settings?.shortcuts }} />
