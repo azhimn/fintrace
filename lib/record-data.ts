@@ -26,7 +26,7 @@ export async function recordData(dal: Dal) {
         kind: c.kind,
         subs: subcategories
           .filter((s) => s.categoryId === c.id)
-          .map((s) => ({ id: s.id, name: s.name, defaultClassification: s.defaultClassification })),
+          .map((s) => ({ id: s.id, name: s.name, defaultClassification: s.defaultClassification, defaultEnvelopeId: s.defaultEnvelopeId })),
       })),
     shortcuts: { ...DEFAULT_SHORTCUTS, ...settings?.shortcuts },
   };

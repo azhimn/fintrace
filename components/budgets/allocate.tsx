@@ -10,7 +10,8 @@ import { formatAmountInput, formatMoney, parseAmount } from "@/lib/format";
 
 type Option = { id: string; name: string };
 type Props = {
-  budgets: (Option & { isSystem: boolean })[];
+  /** `suggest`: the amount to fill when this Budget is the target (its plan, while nothing is allocated). */
+  budgets: (Option & { isSystem: boolean; suggest?: number })[];
   funds: Option[];
   /** Balance per `fund|budget`, to show what each Fund holds and to pick the default Fund. */
   pairs: Record<string, number>;
@@ -43,11 +44,17 @@ export function AllocateProvider({ budgets, funds, pairs, date, children }: Prop
   const richest = (budgetId: string) =>
     [...funds].sort((a, b) => held(b.id, budgetId) - held(a.id, budgetId))[0]?.id ?? "";
 
+  const suggested = (budgetId: string) => {
+    const value = budgets.find((b) => b.id === budgetId)?.suggest;
+    return value ? formatAmountInput(String(value)) : "";
+  };
+
   function start(target?: string) {
+    const to = target && target !== unallocated ? target : "";
     setFrom(unallocated);
-    setTo(target && target !== unallocated ? target : "");
+    setTo(to);
     setFund(richest(unallocated));
-    setAmount("");
+    setAmount(suggested(to));
     setError(null);
     setOpen(true);
   }
@@ -153,7 +160,15 @@ export function AllocateProvider({ budgets, funds, pairs, date, children }: Prop
                   </label>
                   <label className={label}>
                     To Budget
-                    <select value={to} onChange={(e) => setTo(e.target.value)} className={field}>
+                    <select
+                      value={to}
+                      onChange={(e) => {
+                        // Swap the suggestion for the new Budget's, but never overwrite a typed amount.
+                        if (!amount || amount === suggested(to)) setAmount(suggested(e.target.value));
+                        setTo(e.target.value);
+                      }}
+                      className={field}
+                    >
                       <option value="" disabled>
                         Pick one
                       </option>

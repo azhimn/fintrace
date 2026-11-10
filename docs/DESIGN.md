@@ -372,7 +372,7 @@ This is the signature action. On phones it is full width, 60px tall, Warm Ink wi
 ### Chips and Segmented Control
 - **Fund chips:** 44px, Panel Tint, Muted Ink at rest, in a row that scrolls sideways and bleeds to the gutter on phones, and wraps inside the dialog on desktop. When checked they turn Pastel Periwinkle with ink text at 500.
 - **Type tabs:** a four-up segmented control. The track is Panel Tint with 4px padding at 14px radius, and the chosen segment is the sliding Kraft pill at 10px radius (see Sliding Selection).
-- **Amount shortcuts (rb, jt):** 44px Kraft at 50% with Kraft Ink text, turning full Kraft on hover.
+- **Amount shortcuts (00, 000, rb, jt):** 44px Kraft at 50% with Kraft Ink text, turning full Kraft on hover. 00 and 000 append zeros to a plain number (25 → 25.000) and do nothing to shorthand like 1,5jt.
 
 ### Panels and Lists
 - **Corner Style:** 16px.

@@ -213,6 +213,17 @@ export function RecordForm({ data, initial, plan, mode = "add", onDone, onClose,
   }
 
   const subcategory = data.categories.flatMap((c) => c.subs).find((s) => s.id === state.subcategoryId);
+
+  /** Sets the category and fills its default Budget (Settings), unless a Budget was picked by hand. */
+  function pickCategory(id: string) {
+    const defaultOf = (subId: string) => data.categories.flatMap((c) => c.subs).find((x) => x.id === subId)?.defaultEnvelopeId ?? "";
+    setState((s) => {
+      const key = s.type === "income" ? "destEnvelopeId" : "sourceEnvelopeId";
+      const auto = s.type !== "transfer" && (!s[key] || s[key] === defaultOf(s.subcategoryId));
+      return { ...s, subcategoryId: id, ...(auto && { [key]: defaultOf(id) }) };
+    });
+    if (errors.subcategoryId) setErrors((e) => ({ ...e, subcategoryId: "" }));
+  }
   const kind = CATEGORY_KIND[state.type];
   const categories = kind ? data.categories.filter((c) => c.kind === kind) : [];
   const amount = parseAmount(state.amount);
@@ -375,19 +386,22 @@ export function RecordForm({ data, initial, plan, mode = "add", onDone, onClose,
               <label htmlFor={fid("item")} className="mt-3 mb-2 block text-[0.8125rem] font-medium text-kraft-ink">
                 Item
               </label>
-              <ItemCombobox
-                id={fid("item")}
-                inputRef={itemRef}
-                value={state.item}
-                onChange={(v) => {
-                  set("item", v);
-                  if (state.planItemId) set("planItemId", null);
-                }}
-                onPick={pick}
-                placeholder={plan ? "What are you planning for?" : undefined}
-                invalid={!!errors.item}
-                describedBy={described("item")}
-              />
+              {/* Text fields keep their touches, so tapping moves the caret instead of starting a swipe-to-close. */}
+              <div data-base-ui-swipe-ignore>
+                <ItemCombobox
+                  id={fid("item")}
+                  inputRef={itemRef}
+                  value={state.item}
+                  onChange={(v) => {
+                    set("item", v);
+                    if (state.planItemId) set("planItemId", null);
+                  }}
+                  onPick={pick}
+                  placeholder={plan ? "What are you planning for?" : undefined}
+                  invalid={!!errors.item}
+                  describedBy={described("item")}
+                />
+              </div>
               {err("item")}
 
               {/* Grows open once something is typed, so the header expands rather than jumps. */}
@@ -399,7 +413,7 @@ export function RecordForm({ data, initial, plan, mode = "add", onDone, onClose,
                 inert={!started}
               >
                 <div className="min-h-0 overflow-hidden">
-                  <div className="mt-4 rounded-panel bg-window px-4 pt-3 pb-3">
+                  <div data-base-ui-swipe-ignore className="mt-4 rounded-panel bg-window px-4 pt-3 pb-3">
                     <div className="flex items-baseline justify-between gap-3">
                       <label htmlFor={fid("amount")} className="text-[0.8125rem] font-medium text-kraft-ink">
                         Amount
@@ -427,6 +441,21 @@ export function RecordForm({ data, initial, plan, mode = "add", onDone, onClose,
                       />
                     </div>
                     <div className="mt-1 flex gap-2">
+                      {["00", "000"].map((zeros) => (
+                        <button
+                          key={zeros}
+                          type="button"
+                          aria-label={`Add ${zeros.length} zeros`}
+                          onClick={() => {
+                            // Only plain digits take zeros; 1,5jt + 00 means nothing.
+                            if (/^[\d.]+$/.test(state.amount)) set("amount", formatAmountInput(state.amount + zeros));
+                            amountRef.current?.focus();
+                          }}
+                          className="h-11 min-w-14 rounded-button bg-kraft/50 px-3 text-[0.9375rem] font-medium text-kraft-ink hover:bg-kraft"
+                        >
+                          {zeros}
+                        </button>
+                      ))}
                       {[
                         ["rb", "thousand"],
                         ["jt", "million"],
@@ -535,7 +564,7 @@ export function RecordForm({ data, initial, plan, mode = "add", onDone, onClose,
                     inert={!more}
                   >
                     <div className="min-h-0 overflow-hidden">
-                      <div id={fid("more")} className="grid grid-cols-2 gap-x-3 gap-y-4 px-4 pt-1 pb-4">
+                      <div id={fid("more")} data-base-ui-swipe-ignore className="grid grid-cols-2 gap-x-3 gap-y-4 px-4 pt-1 pb-4">
                         <Field label={plan ? "Date (optional)" : "Date"} htmlFor={fid("date")} error={err("date")} wide={!plan}>
                           <DateField
                             id={fid("date")}
@@ -587,7 +616,7 @@ export function RecordForm({ data, initial, plan, mode = "add", onDone, onClose,
                             <select
                               id={fid("sub")}
                               value={state.subcategoryId}
-                              onChange={(e) => set("subcategoryId", e.target.value)}
+                              onChange={(e) => pickCategory(e.target.value)}
                               className={fieldClass}
                             >
                               <option value="">Uncategorised</option>
@@ -905,6 +934,15 @@ function QuickPicks({
  * A date shown as 'Sat, Nov 7' so it can't be misread as day/month, with the native picker on top
  * (invisible) so tapping it still opens the system date picker.
  */
+/** Opens a date input's picker; older browsers without showPicker fall back to focusing it. */
+function openPicker(input: HTMLInputElement | null) {
+  try {
+    input?.showPicker();
+  } catch {
+    input?.focus();
+  }
+}
+
 export function DateField({
   id,
   value,
@@ -921,7 +959,14 @@ export function DateField({
 }) {
   return (
     <div className="flex gap-1">
-      <div className="relative flex h-11 min-w-0 flex-1 items-center rounded-field bg-field px-3 focus-within:shadow-[0_0_0_2px_var(--secondary)]">
+      {/* The whole box opens the picker: mobile Safari doesn't stretch a date input to fill it. */}
+      <div
+        onClick={(e) => {
+          const input = e.currentTarget.querySelector("input");
+          if (e.target !== input) openPicker(input);
+        }}
+        className="relative flex h-11 min-w-0 flex-1 cursor-pointer items-center rounded-field bg-field px-3 focus-within:shadow-[0_0_0_2px_var(--secondary)]"
+      >
         <span aria-hidden className={cn(!value && "text-muted-foreground")}>{value ? formatDate(value) : onClear ? "No date" : "Pick a date"}</span>
         <input
           id={id}
@@ -930,8 +975,8 @@ export function DateField({
           max={max}
           required={!onClear}
           onChange={(e) => e.target.value && onChange(e.target.value)}
-          onClick={(e) => e.currentTarget.showPicker?.()}
-          className="absolute inset-0 cursor-pointer opacity-0"
+          onClick={(e) => openPicker(e.currentTarget)}
+          className="absolute inset-0 block h-full w-full cursor-pointer appearance-none opacity-0"
         />
       </div>
       {onClear && value && (

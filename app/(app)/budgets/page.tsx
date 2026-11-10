@@ -200,7 +200,10 @@ export default async function BudgetsPage({ searchParams }: PageProps<"/budgets"
   const pairs = Object.fromEntries(pairBalances(accounts, txns));
   return (
     <AllocateProvider
-      budgets={envelopes.map((e) => ({ id: e.id, name: e.name, isSystem: e.isSystem }))}
+      budgets={envelopes.map((e) => {
+        const b = balances.get(e.id);
+        return { id: e.id, name: e.name, isSystem: e.isSystem, suggest: b && !b.allocated ? b.planned : undefined };
+      })}
       funds={accounts.filter((a) => a.kind !== "external" && !a.archived)}
       pairs={pairs}
       date={date}
