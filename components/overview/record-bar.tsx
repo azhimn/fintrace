@@ -4,7 +4,6 @@ import { PlusCircleIcon } from "@phosphor-icons/react";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { useRecord } from "@/components/record/record-provider";
-import { Tip } from "@/components/ui/tip";
 import { cn } from "@/lib/utils";
 
 /**
@@ -30,15 +29,14 @@ export function RecordBar({ placement }: { placement: "float" | "page" }) {
     // /record is Quick Record itself.
     if (path === "/record") return null;
     return (
-      <Tip label="Record">
-        <button
-          type="button"
-          onClick={() => open()}
-          className="fixed right-8 bottom-8 z-40 hidden size-14 items-center justify-center rounded-button bg-foreground text-window shadow-[0_8px_20px_-6px_rgb(61_56_50/0.35)] hover:bg-[color-mix(in_oklch,var(--foreground),var(--kraft-ink)_40%)] active:translate-y-px lg:flex"
-        >
-          {icon}
-        </button>
-      </Tip>
+      <button
+        type="button"
+        onClick={() => open()}
+        className="fixed right-8 bottom-8 z-40 hidden h-14 items-center justify-center rounded-button px-4 bg-foreground text-window shadow-[0_8px_20px_-6px_rgb(61_56_50/0.35)] hover:bg-[color-mix(in_oklch,var(--foreground),var(--kraft-ink)_40%)] active:translate-y-px lg:flex"
+      >
+        {icon}
+        <span className="reveal-label">Record</span>
+      </button>
     );
   }
 

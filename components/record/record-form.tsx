@@ -6,7 +6,6 @@ import { deletePlanItem, deleteRecord, savePlanItem, saveRecord, startCycleAndSa
 import { SlidingPill } from "@/components/shell/action";
 import { ScrollThumb } from "@/components/shell/scroll-thumb";
 import { Button } from "@/components/ui/button";
-import { Tip } from "@/components/ui/tip";
 import { today } from "@/lib/calendar";
 import { lineTotal } from "@/lib/finance";
 import { formatAmountInput, formatDate, formatMoney, formatQuantity, parseAmount } from "@/lib/format";
@@ -372,15 +371,15 @@ export function RecordForm({ data, initial, plan, mode = "add", onDone, onClose,
             <div className="bg-kraft px-5 pt-4 pb-5">
               <div className="flex items-center justify-between">
                 {title}
-                <Tip label="Close">
-                  <button
-                    type="button"
-                    onClick={onClose}
-                    className="-mr-2.5 flex size-11 items-center justify-center rounded-button text-kraft-ink hover:bg-kraft-ink/10 hover:text-foreground"
-                  >
-                    <XIcon aria-hidden className="size-5" />
-                  </button>
-                </Tip>
+                <button
+                  type="button"
+                  onClick={onClose}
+                  aria-label="Close"
+                  title="Close"
+                  className="-mr-2.5 flex size-11 items-center justify-center rounded-button text-kraft-ink hover:bg-kraft-ink/10 hover:text-foreground"
+                >
+                  <XIcon aria-hidden className="size-5" />
+                </button>
               </div>
 
               <label htmlFor={fid("item")} className="mt-3 mb-2 block text-[0.8125rem] font-medium text-kraft-ink">

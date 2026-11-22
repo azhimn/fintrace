@@ -240,3 +240,34 @@ select:not([multiple]) {
   background-size: 1rem;
   padding-right: 2.25rem;
 }
+
+/* The name inside an icon button that should stay compact at rest (the floating Record, the sheet's
+   close): hidden, sliding out beside the icon on hover or keyboard focus. Still in the DOM, so it stays
+   the button's accessible name. Buttons with room show their name outright; cramped ones use a Tip. */
+.reveal-label {
+  max-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  opacity: 0;
+  transition:
+    max-width 300ms cubic-bezier(0.22, 1, 0.36, 1),
+    margin-left 300ms cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 200ms ease-out;
+}
+:focus-visible > .reveal-label {
+  max-width: 12rem;
+  margin-left: 0.5rem;
+  opacity: 1;
+}
+@media (hover: hover) {
+  :hover > .reveal-label {
+    max-width: 12rem;
+    margin-left: 0.5rem;
+    opacity: 1;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .reveal-label {
+    transition: none;
+  }
+}

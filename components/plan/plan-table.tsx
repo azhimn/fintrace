@@ -7,16 +7,17 @@ import { copyPreviousPlan, deletePlanItem, savePlanItem } from "@/app/(app)/acti
 import type { PlanInput } from "@/components/record/record-form";
 import { useRecord } from "@/components/record/record-provider";
 import { toasts } from "@/components/record/toast";
-import { Empty, HueDot } from "@/components/shell/bits";
+import { Empty } from "@/components/shell/bits";
+import { Labelled, type Look, TypeBadge } from "@/components/transactions/transaction-list";
 import { Button } from "@/components/ui/button";
-import { Tip } from "@/components/ui/tip";
 import { formatMoney } from "@/lib/format";
+import type { RecordType } from "@/lib/record";
 import { cn } from "@/lib/utils";
 
 export type PlanRow = {
-  input: PlanInput & { id: string; item: string };
+  input: PlanInput & { id: string; item: string; type: RecordType };
   meta: string;
-  budget: { name: string; hue: string } | null;
+  budget: (Look & { name: string }) | null;
   planned: number;
   actual: number;
   variance: number;
@@ -70,11 +71,10 @@ export function PlanTable({ rows, cycle, recordDate }: { rows: PlanRow[]; cycle:
 
   const tools = !cycle.closed && (
     <div className="flex flex-wrap gap-2">
-      <Tip label="Add item">
-        <Button size="lg" onClick={() => open({ plan })} className="size-11 px-0">
-          <ListPlusIcon weight="fill" aria-hidden className="size-5" />
-        </Button>
-      </Tip>
+      <Button size="lg" onClick={() => open({ plan })} className="h-11 gap-2 px-4 text-[0.9375rem]">
+        <ListPlusIcon weight="fill" aria-hidden className="size-5" />
+        <span>Add item</span>
+      </Button>
       {cycle.hasPrevious && (
         <Button size="lg" variant="outline" disabled={copying} onClick={copy} className="h-11 text-[0.9375rem]">
           Copy from previous cycle
@@ -107,9 +107,9 @@ export function PlanTable({ rows, cycle, recordDate }: { rows: PlanRow[]; cycle:
               onClick={() => actions.edit(row)}
               className="flex min-w-0 flex-1 items-start justify-between gap-3 rounded-panel py-3 pl-4 text-left disabled:cursor-default"
             >
-              <span className="flex min-w-0 items-start gap-2.5">
-                <span className="mt-1.5">
-                  <HueDot hue={row.budget?.hue ?? "var(--track)"} />
+              <span className="flex min-w-0 items-start gap-3">
+                <span className="mt-0.5">
+                  <TypeBadge type={row.input.type} />
                 </span>
                 <span className="min-w-0">
                   <span className="block truncate text-[0.9375rem]">{row.input.item}</span>
@@ -152,17 +152,15 @@ export function PlanTable({ rows, cycle, recordDate }: { rows: PlanRow[]; cycle:
             {rows.map((row) => (
               <tr key={row.input.id} className="border-t border-divider">
                 <td className="max-w-72 py-2.5 pl-4">
-                  <span className="block truncate">{row.input.item}</span>
-                  <span className="block truncate text-xs text-muted-foreground">{row.meta}</span>
-                </td>
-                <td className="px-3 py-2.5">
-                  {row.budget && (
-                    <span className="flex items-center gap-2 whitespace-nowrap">
-                      <HueDot hue={row.budget.hue} />
-                      {row.budget.name}
+                  <span className="flex items-center gap-3">
+                    <TypeBadge type={row.input.type} />
+                    <span className="min-w-0">
+                      <span className="block truncate">{row.input.item}</span>
+                      <span className="block truncate text-xs text-muted-foreground">{row.meta}</span>
                     </span>
-                  )}
+                  </span>
                 </td>
+                <td className="px-3 py-2.5">{row.budget && <Labelled look={row.budget}>{row.budget.name}</Labelled>}</td>
                 <td className="px-3 py-2.5 text-right">
                   <Figure value={row.planned} />
                 </td>
@@ -197,7 +195,7 @@ function RowMenu({ row, closed, actions }: { row: PlanRow; closed: boolean; acti
         aria-label={`Actions for ${row.input.item}`}
         className="mx-1 flex size-11 shrink-0 items-center justify-center rounded-button text-quiet-control hover:bg-accent hover:text-foreground data-popup-open:bg-accent data-popup-open:text-foreground"
       >
-        <DotsThreeIcon weight="fill" className="size-5" />
+        <DotsThreeIcon weight="bold" className="size-5" />
       </Menu.Trigger>
       <Menu.Portal>
         <Menu.Positioner align="end" sideOffset={4} className="z-50">

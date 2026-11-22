@@ -5,7 +5,6 @@ import { RecordBar } from "@/components/overview/record-bar";
 import { AddressWindow, Band } from "@/components/shell/band";
 import { Empty, IconBadge, Money, Section } from "@/components/shell/bits";
 import { CycleStepper, pickCycle } from "@/components/shell/cycle-stepper";
-import { Tip } from "@/components/ui/tip";
 import { today } from "@/lib/calendar";
 import { envelopeBalances, pairBalances, type EnvelopeBalance } from "@/lib/finance";
 import { formatMoney, formatPercent } from "@/lib/format";
@@ -249,11 +248,10 @@ export default async function BudgetsPage({ searchParams }: PageProps<"/budgets"
           title="Budgets"
           action={
             open && (
-              <Tip label="Allocate">
-                <AllocateButton className="-mb-1 flex size-11 items-center justify-center rounded-button bg-foreground text-window hover:bg-[color-mix(in_oklch,var(--foreground),var(--kraft-ink)_40%)]">
-                  <ArrowsLeftRightIcon weight="fill" aria-hidden className="size-5" />
-                </AllocateButton>
-              </Tip>
+              <AllocateButton className="-mb-1 flex h-11 items-center justify-center gap-2 rounded-button px-4 text-[0.9375rem] font-medium bg-foreground text-window hover:bg-[color-mix(in_oklch,var(--foreground),var(--kraft-ink)_40%)]">
+                <ArrowsLeftRightIcon weight="fill" aria-hidden className="size-5" />
+                <span>Allocate</span>
+              </AllocateButton>
             )
           }
         >

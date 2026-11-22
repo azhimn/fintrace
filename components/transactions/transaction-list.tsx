@@ -5,7 +5,9 @@ import { Menu } from "@base-ui/react/menu";
 import { deleteRecord, saveRecord } from "@/app/(app)/actions";
 import { useRecord } from "@/components/record/record-provider";
 import { toasts } from "@/components/record/toast";
-import { HueDot } from "@/components/shell/bits";
+import { IconBadge } from "@/components/shell/bits";
+import { Tip } from "@/components/ui/tip";
+import type { IconKey } from "@/lib/icons";
 import { today } from "@/lib/calendar";
 import { formatMoney } from "@/lib/format";
 import { TYPE_LABELS, type RecordInput, type RecordType } from "@/lib/record";
@@ -18,10 +20,14 @@ export type TransactionRow = {
   total: number;
   date: string;
   funds: string;
-  budget: { name: string; hue: string } | null;
+  fundLook: Look | null;
+  budget: (Look & { name: string }) | null;
   category: string | null;
+  categoryLook: Look | null;
   detail: string;
 };
+
+export type Look = { icon: IconKey; hue: string };
 
 /** Each record type's badge: money out apricot ↗, in mint ↙, moved between Funds sky ⇄, saved lilac. */
 const TYPE_BADGE = {
@@ -31,12 +37,24 @@ const TYPE_BADGE = {
   saving: { Icon: PiggyBankIcon, hue: "var(--hue-lilac)" },
 } satisfies Record<RecordType, unknown>;
 
-function TypeBadge({ type }: { type: RecordType }) {
+/** The record type as a badge, named in a tooltip on hover (and for screen readers). */
+export function TypeBadge({ type }: { type: RecordType }) {
   const { Icon, hue } = TYPE_BADGE[type];
   return (
-    <span className="flex size-7 shrink-0 items-center justify-center rounded-full text-foreground" style={{ background: hue }}>
-      <Icon weight="fill" aria-hidden className="size-4" />
-      <span className="sr-only">{TYPE_LABELS[type]}</span>
+    <Tip label={TYPE_LABELS[type]}>
+      <span role="img" className="flex size-7 shrink-0 items-center justify-center rounded-full text-foreground" style={{ background: hue }}>
+        <Icon weight="fill" aria-hidden className="size-4" />
+      </span>
+    </Tip>
+  );
+}
+
+/** A Fund, Budget or category name led by its own small icon badge. */
+export function Labelled({ look, children }: { look: Look | null; children: React.ReactNode }) {
+  return (
+    <span className="flex min-w-0 items-center gap-2 whitespace-nowrap">
+      {look && <IconBadge icon={look.icon} hue={look.hue} className="size-5" />}
+      <span className="min-w-0 truncate">{children}</span>
     </span>
   );
 }
@@ -141,16 +159,13 @@ export function TransactionList({ rows }: { rows: TransactionRow[] }) {
                     </span>
                   </span>
                 </td>
-                <td className="px-3 py-2.5 whitespace-nowrap">{row.funds}</td>
                 <td className="px-3 py-2.5">
-                  {row.budget && (
-                    <span className="flex items-center gap-2 whitespace-nowrap">
-                      <HueDot hue={row.budget.hue} />
-                      {row.budget.name}
-                    </span>
-                  )}
+                  <Labelled look={row.fundLook}>{row.funds}</Labelled>
                 </td>
-                <td className="max-w-48 truncate px-3 py-2.5 text-muted-foreground">{row.category ?? "Uncategorised"}</td>
+                <td className="px-3 py-2.5">{row.budget && <Labelled look={row.budget}>{row.budget.name}</Labelled>}</td>
+                <td className="max-w-48 px-3 py-2.5 text-muted-foreground">
+                  <Labelled look={row.categoryLook}>{row.category ?? "Uncategorised"}</Labelled>
+                </td>
                 <td className="px-3 py-2.5 text-right">{amount(row)}</td>
                 <td className="pr-1">
                   <RowMenu row={row} editable={editable(row)} actions={actions} />
@@ -176,7 +191,7 @@ function RowMenu({ row, editable, actions }: { row: TransactionRow; editable: bo
         aria-label={`Actions for ${row.input.item}`}
         className="mx-1 flex size-11 shrink-0 items-center justify-center rounded-button text-quiet-control hover:bg-accent hover:text-foreground data-popup-open:bg-accent data-popup-open:text-foreground"
       >
-        <DotsThreeIcon weight="fill" className="size-5" />
+        <DotsThreeIcon weight="bold" className="size-5" />
       </Menu.Trigger>
       <Menu.Portal>
         <Menu.Positioner align="end" sideOffset={4} className="z-50">

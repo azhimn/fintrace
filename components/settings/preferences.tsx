@@ -15,7 +15,6 @@ import {
   type ShortcutAction,
   type Shortcuts,
 } from "@/lib/shortcuts";
-import { Tip } from "@/components/ui/tip";
 import { ordinalSuffix } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
@@ -51,11 +50,10 @@ export function PayDayWindow({ payDay }: { payDay: number }) {
         />
         <span className="ml-0.5 text-[0.9375rem] text-kraft-ink">{valid && ordinalSuffix(day)} day of the month</span>
         {valid && day !== payDay && (
-          <Tip label="Save pay day">
-            <Button type="submit" disabled={pending} className="ml-auto size-11 self-center px-0">
-              <CheckCircleIcon weight="fill" aria-hidden className="size-5" />
-            </Button>
-          </Tip>
+          <Button type="submit" disabled={pending} className="ml-auto h-11 gap-2 self-center px-4 text-[0.9375rem]">
+            <CheckCircleIcon weight="fill" aria-hidden className="size-5" />
+            <span>Save pay day</span>
+          </Button>
         )}
       </div>
       <p id={`${id}-hint`} className="mt-1 text-[0.8125rem] text-kraft-ink">
@@ -131,16 +129,15 @@ export function ShortcutEditor({ saved }: { saved: Shortcuts }) {
         })}
       </ul>
       <div className="flex flex-wrap items-center gap-2 border-t border-divider px-4 py-3">
-        <Tip label="Save shortcuts">
-          <Button
-            size="lg"
-            disabled={pending || !changed || conflicts.length > 0}
-            onClick={() => run(() => setShortcuts(draft), "Shortcuts saved")}
-            className="size-11 px-0"
-          >
-            <CheckCircleIcon weight="fill" aria-hidden className="size-5" />
-          </Button>
-        </Tip>
+        <Button
+          size="lg"
+          disabled={pending || !changed || conflicts.length > 0}
+          onClick={() => run(() => setShortcuts(draft), "Shortcuts saved")}
+          className="h-11 gap-2 px-4 text-[0.9375rem]"
+        >
+          <CheckCircleIcon weight="fill" aria-hidden className="size-5" />
+          <span>Save shortcuts</span>
+        </Button>
         <Button
           size="lg"
           variant="ghost"

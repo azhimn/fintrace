@@ -2,13 +2,13 @@
 
 import { CaretDownIcon, CaretUpIcon } from "@phosphor-icons/react";
 import { Popover } from "@base-ui/react/popover";
-import { useState } from "react";
+import { useId, useState } from "react";
 import { deleteEnvelope, reorder, saveAccount, saveCategory, saveEnvelope, saveSubcategory } from "@/app/(app)/actions";
 import { fieldClass, labelClass, RowMenu, SwitchRow, useAction } from "@/components/shell/action";
 import { IconBadge } from "@/components/shell/bits";
 import { Button } from "@/components/ui/button";
 import { formatAmountInput, parseAmount } from "@/lib/format";
-import { HUES, envelopeHue, hueVar } from "@/lib/hue";
+import { HUES, envelopeHue, hueVar, nextHue } from "@/lib/hue";
 import { ICONS, iconOf, type IconKey } from "@/lib/icons";
 import { cn } from "@/lib/utils";
 
@@ -55,11 +55,28 @@ function Order({ name, up, down, run }: { name: string; up: string[] | null; dow
 }
 
 /** The icon and pastel of a row, which opens a picker for both. `fixedHue` hides the pastels (Unallocated stays kraft). */
-function LookPicker({ name, icon, hue, fixedHue, onSave }: { name: string; icon: IconKey; hue: number; fixedHue?: string; onSave: (patch: Partial<Look>) => void }) {
+function LookPicker({
+  name,
+  icon,
+  hue,
+  fixedHue,
+  onSave,
+  open,
+  onOpenChange,
+}: {
+  name: string;
+  icon: IconKey;
+  hue: number;
+  fixedHue?: string;
+  onSave: (patch: Partial<Look>) => void;
+  /** Controlled open state, so a row menu's Change icon can open it. */
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+}) {
   const choice =
     "flex size-10 items-center justify-center rounded-full outline-none transition-[background-color,box-shadow,scale] duration-150 hover:bg-accent active:scale-90 motion-reduce:transition-none focus-visible:shadow-[0_0_0_2px_var(--secondary)] aria-pressed:bg-field aria-pressed:shadow-[0_0_0_2px_var(--secondary)]";
   return (
-    <Popover.Root>
+    <Popover.Root open={open} onOpenChange={onOpenChange}>
       <Popover.Trigger
         aria-label={`Icon and colour for ${name}`}
         className="flex size-11 shrink-0 items-center justify-center rounded-button hover:bg-accent data-popup-open:bg-accent"
@@ -96,13 +113,29 @@ function LookPicker({ name, icon, hue, fixedHue, onSave }: { name: string; icon:
   );
 }
 
+/**
+ * Rename and Change icon for a row's ⋯ menu: Rename selects the row's name field, Change icon opens
+ * its LookPicker. Both wait for the menu to close and hand focus back to its trigger.
+ */
+function useRowEdit() {
+  const nameId = useId();
+  const [picking, setPicking] = useState(false);
+  const later = (fn: () => void) => setTimeout(fn, 0);
+  const actions = [
+    { label: "Rename", onClick: () => later(() => (document.getElementById(nameId) as HTMLInputElement | null)?.select()) },
+    { label: "Change icon", onClick: () => later(() => setPicking(true)) },
+  ];
+  return { nameId, picker: { open: picking, onOpenChange: setPicking }, actions };
+}
+
 /** A text field that saves when it loses focus with a changed, non-empty value. */
-function SavedText({ label, value, onSave, className }: { label: string; value: string; onSave: (v: string) => void; className?: string }) {
+function SavedText({ id, label, value, onSave, className }: { id?: string; label: string; value: string; onSave: (v: string) => void; className?: string }) {
   const [text, setText] = useState(value);
   return (
     <label className={cn("min-w-0", className)}>
       <span className={sr}>{label}</span>
       <input
+        id={id}
         value={text}
         onChange={(e) => setText(e.target.value)}
         onBlur={() => {
@@ -118,7 +151,25 @@ function SavedText({ label, value, onSave, className }: { label: string; value: 
   );
 }
 
-function AddRow({ placeholder, children, onAdd }: { placeholder: string; children?: React.ReactNode; onAdd: (name: string) => Promise<string | null> }) {
+/**
+ * The row that adds a Fund, Budget, category or subcategory. With `icon`, it also offers the icon and
+ * pastel; left alone, the new row gets that icon and the least used pastel (`used` are the pastels
+ * already taken), the same as the server would pick.
+ */
+function AddRow({
+  placeholder,
+  children,
+  onAdd,
+  icon,
+  used = [],
+}: {
+  placeholder: string;
+  children?: React.ReactNode;
+  onAdd: (name: string, look: Partial<Look>) => Promise<string | null>;
+  icon?: IconKey;
+  used?: number[];
+}) {
+  const [picked, setPicked] = useState<Partial<Look>>({});
   const [name, setName] = useState("");
   const { run, pending, alert } = useAction();
   return (
@@ -126,11 +177,26 @@ function AddRow({ placeholder, children, onAdd }: { placeholder: string; childre
       noValidate
       onSubmit={(e) => {
         e.preventDefault();
-        run(() => onAdd(name), `Added ${name.trim()}`, () => setName(""));
+        run(
+          () => onAdd(name, picked),
+          `Added ${name.trim()}`,
+          () => {
+            setName("");
+            setPicked({});
+          },
+        );
       }}
       className="flex flex-col gap-3 border-t border-divider px-4 py-3"
     >
       <div className="flex flex-wrap gap-2">
+        {icon && (
+          <LookPicker
+            name={name.trim() || placeholder}
+            icon={(picked.icon as IconKey | undefined) ?? icon}
+            hue={picked.hue ?? nextHue(used)}
+            onSave={(patch) => setPicked((p) => ({ ...p, ...patch }))}
+          />
+        )}
         <label className="min-w-40 flex-1">
           <span className={sr}>{placeholder}</span>
           <input value={name} onChange={(e) => setName(e.target.value)} placeholder={placeholder} autoComplete="off" className={fieldClass} />
@@ -171,7 +237,7 @@ export function FundSettings({ funds }: { funds: Fund[] }) {
         </li>
       )}
       <li>
-        <AddRow placeholder="New Fund name" onAdd={(name) => saveAccount(null, { name, kind })}>
+        <AddRow placeholder="New Fund name" icon="wallet" used={own.map((f) => f.hue)} onAdd={(name, look) => saveAccount(null, { ...look, name, kind })}>
           <label>
             <span className={sr}>Kind</span>
             <select value={kind} onChange={(e) => setKind(e.target.value as keyof typeof KINDS)} className={cn(fieldClass, "w-32")}>
@@ -192,15 +258,17 @@ function FundRow({ fund, up, down, order }: { fund: Fund; up: string[] | null; d
   const { run, pending, alert } = useAction();
   const [min, setMin] = useState(fund.minBalance ? formatAmountInput(String(fund.minBalance)) : "");
   const save = (patch: Partial<Fund>, done?: string) => run(() => saveAccount(fund.id, patch), done);
+  const { nameId, picker, actions } = useRowEdit();
   return (
     <li className={cn("border-t border-divider px-4 py-3 first:border-t-0", fund.archived && "[&_input]:text-muted-foreground")}>
       <div className="flex items-center gap-2">
-        <LookPicker name={fund.name} icon={iconOf(fund, "wallet")} hue={fund.hue} onSave={(patch) => save(patch)} />
-        <SavedText label="Name" value={fund.name} onSave={(name) => save({ name }, `Renamed to ${name}`)} className="flex-1" />
+        <LookPicker name={fund.name} icon={iconOf(fund, "wallet")} hue={fund.hue} onSave={(patch) => save(patch)} {...picker} />
+        <SavedText id={nameId} label="Name" value={fund.name} onSave={(name) => save({ name }, `Renamed to ${name}`)} className="flex-1" />
         <Order name={fund.name} up={up} down={down} run={(ids) => run(() => order(ids))} />
         <RowMenu
           label={`Actions for ${fund.name}`}
           actions={[
+            ...actions,
             fund.archived
               ? { label: "Restore", onClick: () => save({ archived: false }, `${fund.name} is back`) }
               : { label: "Archive", onClick: () => save({ archived: true }, `${fund.name} archived`) },
@@ -267,7 +335,12 @@ export function BudgetSettings({ budgets }: { budgets: Budget[] }) {
         />
       ))}
       <li>
-        <AddRow placeholder="New Budget name" onAdd={(name) => saveEnvelope(null, { name })} />
+        <AddRow
+          placeholder="New Budget name"
+          icon="wallet"
+          used={budgets.filter((b) => !b.isSystem).map((b) => b.hue)}
+          onAdd={(name, look) => saveEnvelope(null, { ...look, name })}
+        />
       </li>
     </ul>
   );
@@ -275,6 +348,7 @@ export function BudgetSettings({ budgets }: { budgets: Budget[] }) {
 
 function BudgetRow({ budget, up, down }: { budget: Budget; up: string[] | null; down: string[] | null }) {
   const { run, alert } = useAction();
+  const { nameId, picker, actions } = useRowEdit();
   return (
     <li className="border-t border-divider py-1.5 pr-1 pl-2 first:border-t-0">
       <div className="flex items-center gap-2">
@@ -284,22 +358,25 @@ function BudgetRow({ budget, up, down }: { budget: Budget; up: string[] | null; 
           hue={budget.hue}
           fixedHue={budget.isSystem ? envelopeHue(budget) : undefined}
           onSave={(patch) => run(() => saveEnvelope(budget.id, patch))}
+          {...picker}
         />
         <SavedText
+          id={nameId}
           label={`Name of ${budget.name}`}
           value={budget.name}
           onSave={(name) => run(() => saveEnvelope(budget.id, { name }), `Renamed to ${name}`)}
           className="flex-1"
         />
         <Order name={budget.name} up={up} down={down} run={(ids) => run(() => reorder("envelopes", ids))} />
-        {budget.isSystem ? (
-          <span className="size-11 shrink-0" />
-        ) : (
-          <RowMenu
-            label={`Actions for ${budget.name}`}
-            actions={[{ label: "Delete", destructive: true, onClick: () => run(() => deleteEnvelope(budget.id), `Deleted ${budget.name}`) }]}
-          />
-        )}
+        {/* Unallocated can be renamed and given an icon, but never deleted. */}
+        <RowMenu
+          label={`Actions for ${budget.name}`}
+          actions={
+            budget.isSystem
+              ? actions
+              : [...actions, { label: "Delete", destructive: true, onClick: () => run(() => deleteEnvelope(budget.id), `Deleted ${budget.name}`) }]
+          }
+        />
       </div>
       {alert && <div className="mt-1 mr-3 mb-1.5">{alert}</div>}
     </li>
@@ -332,7 +409,7 @@ export function CategorySettings({ categories, budgets }: { categories: Category
       })}
       <ul className="rounded-panel bg-panel">
         <li>
-          <AddRow placeholder="New category name" onAdd={(name) => saveCategory(null, { name, kind })}>
+          <AddRow placeholder="New category name" icon="tag" used={categories.map((c) => c.hue)} onAdd={(name, look) => saveCategory(null, { ...look, name, kind })}>
             <label>
               <span className={sr}>Kind</span>
               <select value={kind} onChange={(e) => setKind(e.target.value as keyof typeof CATEGORY_KINDS)} className={cn(fieldClass, "w-32")}>
@@ -353,14 +430,16 @@ export function CategorySettings({ categories, budgets }: { categories: Category
 function CategoryRow({ category, budgets, up, down }: { category: Category; budgets: Budget[]; up: string[] | null; down: string[] | null }) {
   const { run, alert } = useAction();
   const unset = category.kind === "expense" && category.subs.filter((s) => !s.defaultEnvelopeId).length;
+  const { nameId, picker, actions } = useRowEdit();
   return (
     <li className="border-t border-divider first:border-t-0">
       <details className="disclosure group">
-        <summary className="flex min-h-14 cursor-pointer list-none items-center justify-between gap-3 rounded-panel px-4 py-2 hover:bg-accent [&::-webkit-details-marker]:hidden">
+        {/* Open, the header is tinted and its name is set at 500, so the open row stands out. */}
+        <summary className="flex min-h-14 cursor-pointer list-none items-center justify-between gap-3 rounded-panel px-4 py-2 transition-colors hover:bg-accent group-open:bg-accent [&::-webkit-details-marker]:hidden">
           <span className="flex min-w-0 items-center gap-3">
             <IconBadge icon={iconOf(category, "tag")} hue={hueVar(category.hue)} />
             <span className="min-w-0">
-              <span className={cn("block truncate text-[0.9375rem]", category.archived && "text-muted-foreground")}>{category.name}</span>
+              <span className={cn("block truncate text-[0.9375rem] group-open:font-medium", category.archived && "text-muted-foreground")}>{category.name}</span>
               <span className="mt-px block text-xs text-muted-foreground">
                 {[
                   `${category.subs.length} ${category.subs.length === 1 ? "subcategory" : "subcategories"}`,
@@ -374,7 +453,7 @@ function CategoryRow({ category, budgets, up, down }: { category: Category; budg
           </span>
           <CaretDownIcon weight="fill" aria-hidden className="size-4 shrink-0 text-quiet-control transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] group-open:rotate-180" />
         </summary>
-        <div className="px-4 pb-3">
+        <div className="px-4 pt-2 pb-3">
           <span className="text-xs text-muted-foreground">Name</span>
           <div className="flex items-center gap-2">
             <LookPicker
@@ -382,8 +461,10 @@ function CategoryRow({ category, budgets, up, down }: { category: Category; budg
               icon={iconOf(category, "tag")}
               hue={category.hue}
               onSave={(patch) => run(() => saveCategory(category.id, patch))}
+              {...picker}
             />
             <SavedText
+              id={nameId}
               label={`Name of ${category.name}`}
               value={category.name}
               onSave={(name) => run(() => saveCategory(category.id, { name }), `Renamed to ${name}`)}
@@ -393,6 +474,7 @@ function CategoryRow({ category, budgets, up, down }: { category: Category; budg
             <RowMenu
               label={`Actions for ${category.name}`}
               actions={[
+                ...actions,
                 category.archived
                   ? { label: "Restore", onClick: () => run(() => saveCategory(category.id, { archived: false }), `${category.name} is back`) }
                   : { label: "Archive", onClick: () => run(() => saveCategory(category.id, { archived: true }), `${category.name} archived`) },

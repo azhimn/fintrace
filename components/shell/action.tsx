@@ -41,7 +41,7 @@ export function useAction() {
 
 export type MenuAction = { label: string; onClick: () => void; destructive?: boolean };
 
-/** The ⋯ menu at the end of a row. */
+/** The ⋯ menu at the end of a row. Bold, not fill: Phosphor's fill dots sit inside a box. */
 export function RowMenu({ label, actions }: { label: string; actions: MenuAction[] }) {
   const item = "flex h-11 cursor-default items-center rounded-field px-3 text-[0.9375rem] outline-none select-none data-highlighted:bg-field";
   return (
@@ -50,7 +50,7 @@ export function RowMenu({ label, actions }: { label: string; actions: MenuAction
         aria-label={label}
         className="flex size-11 shrink-0 items-center justify-center rounded-button text-quiet-control hover:bg-accent hover:text-foreground data-popup-open:bg-accent data-popup-open:text-foreground"
       >
-        <DotsThreeIcon weight="fill" className="size-5" />
+        <DotsThreeIcon weight="bold" className="size-5" />
       </Menu.Trigger>
       <Menu.Portal>
         <Menu.Positioner align="end" sideOffset={4} className="z-50">

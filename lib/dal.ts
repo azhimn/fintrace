@@ -44,6 +44,7 @@ export const transactionFilters = z.object({
   class: loose(z.enum(["needs", "wants", "none"])),
   tag: loose(z.string().trim().min(1).max(40)),
   q: loose(z.string().trim().min(1).max(100)),
+  page: loose(z.coerce.number().int().min(1).max(100_000)),
 });
 export type TransactionFilters = z.infer<typeof transactionFilters>;
 
@@ -397,9 +398,10 @@ export function scopedTo(db: Db, userId: string) {
 
     /**
      * Transactions matching the Transactions screen's filters, newest first, opening rows included.
-     * Returns one more row than `limit` so the caller can tell the list was cut.
+     * With `limit`, returns one more row than it so the caller can tell the list was cut; without,
+     * every match (the Transactions screen pages them itself, so its totals cover them all).
      */
-    searchTransactions: (f: TransactionFilters, limit: number) => {
+    searchTransactions: (f: TransactionFilters, limit?: number) => {
       const where: (SQL | undefined)[] = [inArray(transactions.cycleId, ownedCycles)];
       if (f.cycle && f.cycle !== "all") where.push(eq(transactions.cycleId, f.cycle));
       if (f.from) where.push(gte(transactions.date, f.from));
@@ -428,12 +430,12 @@ export function scopedTo(db: Db, userId: string) {
           ),
         );
       }
-      return db
+      const query = db
         .select()
         .from(transactions)
         .where(and(...where))
-        .orderBy(desc(transactions.date), desc(transactions.createdAt))
-        .limit(limit + 1);
+        .orderBy(desc(transactions.date), desc(transactions.createdAt));
+      return limit === undefined ? query : query.limit(limit + 1);
     },
 
     /** Every tag this user has used, for the tag filter. */

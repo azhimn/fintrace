@@ -8,6 +8,7 @@ import { today } from "@/lib/calendar";
 import { lineTotal, planVsActual, projectedRemainder, runningBalance } from "@/lib/finance";
 import { formatDate } from "@/lib/format";
 import { envelopeHue } from "@/lib/hue";
+import { iconOf } from "@/lib/icons";
 import { rowToInput, TYPE_LABELS } from "@/lib/record";
 import { getDal } from "@/lib/session";
 
@@ -42,7 +43,7 @@ export default async function PlanPage({ searchParams }: PageProps<"/plan">) {
   const expected = runningBalance(plan);
   const vs = planVsActual([], plan, txns).items;
   const names = new Map(accounts.map((a) => [a.id, a.name]));
-  const budgets = new Map(envelopes.map((e) => [e.id, { name: e.name, hue: envelopeHue(e) }]));
+  const budgets = new Map(envelopes.map((e) => [e.id, { name: e.name, hue: envelopeHue(e), icon: iconOf(e, "wallet") }]));
   const sum = (types: string[]) => plan.filter((p) => types.includes(p.type)).reduce((s, p) => s + lineTotal(p), 0);
   // Record from the plan on today's date when it falls in this cycle, otherwise on the plan date or the start.
   const inCycle = (d: string | null) => !!d && d >= cycle.startDate && d <= cycle.endDate;

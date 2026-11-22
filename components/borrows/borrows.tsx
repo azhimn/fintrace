@@ -162,10 +162,10 @@ export function PersonGroup({ person, net, rows }: { person: string; net: number
           aria-expanded={open}
           aria-controls={id}
           onClick={() => setOpen((o) => !o)}
-          className="-mr-4 flex min-h-14 min-w-0 flex-1 items-center justify-between gap-3 rounded-panel py-2 pr-4 pl-4 text-left"
+          className={cn("-mr-4 flex min-h-14 min-w-0 flex-1 items-center justify-between gap-3 rounded-panel py-2 pr-4 pl-4 text-left transition-colors hover:bg-accent", open && "bg-accent")}
         >
           <span className="min-w-0">
-            <span className="block truncate text-[0.9375rem] font-medium">{person}</span>
+            <span className={cn("block truncate text-[0.9375rem]", open && "font-medium")}>{person}</span>
             <span className="block text-xs text-muted-foreground">
               {rows.length} {rows.length === 1 ? "item" : "items"}
             </span>

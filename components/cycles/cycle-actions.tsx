@@ -6,7 +6,6 @@ import { closeCycle, moveCycleStart, startFirstCycle } from "@/app/(app)/actions
 import { DateField } from "@/components/record/record-form";
 import { useAction } from "@/components/shell/action";
 import { Button } from "@/components/ui/button";
-import { Tip } from "@/components/ui/tip";
 import { formatDate } from "@/lib/format";
 
 const labelClass = "text-[0.8125rem] font-medium text-muted-foreground";
@@ -73,16 +72,15 @@ export function CloseCycle({ cycleId, name, suggested, fixed }: { cycleId: strin
             undo this.
           </p>
           <div className="flex flex-wrap gap-2">
-            <Tip label="Close it">
-              <Button
-                size="lg"
-                disabled={pending}
-                onClick={() => run(() => closeCycle(cycleId, value), `Closed ${name}`)}
-                className="size-12 px-0"
-              >
-                <LockSimpleIcon weight="fill" aria-hidden className="size-5" />
-              </Button>
-            </Tip>
+            <Button
+              size="lg"
+              disabled={pending}
+              onClick={() => run(() => closeCycle(cycleId, value), `Closed ${name}`)}
+              className="h-12 gap-2 px-5 text-[0.9375rem]"
+            >
+              <LockSimpleIcon weight="fill" aria-hidden className="size-5" />
+              <span>Close it</span>
+            </Button>
             <Button size="lg" variant="ghost" disabled={pending} onClick={() => setConfirming(false)} className="text-[0.9375rem]">
               Keep it open
             </Button>
@@ -111,11 +109,10 @@ export function StartFirstCycle({ suggested }: { suggested: string }) {
       </label>
       <DateField id={id} value={value} onChange={setValue} />
       {alert}
-      <Tip label="Start cycle">
-        <Button size="lg" disabled={pending} onClick={() => run(() => startFirstCycle(value), "Cycle started")} className="size-12 self-start px-0">
-          <PlayIcon weight="fill" aria-hidden className="size-5" />
-        </Button>
-      </Tip>
+      <Button size="lg" disabled={pending} onClick={() => run(() => startFirstCycle(value), "Cycle started")} className="h-12 gap-2 self-start px-5 text-[0.9375rem]">
+        <PlayIcon weight="fill" aria-hidden className="size-5" />
+        <span>Start cycle</span>
+      </Button>
     </div>
   );
 }
