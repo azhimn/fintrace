@@ -17,7 +17,8 @@ import {
   wishlist,
 } from "./db/schema";
 import { lineTotal, pairBalances } from "./finance";
-import { nextHue } from "./hue";
+import { HUES, nextHue } from "./hue";
+import { ICON_KEYS } from "./icons";
 import { bindingProblem, DEFAULT_SHORTCUTS, shortcutConflicts, type ShortcutAction } from "./shortcuts";
 import { recordSchema, TYPES, type RecordInput } from "./record";
 
@@ -99,8 +100,12 @@ export const wishInput = z
     path: ["discount"],
   });
 
+// What a Fund, Budget or category wears: a key into lib/icons (null for the default) and a pastel.
+const look = { icon: z.enum(ICON_KEYS).nullable(), hue: z.number().int().min(0).max(HUES.length - 1) };
+
 export const accountPatch = z
   .object({
+    ...look,
     name: name("Fund"),
     kind: z.enum(["bank", "e_wallet", "cash"]),
     minBalance: z.number().int().min(0).max(MONEY),
@@ -109,7 +114,7 @@ export const accountPatch = z
   })
   .partial();
 export const categoryPatch = z
-  .object({ name: name("category"), kind: z.enum(["income", "expense", "saving"]), archived: z.boolean() })
+  .object({ ...look, name: name("category"), kind: z.enum(["income", "expense", "saving"]), archived: z.boolean() })
   .partial();
 export const subcategoryPatch = z
   .object({
@@ -784,8 +789,15 @@ export function scopedTo(db: Db, userId: string) {
       if (id === null) {
         const { name, kind } = parsed.data;
         if (!name || !kind) return "Name the Fund and pick its kind";
-        const [{ last }] = await db.select({ last: max(accounts.sortOrder) }).from(accounts).where(eq(accounts.userId, userId));
-        await db.insert(accounts).values({ ...parsed.data, name, kind, userId, sortOrder: (last ?? -1) + 1 });
+        const rows = await db.select({ hue: accounts.hue, sortOrder: accounts.sortOrder, kind: accounts.kind }).from(accounts).where(eq(accounts.userId, userId));
+        await db.insert(accounts).values({
+          hue: nextHue(rows.filter((r) => r.kind !== "external").map((r) => r.hue)),
+          ...parsed.data,
+          name,
+          kind,
+          userId,
+          sortOrder: Math.max(-1, ...rows.map((r) => r.sortOrder)) + 1,
+        });
         return null;
       }
       if (!isId(id)) return "That Fund doesn't exist";
@@ -797,17 +809,19 @@ export function scopedTo(db: Db, userId: string) {
       return updated.length ? null : "That Fund can't be changed";
     },
 
-    /** Adds a Budget (id null) with the least used pastel, or renames one. */
+    /** Adds a Budget (id null) with the least used pastel, or renames or restyles one. */
     saveEnvelope: async (id: string | null, input: unknown) => {
-      const parsed = z.object({ name: name("Budget") }).safeParse(input);
+      const parsed = z.object({ ...look, name: name("Budget") }).partial().safeParse(input);
       if (!parsed.success) return problem(parsed.error);
       if (id === null) {
+        if (!parsed.data.name) return "Name the Budget";
         const rows = await db.select({ hue: envelopes.hue, sortOrder: envelopes.sortOrder, isSystem: envelopes.isSystem }).from(envelopes).where(eq(envelopes.userId, userId));
         const own = rows.filter((r) => !r.isSystem);
         await db.insert(envelopes).values({
+          hue: nextHue(own.map((r) => r.hue)),
+          ...parsed.data,
           userId,
           name: parsed.data.name,
-          hue: nextHue(own.map((r) => r.hue)),
           sortOrder: Math.max(-1, ...rows.map((r) => r.sortOrder)) + 1,
         });
         return null;
@@ -848,8 +862,15 @@ export function scopedTo(db: Db, userId: string) {
       if (id === null) {
         const { name, kind } = parsed.data;
         if (!name || !kind) return "Name the category and pick its kind";
-        const [{ last }] = await db.select({ last: max(categories.sortOrder) }).from(categories).where(eq(categories.userId, userId));
-        await db.insert(categories).values({ name, kind, userId, sortOrder: (last ?? -1) + 1 });
+        const rows = await db.select({ hue: categories.hue, sortOrder: categories.sortOrder }).from(categories).where(eq(categories.userId, userId));
+        await db.insert(categories).values({
+          hue: nextHue(rows.map((r) => r.hue)),
+          ...parsed.data,
+          name,
+          kind,
+          userId,
+          sortOrder: Math.max(-1, ...rows.map((r) => r.sortOrder)) + 1,
+        });
         return null;
       }
       if (!isId(id)) return "That category doesn't exist";

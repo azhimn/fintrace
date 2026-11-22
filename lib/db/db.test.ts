@@ -479,6 +479,9 @@ describe("M5 supporting screens", () => {
     const holiday = before.find((e) => e.name === "Holiday")!;
     // 13 seeded Budgets use hues 0 to 5 round-robin, so the least used is 1.
     expect(holiday.hue).toBe(1);
+    expect(await dal.saveEnvelope(holiday.id, { icon: "travel", hue: 4 })).toBeNull();
+    expect((await dal.envelopes()).find((e) => e.id === holiday.id)).toMatchObject({ name: "Holiday", icon: "travel", hue: 4 });
+    expect(await dal.saveEnvelope(holiday.id, { hue: 1 })).toBeNull();
     expect(await dal.reorder("envelopes", before.map((e) => e.id).reverse())).toBeNull();
     const after = await dal.envelopes();
     expect(after[0].name).toBe("Holiday");
@@ -501,6 +504,10 @@ describe("M5 supporting screens", () => {
     expect((await dal.accounts()).find((a) => a.id === cash)).toMatchObject({ minBalance: 20_000, countsAsUsable: false });
     expect(await dal.saveAccount(accts.find((a) => a.kind === "external")!.id, { name: "Shop" })).toMatch(/can't be changed/);
     expect(await scopedTo(db, bob).saveAccount(cash, { name: "Mine" })).toMatch(/can't be changed/);
+    expect(await dal.saveAccount(cash, { icon: "coins", hue: 3 })).toBeNull();
+    expect((await dal.accounts()).find((a) => a.id === cash)).toMatchObject({ icon: "coins", hue: 3 });
+    expect(await dal.saveAccount(cash, { icon: "<script>" })).not.toBeNull();
+    expect(await dal.saveAccount(cash, { hue: 6 })).not.toBeNull();
     const sub = (await dal.subcategories()).find((s) => s.name === "Meal")!;
     const meal = (await dal.envelopes()).find((e) => e.name === "Meal")!.id;
     expect(await dal.saveSubcategory(sub.id, sub.categoryId, { defaultEnvelopeId: meal })).toBeNull();

@@ -1,4 +1,5 @@
 import { formatMoney } from "@/lib/format";
+import { ICONS, type IconKey } from "@/lib/icons";
 import { cn } from "@/lib/utils";
 
 export const Money = ({ value, signed, className }: { value: number; signed?: boolean; className?: string }) => (
@@ -38,3 +39,13 @@ export function Empty({ children }: { children: React.ReactNode }) {
 export const HueDot = ({ hue }: { hue: string }) => (
   <span aria-hidden className="size-2.5 shrink-0 rounded-full" style={{ background: hue }} />
 );
+
+/** A Fund, Budget or category's icon on its pastel. */
+export function IconBadge({ icon, hue, className }: { icon: IconKey; hue: string; className?: string }) {
+  const Icon = ICONS[icon];
+  return (
+    <span aria-hidden className={cn("flex size-7 shrink-0 items-center justify-center rounded-full text-foreground transition-[background-color] duration-300 motion-reduce:transition-none", className)} style={{ background: hue }}>
+      <Icon weight="fill" className="size-[55%]" />
+    </span>
+  );
+}

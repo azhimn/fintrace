@@ -20,13 +20,15 @@ export default async function FundsSettingsPage() {
         <RecordBar placement="page" />
         <Section title="Your Funds">
           <FundSettings
-            funds={accounts.map(({ id, name, kind, minBalance, countsAsUsable, archived }) => ({
+            funds={accounts.map(({ id, name, kind, minBalance, countsAsUsable, archived, icon, hue }) => ({
               id,
               name,
               kind,
               minBalance,
               countsAsUsable,
               archived,
+              icon,
+              hue,
             }))}
           />
           <p className="mt-2 px-1 text-sm text-muted-foreground">

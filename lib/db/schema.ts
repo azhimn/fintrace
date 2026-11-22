@@ -102,6 +102,9 @@ export const accounts = pgTable(
     kind: accountKind("kind").notNull(),
     minBalance: rupiah("min_balance").notNull().default(0),
     countsAsUsable: boolean("counts_as_usable").notNull().default(false),
+    // A key into lib/icons, null for the kind's default; hue indexes the same pastels as Budgets.
+    icon: text("icon"),
+    hue: smallint("hue").notNull().default(0),
     sortOrder: integer("sort_order").notNull().default(0),
     archived: boolean("archived").notNull().default(false),
   },
@@ -118,6 +121,7 @@ export const envelopes = pgTable(
     isSystem: boolean("is_system").notNull().default(false),
     // Index into the Budget pastels, fixed at creation so reordering never recolours a Budget.
     hue: smallint("hue").notNull().default(0),
+    icon: text("icon"),
   },
   (t) => [index("envelopes_user_idx").on(t.userId)],
 );
@@ -130,6 +134,7 @@ export const categories = pgTable(
     kind: categoryKind("kind").notNull(),
     name: text("name").notNull(),
     icon: text("icon"),
+    hue: smallint("hue").notNull().default(0),
     sortOrder: integer("sort_order").notNull().default(0),
     archived: boolean("archived").notNull().default(false),
   },

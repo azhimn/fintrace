@@ -3,7 +3,7 @@ import { RecentList } from "@/components/overview/recent-list";
 import { RecordBar } from "@/components/overview/record-bar";
 import { NeedsWants } from "@/components/overview/needs-wants";
 import { AddressWindow, Band } from "@/components/shell/band";
-import { Empty, HueDot, Money, Section } from "@/components/shell/bits";
+import { Empty, IconBadge, Money, Section } from "@/components/shell/bits";
 import { daysBetween, today } from "@/lib/calendar";
 import {
   accountBalances,
@@ -15,7 +15,8 @@ import {
   usableFunds,
 } from "@/lib/finance";
 import { formatDate, formatMoney } from "@/lib/format";
-import { envelopeHue } from "@/lib/hue";
+import { envelopeHue, hueVar } from "@/lib/hue";
+import { iconOf } from "@/lib/icons";
 import { rowToInput } from "@/lib/record";
 import { getDal } from "@/lib/session";
 
@@ -106,13 +107,16 @@ export default async function OverviewPage() {
                 <ul className="rounded-panel bg-panel">
                   {own.map((a) => (
                     <li key={a.id} className="flex items-center justify-between gap-4 border-t border-divider px-4 py-3 text-[0.9375rem] first:border-t-0">
-                      <span className="min-w-0">
-                        {a.name}
-                        {(a.minBalance > 0 || !a.countsAsUsable) && (
-                          <span className="mt-px block text-xs text-muted-foreground">
-                            {a.minBalance > 0 ? `Keeps ${formatMoney(a.minBalance)} minimum` : "Not in usable funds"}
-                          </span>
-                        )}
+                      <span className="flex min-w-0 items-center gap-3">
+                        <IconBadge icon={iconOf(a, "wallet")} hue={hueVar(a.hue)} />
+                        <span className="min-w-0">
+                          {a.name}
+                          {(a.minBalance > 0 || !a.countsAsUsable) && (
+                            <span className="mt-px block text-xs text-muted-foreground">
+                              {a.minBalance > 0 ? `Keeps ${formatMoney(a.minBalance)} minimum` : "Not in usable funds"}
+                            </span>
+                          )}
+                        </span>
                       </span>
                       <Money value={balances.get(a.id) ?? 0} />
                     </li>
@@ -135,7 +139,7 @@ export default async function OverviewPage() {
                       <li key={e.id} className="border-t border-divider px-4 py-3 first:border-t-0">
                         <div className="flex items-center justify-between gap-4 text-[0.9375rem]">
                           <span className="flex min-w-0 items-center gap-2">
-                            <HueDot hue={envelopeHue(e)} />
+                            <IconBadge icon={iconOf(e, "wallet")} hue={envelopeHue(e)} className="size-6" />
                             <span className="truncate">{e.name}</span>
                           </span>
                           {b.overBudget ? (

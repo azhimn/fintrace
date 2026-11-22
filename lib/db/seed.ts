@@ -128,14 +128,14 @@ export async function seedUser(
     const [seeded] = await tx.select({ userId: settings.userId }).from(settings).where(eq(settings.userId, userId));
     if (seeded) return { userId, seeded: false };
 
-    await tx.insert(accounts).values(ACCOUNTS.map((a, i) => ({ ...a, userId, sortOrder: i })));
+    await tx.insert(accounts).values(ACCOUNTS.map((a, i) => ({ ...a, userId, sortOrder: i, hue: i % 6 })));
     await tx.insert(envelopes).values(
       ENVELOPES.map((name, i) => ({ userId, name, sortOrder: i, hue: i % 6, isSystem: name === "Unallocated" })),
     );
     for (const [i, { name, kind, subs }] of TAXONOMY.entries()) {
       const [category] = await tx
         .insert(categories)
-        .values({ userId, name, kind, sortOrder: i })
+        .values({ userId, name, kind, sortOrder: i, hue: i % 6 })
         .returning({ id: categories.id });
       await tx.insert(subcategories).values(
         subs.map(([sub, defaultClassification]) => ({ categoryId: category.id, name: sub, defaultClassification })),

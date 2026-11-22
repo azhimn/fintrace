@@ -3,7 +3,6 @@ import { RecordBar } from "@/components/overview/record-bar";
 import { CategorySettings } from "@/components/settings/lists";
 import { Band } from "@/components/shell/band";
 import { Section } from "@/components/shell/bits";
-import { envelopeHue } from "@/lib/hue";
 import { getDal } from "@/lib/session";
 
 export const metadata: Metadata = { title: "Categories · Settings" };
@@ -22,11 +21,13 @@ export default async function CategoriesSettingsPage() {
         <RecordBar placement="page" />
         <Section title="Your Categories">
           <CategorySettings
-            budgets={envelopes.map((e) => ({ id: e.id, name: e.name, isSystem: e.isSystem, hue: envelopeHue(e) }))}
+            budgets={envelopes.map((e) => ({ id: e.id, name: e.name, isSystem: e.isSystem, hue: e.hue, icon: e.icon }))}
             categories={categories.map((c) => ({
               id: c.id,
               name: c.name,
               kind: c.kind,
+              icon: c.icon,
+              hue: c.hue,
               archived: c.archived,
               subs: subcategories
                 .filter((s) => s.categoryId === c.id)

@@ -4,8 +4,10 @@ export const HUES = ["mint", "apricot", "lilac", "sky", "rose", "butter"] as con
  * One pastel per Budget, used everywhere it appears. The hue is stored per envelope, so reordering
  * Budgets never recolours them. Unallocated is kraft: money still in the pay envelope.
  */
-export const envelopeHue = (e: { hue: number; isSystem: boolean }) =>
-  e.isSystem ? "var(--kraft)" : `var(--hue-${HUES[e.hue % HUES.length]})`;
+export const envelopeHue = (e: { hue: number; isSystem: boolean }) => (e.isSystem ? "var(--kraft)" : hueVar(e.hue));
+
+/** The CSS colour for a stored hue index. Funds and categories pick theirs too. */
+export const hueVar = (hue: number) => `var(--hue-${HUES[hue % HUES.length]})`;
 
 /** The hue for a new Budget: the one fewest other Budgets use, earliest first on a tie. */
 export function nextHue(used: number[]) {

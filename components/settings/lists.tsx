@@ -1,18 +1,22 @@
 "use client";
 
 import { CaretDownIcon, CaretUpIcon } from "@phosphor-icons/react";
+import { Popover } from "@base-ui/react/popover";
 import { useState } from "react";
 import { deleteEnvelope, reorder, saveAccount, saveCategory, saveEnvelope, saveSubcategory } from "@/app/(app)/actions";
 import { fieldClass, labelClass, RowMenu, SwitchRow, useAction } from "@/components/shell/action";
-import { HueDot } from "@/components/shell/bits";
+import { IconBadge } from "@/components/shell/bits";
 import { Button } from "@/components/ui/button";
 import { formatAmountInput, parseAmount } from "@/lib/format";
+import { HUES, envelopeHue, hueVar } from "@/lib/hue";
+import { ICONS, iconOf, type IconKey } from "@/lib/icons";
 import { cn } from "@/lib/utils";
 
 type Kind = "bank" | "e_wallet" | "cash" | "external";
-export type Fund = { id: string; name: string; kind: Kind; minBalance: number; countsAsUsable: boolean; archived: boolean };
-export type Budget = { id: string; name: string; isSystem: boolean; hue: string };
-export type Category = {
+type Look = { icon: string | null; hue: number };
+export type Fund = Look & { id: string; name: string; kind: Kind; minBalance: number; countsAsUsable: boolean; archived: boolean };
+export type Budget = Look & { id: string; name: string; isSystem: boolean };
+export type Category = Look & {
   id: string;
   name: string;
   kind: "income" | "expense" | "saving";
@@ -47,6 +51,48 @@ function Order({ name, up, down, run }: { name: string; up: string[] | null; dow
         <CaretDownIcon weight="fill" className="size-4" />
       </button>
     </span>
+  );
+}
+
+/** The icon and pastel of a row, which opens a picker for both. `fixedHue` hides the pastels (Unallocated stays kraft). */
+function LookPicker({ name, icon, hue, fixedHue, onSave }: { name: string; icon: IconKey; hue: number; fixedHue?: string; onSave: (patch: Partial<Look>) => void }) {
+  const choice =
+    "flex size-10 items-center justify-center rounded-full outline-none transition-[background-color,box-shadow,scale] duration-150 hover:bg-accent active:scale-90 motion-reduce:transition-none focus-visible:shadow-[0_0_0_2px_var(--secondary)] aria-pressed:bg-field aria-pressed:shadow-[0_0_0_2px_var(--secondary)]";
+  return (
+    <Popover.Root>
+      <Popover.Trigger
+        aria-label={`Icon and colour for ${name}`}
+        className="flex size-11 shrink-0 items-center justify-center rounded-button hover:bg-accent data-popup-open:bg-accent"
+      >
+        <IconBadge icon={icon} hue={fixedHue ?? hueVar(hue)} />
+      </Popover.Trigger>
+      <Popover.Portal>
+        <Popover.Positioner align="start" sideOffset={4} className="z-50">
+          <Popover.Popup className="w-[min(22rem,calc(100vw-2rem))] origin-(--transform-origin) rounded-panel bg-panel p-3 shadow-[0_8px_24px_-8px_rgb(61_56_50/0.3)] outline-none transition-[opacity,scale] duration-200 ease-[cubic-bezier(0.22,1,0.36,1)] data-ending-style:scale-95 data-ending-style:opacity-0 data-starting-style:scale-95 data-starting-style:opacity-0 motion-reduce:transition-none">
+            <Popover.Title className="sr-only">Icon and colour for {name}</Popover.Title>
+            {!fixedHue && (
+              <div role="group" aria-label="Colour" className="mb-3 flex gap-1 border-b border-divider pb-3">
+                {HUES.map((h, i) => (
+                  <button key={h} type="button" aria-label={h} aria-pressed={i === hue} onClick={() => onSave({ hue: i })} className={choice}>
+                    <span className="size-6 rounded-full" style={{ background: hueVar(i) }} />
+                  </button>
+                ))}
+              </div>
+            )}
+            <div role="group" aria-label="Icon" className="grid grid-cols-8 gap-0.5">
+              {(Object.keys(ICONS) as IconKey[]).map((key) => {
+                const Icon = ICONS[key];
+                return (
+                  <button key={key} type="button" aria-label={key} aria-pressed={key === icon} onClick={() => onSave({ icon: key })} className={choice}>
+                    <Icon weight="fill" className="size-5" />
+                  </button>
+                );
+              })}
+            </div>
+          </Popover.Popup>
+        </Popover.Positioner>
+      </Popover.Portal>
+    </Popover.Root>
   );
 }
 
@@ -149,6 +195,7 @@ function FundRow({ fund, up, down, order }: { fund: Fund; up: string[] | null; d
   return (
     <li className={cn("border-t border-divider px-4 py-3 first:border-t-0", fund.archived && "[&_input]:text-muted-foreground")}>
       <div className="flex items-center gap-2">
+        <LookPicker name={fund.name} icon={iconOf(fund, "wallet")} hue={fund.hue} onSave={(patch) => save(patch)} />
         <SavedText label="Name" value={fund.name} onSave={(name) => save({ name }, `Renamed to ${name}`)} className="flex-1" />
         <Order name={fund.name} up={up} down={down} run={(ids) => run(() => order(ids))} />
         <RowMenu
@@ -229,9 +276,15 @@ export function BudgetSettings({ budgets }: { budgets: Budget[] }) {
 function BudgetRow({ budget, up, down }: { budget: Budget; up: string[] | null; down: string[] | null }) {
   const { run, alert } = useAction();
   return (
-    <li className="border-t border-divider py-1.5 pr-1 pl-4 first:border-t-0">
-      <div className="flex items-center gap-4">
-        <HueDot hue={budget.hue} />
+    <li className="border-t border-divider py-1.5 pr-1 pl-2 first:border-t-0">
+      <div className="flex items-center gap-2">
+        <LookPicker
+          name={budget.name}
+          icon={iconOf(budget, "wallet")}
+          hue={budget.hue}
+          fixedHue={budget.isSystem ? envelopeHue(budget) : undefined}
+          onSave={(patch) => run(() => saveEnvelope(budget.id, patch))}
+        />
         <SavedText
           label={`Name of ${budget.name}`}
           value={budget.name}
@@ -304,16 +357,19 @@ function CategoryRow({ category, budgets, up, down }: { category: Category; budg
     <li className="border-t border-divider first:border-t-0">
       <details className="disclosure group">
         <summary className="flex min-h-14 cursor-pointer list-none items-center justify-between gap-3 rounded-panel px-4 py-2 hover:bg-accent [&::-webkit-details-marker]:hidden">
-          <span className="min-w-0">
-            <span className={cn("block truncate text-[0.9375rem]", category.archived && "text-muted-foreground")}>{category.name}</span>
-            <span className="mt-px block text-xs text-muted-foreground">
-              {[
-                `${category.subs.length} ${category.subs.length === 1 ? "subcategory" : "subcategories"}`,
-                unset ? `${unset} without a default Budget` : null,
-                category.archived ? "Archived" : null,
-              ]
-                .filter(Boolean)
-                .join(" · ")}
+          <span className="flex min-w-0 items-center gap-3">
+            <IconBadge icon={iconOf(category, "tag")} hue={hueVar(category.hue)} />
+            <span className="min-w-0">
+              <span className={cn("block truncate text-[0.9375rem]", category.archived && "text-muted-foreground")}>{category.name}</span>
+              <span className="mt-px block text-xs text-muted-foreground">
+                {[
+                  `${category.subs.length} ${category.subs.length === 1 ? "subcategory" : "subcategories"}`,
+                  unset ? `${unset} without a default Budget` : null,
+                  category.archived ? "Archived" : null,
+                ]
+                  .filter(Boolean)
+                  .join(" · ")}
+              </span>
             </span>
           </span>
           <CaretDownIcon weight="fill" aria-hidden className="size-4 shrink-0 text-quiet-control transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] group-open:rotate-180" />
@@ -321,6 +377,12 @@ function CategoryRow({ category, budgets, up, down }: { category: Category; budg
         <div className="px-4 pb-3">
           <span className="text-xs text-muted-foreground">Name</span>
           <div className="flex items-center gap-2">
+            <LookPicker
+              name={category.name}
+              icon={iconOf(category, "tag")}
+              hue={category.hue}
+              onSave={(patch) => run(() => saveCategory(category.id, patch))}
+            />
             <SavedText
               label={`Name of ${category.name}`}
               value={category.name}

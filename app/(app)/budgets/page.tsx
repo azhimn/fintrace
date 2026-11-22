@@ -3,13 +3,14 @@ import type { Metadata } from "next";
 import { AllocateButton, AllocateProvider } from "@/components/budgets/allocate";
 import { RecordBar } from "@/components/overview/record-bar";
 import { AddressWindow, Band } from "@/components/shell/band";
-import { Empty, HueDot, Money, Section } from "@/components/shell/bits";
+import { Empty, IconBadge, Money, Section } from "@/components/shell/bits";
 import { CycleStepper, pickCycle } from "@/components/shell/cycle-stepper";
 import { Tip } from "@/components/ui/tip";
 import { today } from "@/lib/calendar";
 import { envelopeBalances, pairBalances, type EnvelopeBalance } from "@/lib/finance";
 import { formatMoney, formatPercent } from "@/lib/format";
 import { envelopeHue } from "@/lib/hue";
+import { iconOf } from "@/lib/icons";
 import { getDal } from "@/lib/session";
 import { cn } from "@/lib/utils";
 
@@ -50,7 +51,7 @@ export default async function BudgetsPage({ searchParams }: PageProps<"/budgets"
                   className="flex min-h-11 w-full items-center justify-between gap-4 rounded-panel px-4 py-2.5 text-left text-[0.9375rem] disabled:cursor-default"
                 >
                   <span className="flex min-w-0 items-center gap-2">
-                    <HueDot hue={envelopeHue(e)} />
+                    <IconBadge icon={iconOf(e, "wallet")} hue={envelopeHue(e)} className="size-6" />
                     <span className="truncate">{e.name}</span>
                   </span>
                   <span className="text-sm text-muted-foreground">{open && !e.isSystem ? "Empty · Allocate" : "Empty"}</span>
@@ -67,7 +68,7 @@ export default async function BudgetsPage({ searchParams }: PageProps<"/budgets"
               >
                 <span className="flex items-center justify-between gap-4 text-[0.9375rem]">
                   <span className="flex min-w-0 items-center gap-2">
-                    <HueDot hue={envelopeHue(e)} />
+                    <IconBadge icon={iconOf(e, "wallet")} hue={envelopeHue(e)} className="size-6" />
                     <span className="truncate">{e.name}</span>
                   </span>
                   <span>
@@ -126,7 +127,7 @@ export default async function BudgetsPage({ searchParams }: PageProps<"/budgets"
                     {/* h-14: as tall as rows holding the 44px Allocate button, so Unallocated matches. */}
                     <td className="h-14 py-1.5 pl-4">
                       <span className="flex items-center gap-2">
-                        <HueDot hue={envelopeHue(e)} />
+                        <IconBadge icon={iconOf(e, "wallet")} hue={envelopeHue(e)} className="size-6" />
                         {e.name}
                       </span>
                     </td>
@@ -149,7 +150,7 @@ export default async function BudgetsPage({ searchParams }: PageProps<"/budgets"
                 <tr key={e.id} className="border-t border-divider">
                   <td className="py-2.5 pl-4">
                     <span className="flex items-center gap-2">
-                      <HueDot hue={envelopeHue(e)} />
+                      <IconBadge icon={iconOf(e, "wallet")} hue={envelopeHue(e)} className="size-6" />
                       {e.name}
                     </span>
                   </td>
