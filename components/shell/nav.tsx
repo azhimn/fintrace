@@ -1,65 +1,319 @@
 "use client";
 
+import { Dialog } from "@base-ui/react/dialog";
+import {
+  ArrowsClockwiseIcon,
+  CaretDownIcon,
+  ChartBarIcon,
+  ClipboardTextIcon,
+  EnvelopeSimpleIcon,
+  EnvelopeSimpleOpenIcon,
+  HandCoinsIcon,
+  HeartIcon,
+  HouseIcon,
+  type Icon,
+  ListIcon,
+  ReceiptIcon,
+  ScalesIcon,
+  SidebarSimpleIcon,
+  SignOutIcon,
+  SlidersHorizontalIcon,
+  TagIcon,
+  UserCircleIcon,
+  WalletIcon,
+} from "@phosphor-icons/react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useRef, ViewTransition } from "react";
+import { useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore, ViewTransition } from "react";
+import { ScrollThumb } from "./scroll-thumb";
 import { cn } from "@/lib/utils";
 
-const TABS = [
-  { href: "/", label: "Overview" },
-  { href: "/transactions", label: "Transactions" },
-  { href: "/plan", label: "Plan" },
-  { href: "/budgets", label: "Budgets" },
-  { href: "/reconcile", label: "Reconcile" },
-  { href: "/analytics", label: "Analytics" },
-  { href: "/cycles", label: "Cycles" },
-  { href: "/borrows", label: "Borrows" },
-  { href: "/wishlist", label: "Wishlist" },
-  { href: "/settings", label: "Settings" },
-] as const;
+type Item = { href: string; label: string; icon: Icon };
 
-/** The app's sections as tabs cut into the envelope band. They scroll sideways where they don't fit. */
-export function Nav() {
-  const path = usePathname();
-  const router = useRouter();
-  const list = useRef<HTMLUListElement>(null);
-  useTabSwipe(path, router);
-  // On a phone the tabs scroll sideways; keep the current one in view.
-  useEffect(() => {
-    list.current?.querySelector('[aria-current="page"]')?.scrollIntoView({ block: "nearest", inline: "nearest" });
-  }, [path]);
+/** The app's sections in collapsible groups. */
+const GROUPS: { label: string; items: Item[] }[] = [
+  {
+    label: "Day to day",
+    items: [
+      { href: "/", label: "Overview", icon: HouseIcon },
+      { href: "/transactions", label: "Transactions", icon: ReceiptIcon },
+      { href: "/reconcile", label: "Reconcile", icon: ScalesIcon },
+    ],
+  },
+  {
+    label: "Planning",
+    items: [
+      { href: "/plan", label: "Plan", icon: ClipboardTextIcon },
+      { href: "/budgets", label: "Budgets", icon: EnvelopeSimpleIcon },
+      { href: "/cycles", label: "Cycles", icon: ArrowsClockwiseIcon },
+    ],
+  },
+  {
+    label: "Tracking",
+    items: [
+      { href: "/analytics", label: "Analytics", icon: ChartBarIcon },
+      { href: "/borrows", label: "Borrows", icon: HandCoinsIcon },
+      { href: "/wishlist", label: "Wishlist", icon: HeartIcon },
+    ],
+  },
+  {
+    label: "Settings",
+    items: [
+      { href: "/settings", label: "General", icon: SlidersHorizontalIcon },
+      { href: "/settings/funds", label: "Funds", icon: WalletIcon },
+      { href: "/settings/budgets", label: "Budgets", icon: EnvelopeSimpleOpenIcon },
+      { href: "/settings/categories", label: "Categories", icon: TagIcon },
+    ],
+  },
+];
+
+// Reached from the user's name at the bottom of the sidebar rather than from the Settings group.
+const ACCOUNT: Item = { href: "/settings/account", label: "Account", icon: UserCircleIcon };
+const ITEMS = [...GROUPS.flatMap((g) => g.items), ACCOUNT];
+
+/** The item the path is on: the longest href it sits under, so /settings/funds isn't also /settings. */
+function currentItem(path: string) {
+  let best: Item | undefined;
+  for (const item of ITEMS) {
+    const under = item.href === "/" ? path === "/" : path === item.href || path.startsWith(item.href + "/");
+    if (under && (!best || item.href.length > best.href.length)) best = item;
+  }
+  return best;
+}
+
+// The desktop sidebar collapses to an icon rail while <html data-sidebar="collapsed">. These hide its
+// text there; the phone drawer is never on a desktop, so it always shows text.
+const railHidden = "lg:[[data-sidebar=collapsed]_&]:sr-only";
+const row = "relative flex h-10 items-center gap-3 rounded-button px-2.5 text-[0.9375rem] text-sidebar-ink/75 transition-colors hover:bg-sidebar-ink/10 hover:text-sidebar-ink";
+
+function NavLinks({ onNavigate, slide }: { onNavigate?: () => void; slide?: boolean }) {
+  const current = currentItem(usePathname());
+  const heading = "px-2.5 text-xs font-medium tracking-wide whitespace-nowrap text-sidebar-ink/60 uppercase";
   return (
-    <nav aria-label="Sections" className="-mx-5 lg:-mx-2.5">
-      <ul ref={list} className="flex overflow-x-auto px-2.5 [scrollbar-width:none] lg:gap-0.5 lg:px-0">
-        {TABS.map((tab) => {
-          const current = isCurrent(tab.href, path);
-          return (
-            <li key={tab.href} className="shrink-0">
-              <Link
-                href={tab.href}
-                aria-current={current ? "page" : undefined}
-                className={cn(
-                  "relative flex h-11 items-center rounded-button px-2.5 text-sm text-kraft-ink transition-colors hover:text-foreground lg:text-[0.9375rem]",
-                  current && "font-medium text-foreground",
-                )}
-              >
-                {current && (
-                  // A short ink rule under the label. Named, so it slides to the new tab on navigation.
-                  <ViewTransition name="nav-current">
-                    <span aria-hidden className="absolute inset-x-2.5 bottom-1.5 h-0.5 rounded-full bg-foreground" />
-                  </ViewTransition>
-                )}
-                {tab.label}
-              </Link>
-            </li>
-          );
-        })}
-      </ul>
+    <nav aria-label="Sections" className="flex flex-col gap-5">
+      {GROUPS.map((group) => {
+        const list = (
+          <ul className="flex flex-col gap-0.5">
+            {group.items.map((item) => {
+              const here = item === current;
+              return (
+                <li key={item.href}>
+                  <Link
+                    href={item.href}
+                    onClick={onNavigate}
+                    title={item.label}
+                    aria-current={here ? "page" : undefined}
+                    className={cn(row, here && "font-medium text-sidebar-ink")}
+                  >
+                    {here &&
+                      (slide ? (
+                        // Named, so the highlight slides to the new item on navigation.
+                        <ViewTransition name="nav-current">
+                          <span aria-hidden className="absolute inset-0 rounded-button bg-sidebar-ink/15" />
+                        </ViewTransition>
+                      ) : (
+                        <span aria-hidden className="absolute inset-0 rounded-button bg-sidebar-ink/15" />
+                      ))}
+                    <item.icon aria-hidden weight={here ? "fill" : "regular"} className="relative size-5 shrink-0" />
+                    <span className={cn("relative truncate", railHidden)}>{item.label}</span>
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        );
+        const holdsCurrent = !!current && group.items.includes(current);
+        // Groups start open. Keyed by holding the current page, so moving into a group you closed opens it again.
+        return (
+          <details key={`${group.label}-${holdsCurrent}`} open className="disclosure group">
+            <summary
+              title={group.label}
+              className={cn(
+                heading,
+                "flex h-8 cursor-pointer list-none items-center justify-between rounded-button hover:text-sidebar-ink [&::-webkit-details-marker]:hidden",
+                "lg:[[data-sidebar=collapsed]_&]:justify-center lg:[[data-sidebar=collapsed]_&]:hover:bg-sidebar-ink/10",
+              )}
+            >
+              <span className={railHidden}>{group.label}</span>
+              <CaretDownIcon
+                aria-hidden
+                className="size-3.5 transition-transform group-open:rotate-180"
+              />
+            </summary>
+            {list}
+          </details>
+        );
+      })}
     </nav>
   );
 }
 
-const isCurrent = (href: string, path: string) => (href === "/" ? path === "/" : path.startsWith(href));
+type AccountProps = { username: string; signOut: () => Promise<void> };
+
+/** The signed-in user, linking to their Account settings, and Sign out beside it (below it on the icon rail). */
+function Account({ username, signOut, onNavigate, className }: AccountProps & { onNavigate?: () => void; className?: string }) {
+  const here = currentItem(usePathname()) === ACCOUNT;
+  return (
+    <div className={cn("flex items-center gap-1 pt-2 lg:[[data-sidebar=collapsed]_&]:flex-col", className)}>
+      <Link
+        href={ACCOUNT.href}
+        onClick={onNavigate}
+        title={`${username}, account settings`}
+        aria-current={here ? "page" : undefined}
+        className={cn(row, "min-w-0 flex-1 lg:[[data-sidebar=collapsed]_&]:w-10", here && "bg-sidebar-ink/15 font-medium text-sidebar-ink")}
+      >
+        <UserCircleIcon aria-hidden weight={here ? "fill" : "regular"} className="size-5 shrink-0" />
+        <span className={cn("truncate", railHidden)}>{username}</span>
+      </Link>
+      <form action={signOut}>
+        <button
+          type="submit"
+          aria-label="Sign out"
+          title="Sign out"
+          className="flex size-10 items-center justify-center rounded-button text-sidebar-ink/75 hover:bg-sidebar-ink/10 hover:text-sidebar-ink"
+        >
+          <SignOutIcon aria-hidden className="size-5" />
+        </button>
+      </form>
+    </div>
+  );
+}
+
+// The inline script in app/layout.tsx applies the same key before first paint.
+const COLLAPSED_KEY = "sidebar-collapsed";
+const listeners = new Set<() => void>();
+const subscribe = (fn: () => void) => (listeners.add(fn), () => void listeners.delete(fn));
+const storedCollapsed = () => localStorage.getItem(COLLAPSED_KEY) === "1";
+
+function applyCollapsed(collapsed: boolean) {
+  if (collapsed) document.documentElement.dataset.sidebar = "collapsed";
+  else delete document.documentElement.dataset.sidebar;
+}
+
+function setCollapsed(collapsed: boolean) {
+  if (collapsed) localStorage.setItem(COLLAPSED_KEY, "1");
+  else localStorage.removeItem(COLLAPSED_KEY);
+  applyCollapsed(collapsed);
+  listeners.forEach((fn) => fn());
+}
+
+/** Whether `ref` can scroll further up and down, rechecked on scroll and whenever it or its content resizes. */
+function useMoreHidden(ref: React.RefObject<HTMLElement | null>) {
+  const [above, setAbove] = useState(false);
+  const [below, setBelow] = useState(false);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const check = () => {
+      setAbove(el.scrollTop > 1);
+      setBelow(el.scrollTop + el.clientHeight < el.scrollHeight - 1);
+    };
+    const resize = new ResizeObserver(check);
+    for (const node of [el, ...el.children]) resize.observe(node);
+    el.addEventListener("scroll", check, { passive: true });
+    check();
+    return () => {
+      resize.disconnect();
+      el.removeEventListener("scroll", check);
+    };
+  }, [ref]);
+  return { above, below };
+}
+
+// Set by the mounted Sidebar, so the band's menu button can open its drawer.
+let openDrawer: (() => void) | null = null;
+
+/**
+ * The sections down the left of a desktop screen, collapsible to an icon rail, with the signed-in
+ * user at the bottom. On a phone the same lives in a drawer. Also owns the swipe between sections.
+ */
+export function Sidebar(account: AccountProps) {
+  const path = usePathname();
+  const router = useRouter();
+  const [open, setOpen] = useState(false);
+  const scroller = useRef<HTMLDivElement>(null);
+  const more = useMoreHidden(scroller);
+  const collapsed = useSyncExternalStore(subscribe, storedCollapsed, () => false);
+  useTabSwipe(path, router);
+  // Re-applies the saved state after React's dev remount clears attributes on <html>; a no-op in production.
+  useLayoutEffect(() => applyCollapsed(storedCollapsed()), []);
+  useEffect(() => {
+    openDrawer = () => setOpen(true);
+    return () => void (openDrawer = null);
+  }, []);
+  return (
+    <>
+      <aside className="sticky top-0 hidden h-dvh w-56 shrink-0 flex-col overflow-hidden bg-sidebar px-3 pt-3 pb-3 text-sidebar-ink transition-[width] duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] lg:flex lg:[[data-sidebar=collapsed]_&]:w-16">
+        <div className="mb-2 flex items-center gap-1">
+          <button
+            type="button"
+            onClick={() => setCollapsed(!collapsed)}
+            aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+            title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+            className="flex size-10 shrink-0 items-center justify-center rounded-button text-sidebar-ink/75 hover:bg-sidebar-ink/10 hover:text-sidebar-ink"
+          >
+            <SidebarSimpleIcon aria-hidden weight={collapsed ? "regular" : "fill"} className="size-5" />
+          </button>
+          {/* The wordmark, as on the sign-in screen. */}
+          <span className="text-base font-semibold lg:[[data-sidebar=collapsed]_&]:hidden">fintrace</span>
+        </div>
+        {/* Only the sections scroll; the header and account stay put. The thumb is drawn over the edge. */}
+        <div className="relative -mx-3 min-h-0 flex-1">
+          <div ref={scroller} className="h-full overflow-x-hidden overflow-y-auto overscroll-contain px-3 [scrollbar-width:none]">
+            <NavLinks slide />
+          </div>
+          {/* Soft shadows over the top and bottom edges while more sections are scrolled out of view. */}
+          <div
+            aria-hidden
+            className={cn(
+              "pointer-events-none absolute inset-x-0 top-0 h-6 bg-linear-to-b from-black/20 to-transparent transition-opacity duration-200",
+              !more.above && "opacity-0",
+            )}
+          />
+          <div
+            aria-hidden
+            className={cn(
+              "pointer-events-none absolute inset-x-0 bottom-0 h-6 bg-linear-to-t from-black/20 to-transparent transition-opacity duration-200",
+              !more.below && "opacity-0",
+            )}
+          />
+          <ScrollThumb target={scroller} />
+        </div>
+        {/* Named, so during navigation it is lifted above the sliding highlight instead of under it.
+            Only here: the drawer's copy may still be closing then, and a duplicate name skips the transition. */}
+        <Account {...account} className="bg-sidebar [view-transition-name:sidebar-account]" />
+      </aside>
+      <Dialog.Root open={open} onOpenChange={setOpen}>
+        <Dialog.Portal>
+          <Dialog.Backdrop className="fixed inset-0 z-50 bg-foreground/35 transition-opacity duration-200 data-ending-style:opacity-0 data-starting-style:opacity-0" />
+          <Dialog.Popup className="fixed inset-y-0 left-0 z-50 flex w-72 max-w-[85vw] flex-col overflow-y-auto bg-sidebar px-3 pt-[max(1.25rem,env(safe-area-inset-top))] pb-[max(1.25rem,env(safe-area-inset-bottom))] text-sidebar-ink outline-none transition-transform duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] data-ending-style:-translate-x-full data-starting-style:-translate-x-full">
+            <Dialog.Title className="mb-2 flex h-10 items-center px-2.5 text-base font-semibold">fintrace</Dialog.Title>
+            <div className="flex-1">
+              <NavLinks onNavigate={() => setOpen(false)} />
+            </div>
+            <Account {...account} onNavigate={() => setOpen(false)} />
+          </Dialog.Popup>
+        </Dialog.Portal>
+      </Dialog.Root>
+    </>
+  );
+}
+
+/** On a phone: the current section's name in the band, opening the sections as a drawer from the left. */
+export function MenuButton() {
+  const current = currentItem(usePathname());
+  return (
+    <button
+      type="button"
+      onClick={() => openDrawer?.()}
+      aria-haspopup="dialog"
+      className="-ml-3 flex h-11 items-center gap-2 rounded-button px-3 text-[0.9375rem] font-medium hover:bg-kraft-ink/10 lg:hidden"
+    >
+      <ListIcon aria-hidden className="size-5" />
+      {current?.label ?? "Menu"}
+    </button>
+  );
+}
 
 /** Whether a touch should be left alone: something under it already uses a sideways swipe. */
 function ownsSwipe(target: EventTarget | null) {
@@ -72,8 +326,8 @@ function ownsSwipe(target: EventTarget | null) {
 }
 
 /**
- * On touch screens, a quick sideways swipe moves to the neighbouring tab: left for the next, right
- * for the previous, wrapping from Settings to Overview and back. Mostly-vertical drags, swipes that
+ * On touch screens, a quick sideways swipe moves to the neighbouring section: left for the next, right
+ * for the previous, wrapping from the last Settings page to Overview and back. Mostly-vertical drags, swipes that
  * start on something that scrolls or swipes sideways, and open sheets are left alone.
  */
 function useTabSwipe(path: string, router: ReturnType<typeof useRouter>) {
@@ -90,9 +344,10 @@ function useTabSwipe(path: string, router: ReturnType<typeof useRouter>) {
       const dy = e.changedTouches[0].clientY - start.y;
       const quick = e.timeStamp - start.t < 600;
       start = null;
-      const i = TABS.findIndex((t) => isCurrent(t.href, path));
+      const here = currentItem(path);
+      const i = here ? ITEMS.indexOf(here) : -1;
       if (i < 0 || !quick || Math.abs(dx) < 70 || Math.abs(dx) < 1.5 * Math.abs(dy)) return;
-      router.push(TABS[(i + (dx < 0 ? 1 : -1) + TABS.length) % TABS.length].href);
+      router.push(ITEMS[(i + (dx < 0 ? 1 : -1) + ITEMS.length) % ITEMS.length].href);
     };
     document.addEventListener("touchstart", down, { passive: true });
     document.addEventListener("touchend", up, { passive: true });

@@ -39,6 +39,8 @@
   --color-kraft: var(--kraft);
   --color-kraft-ink: var(--kraft-ink);
   --color-window: var(--window);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-ink: var(--sidebar-ink);
   --color-panel: var(--panel);
   --color-divider: var(--divider);
   --color-track: var(--track);
@@ -84,6 +86,9 @@
   --kraft-ink: light-dark(#5f503f, #e6d0b0);
   --window: light-dark(#fffdfb, #1f1c19);
   --panel: light-dark(#edeef4, #212229);
+  /* The sidebar: the primary button's ink in light mode, the address window's surface in dark. */
+  --sidebar: light-dark(var(--foreground), var(--window));
+  --sidebar-ink: light-dark(var(--window), var(--foreground));
   --divider: light-dark(#e0e2ea, #30323b);
   --track: light-dark(#dcdee7, #383a45);
   --field: light-dark(#ffffff, #1b1c21);

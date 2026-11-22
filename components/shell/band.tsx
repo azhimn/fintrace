@@ -1,9 +1,9 @@
 import { ViewTransition } from "react";
 import { cn } from "@/lib/utils";
-import { Nav } from "./nav";
+import { MenuButton } from "./nav";
 
 /**
- * The kraft pay envelope across the top of every app screen: the section tabs, then whatever the
+ * The kraft pay envelope across the top of every app screen: the menu button on a phone, then whatever the
  * screen frames in its address window, then the wavy flap.
  */
 export function Band({ children }: { children?: React.ReactNode }) {
@@ -14,7 +14,7 @@ export function Band({ children }: { children?: React.ReactNode }) {
       <ViewTransition name="band" share="auto" default="none">
         <header className="bg-kraft">
           <div className="mx-auto max-w-5xl px-5 pt-3 pb-5 lg:px-8 lg:pt-4">
-            <Nav />
+            <MenuButton />
             {children}
           </div>
         </header>

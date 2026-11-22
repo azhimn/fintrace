@@ -63,7 +63,7 @@ export default async function OverviewPage() {
   return (
     <>
       <Band>
-        <h1 className="sr-only">Overview</h1>
+        <h1 className="mt-3 text-[1.375rem] font-medium">Overview</h1>
         <p className="mt-3 text-[0.8125rem]">
           {cycle ? (
             <>

@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
 // Placeholder text lines at the real type sizes, so the skeleton window is as tall as a loaded one.
 const bar = "inline-block h-[0.7em] rounded-full bg-track/70 align-middle";
 
-// The real band, so the tabs stay put while the next screen loads.
+// The real band, so the menu button stays put while the next screen loads.
 export default function Loading() {
   return (
     <div role="status" aria-label="Loading">

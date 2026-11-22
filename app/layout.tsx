@@ -24,8 +24,8 @@ export const viewport: Viewport = {
   interactiveWidget: "resizes-content",
 };
 
-// Runs while the HTML parses, so a theme chosen in Settings applies before first paint.
-const themeScript = `try{var t=localStorage.getItem("theme");if(t==="light"||t==="dark")document.documentElement.dataset.theme=t}catch(e){}`;
+// Runs while the HTML parses, so a theme chosen in Settings and a collapsed sidebar apply before first paint.
+const themeScript = `try{var t=localStorage.getItem("theme");if(t==="light"||t==="dark")document.documentElement.dataset.theme=t;if(localStorage.getItem("sidebar-collapsed")==="1")document.documentElement.dataset.sidebar="collapsed"}catch(e){}`;
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
