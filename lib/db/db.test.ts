@@ -9,6 +9,7 @@ import { scopedTo } from "../dal";
 import { lineTotal } from "../finance";
 import type { Db } from "./index";
 import { accounts, categories, cycles, envelopes, settings, subcategories, transactions, wishlist } from "./schema";
+import { changePassword, createUser, deleteUser, listUsers, renameUser, resetPassword } from "../users";
 import { DEFAULT_SHORTCUTS, seedUser } from "./seed";
 
 // Runs the real /drizzle migrations on PGlite, Postgres compiled to WASM, so no server is needed.
@@ -25,8 +26,8 @@ beforeAll(async () => {
   const pg = drizzle({ client: new PGlite({ extensions: { pg_trgm, btree_gist } }) });
   await migrate(pg, { migrationsFolder: "drizzle" });
   db = pg as unknown as Db;
-  alice = (await seedUser(db, "alice@example.com", "hash")).userId;
-  bob = (await seedUser(db, "bob@example.com", "hash")).userId;
+  alice = (await seedUser(db, "alice", "hash")).userId;
+  bob = (await seedUser(db, "bob", "hash")).userId;
 }, 60_000);
 
 describe("seed", () => {
@@ -75,7 +76,7 @@ describe("seed", () => {
 
   it("does nothing the second time, even after a rename", async () => {
     await db.update(envelopes).set({ name: "Makan" }).where(eq(envelopes.name, "Meal"));
-    const again = await seedUser(db, "alice@example.com", "other-hash");
+    const again = await seedUser(db, "alice", "other-hash");
     expect(again).toEqual({ userId: alice, seeded: false });
     const names = (await scopedTo(db, alice).envelopes()).map((e) => e.name);
     expect(names).toContain("Makan");
@@ -307,7 +308,7 @@ describe("M4 cycles, plan and search", () => {
   });
 
   beforeAll(async () => {
-    carol = (await seedUser(db, "carol@example.com", "hash")).userId;
+    carol = (await seedUser(db, "carol", "hash")).userId;
     dal = scopedTo(db, carol);
     const accts = await dal.accounts();
     const envs = await dal.envelopes();
@@ -425,7 +426,7 @@ describe("M5 supporting screens", () => {
   let cash: string;
 
   beforeAll(async () => {
-    dave = (await seedUser(db, "dave@example.com", "hash")).userId;
+    dave = (await seedUser(db, "dave", "hash")).userId;
     dal = scopedTo(db, dave);
     cash = (await dal.accounts()).find((a) => a.name === "Cash")!.id;
     expect(await dal.startCycle("2034-01-25", "2034-01-25", 25)).toBeNull();
@@ -514,5 +515,29 @@ describe("M5 supporting screens", () => {
     expect(await dal.settings()).toMatchObject({ defaultPayDay: 28, shortcuts: { openQuickRecord: "n" } });
     expect(await dal.setShortcuts({ ...DEFAULT_SHORTCUTS, close: "mod+enter" })).toMatch(/share/);
     expect(await dal.setShortcuts({ ...DEFAULT_SHORTCUTS, close: "x" })).toMatch(/Ctrl/);
+  });
+
+  it("lets an admin add and reset users, and delete anyone else with all their data", async () => {
+    expect(await createUser(db, { username: "Erin", password: "short", email: "", isAdmin: false })).toMatch(/8 characters/);
+    expect(await createUser(db, { username: "alice", password: "long enough", email: "", isAdmin: false })).toMatch(/taken/);
+    expect(await createUser(db, { username: " Erin ", password: "long enough", email: "", isAdmin: false })).toBeNull();
+    const erin = (await listUsers(db)).find((u) => u.username === "erin")!;
+    expect(erin).toMatchObject({ email: null, isAdmin: false });
+    expect((await scopedTo(db, erin.id).envelopes()).length).toBeGreaterThan(0);
+    expect(await resetPassword(db, erin.id, "another one")).toBeNull();
+    expect(await changePassword(db, erin.id, "long enough", "third one!")).toMatch(/current password/);
+    expect(await changePassword(db, erin.id, "another one", "third one!")).toBeNull();
+    expect(await renameUser(db, erin.id, "alice")).toMatch(/taken/);
+    expect(await renameUser(db, erin.id, "x")).toMatch(/3 to 32/);
+    expect(await renameUser(db, erin.id, "erin")).toBeNull();
+    expect(await renameUser(db, erin.id, "Erin.K")).toBeNull();
+    expect((await listUsers(db)).find((u) => u.id === erin.id)?.username).toBe("erin.k");
+
+    expect(await deleteUser(db, dave, dave)).toMatch(/yourself/);
+    const [cycle] = await dal.cycles();
+    expect((await dal.reconciliations(cycle.id)).length).toBeGreaterThan(0);
+    expect(await deleteUser(db, dave, alice)).toBeNull();
+    expect(await db.select().from(cycles).where(eq(cycles.userId, dave))).toEqual([]);
+    expect(await deleteUser(db, dave, alice)).toMatch(/no longer exists/);
   });
 });

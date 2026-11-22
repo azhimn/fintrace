@@ -2,23 +2,29 @@ import type { Metadata } from "next";
 import { RecordBar } from "@/components/overview/record-bar";
 import { BudgetSettings, CategorySettings, FundSettings } from "@/components/settings/lists";
 import { PayDayWindow, ShortcutEditor } from "@/components/settings/preferences";
+import { AccountSettings, UserSettings } from "@/components/settings/users";
 import { ThemeChoice } from "@/components/theme";
 import { AddressWindow, Band } from "@/components/shell/band";
 import { Section } from "@/components/shell/bits";
 import { envelopeHue } from "@/lib/hue";
-import { getDal } from "@/lib/session";
+import { db } from "@/lib/db";
+import { getDal, requireAdmin, requireUser } from "@/lib/session";
+import { listUsers } from "@/lib/users";
 import { DEFAULT_SHORTCUTS } from "@/lib/shortcuts";
 
 export const metadata: Metadata = { title: "Settings" };
 
 export default async function SettingsPage() {
   const dal = await getDal();
-  const [accounts, envelopes, categories, subcategories, settings] = await Promise.all([
+  const me = await requireUser();
+  const admin = await requireAdmin();
+  const [accounts, envelopes, categories, subcategories, settings, users] = await Promise.all([
     dal.accounts(),
     dal.envelopes(),
     dal.categories(),
     dal.subcategories(),
     dal.settings(),
+    admin ? listUsers(db) : null,
   ]);
   const budgets = envelopes.map((e) => ({ id: e.id, name: e.name, isSystem: e.isSystem, hue: envelopeHue(e) }));
 
@@ -56,6 +62,17 @@ export default async function SettingsPage() {
             <Section title="Keyboard shortcuts">
               <ShortcutEditor saved={{ ...DEFAULT_SHORTCUTS, ...settings?.shortcuts }} />
             </Section>
+            <Section title="Your login">
+              <AccountSettings username={me.username ?? ""} />
+            </Section>
+            {admin && users && (
+              <Section title="Users">
+                <UserSettings users={users} selfId={admin.id} />
+                <p className="mt-2 px-1 text-sm text-muted-foreground">
+                  Each user gets their own Funds, Budgets and Categories. Only admins see this list.
+                </p>
+              </Section>
+            )}
           </div>
           <div>
             <Section title="Budgets">

@@ -4,7 +4,9 @@ import { refresh } from "next/cache";
 import type { ZodError } from "zod";
 import { payDateOnOrBefore } from "@/lib/calendar";
 import { fieldErrors } from "@/lib/record";
-import { getDal } from "@/lib/session";
+import { db } from "@/lib/db";
+import { getDal, requireAdmin, requireUser } from "@/lib/session";
+import { changePassword, createUser, deleteUser, renameUser, resetPassword } from "@/lib/users";
 
 export type SaveResult =
   | { ok: true }
@@ -137,3 +139,26 @@ export const reorder = async (list: "accounts" | "envelopes" | "categories", ids
   settle((await getDal()).reorder(list, ids));
 export const setPayDay = async (day: number) => settle((await getDal()).setPayDay(day));
 export const setShortcuts = async (input: unknown) => settle((await getDal()).setShortcuts(input));
+
+const NOT_ADMIN = "Only an admin can manage users.";
+export async function addUser(input: unknown) {
+  if (!(await requireAdmin())) return NOT_ADMIN;
+  return settle(createUser(db, input));
+}
+export async function setUserPassword(id: string, password: string) {
+  if (!(await requireAdmin())) return NOT_ADMIN;
+  return settle(resetPassword(db, id, password));
+}
+export async function removeUser(id: string) {
+  const admin = await requireAdmin();
+  if (!admin) return NOT_ADMIN;
+  return settle(deleteUser(db, id, admin.id));
+}
+export async function setUsername(id: string, username: string) {
+  if (!(await requireAdmin())) return NOT_ADMIN;
+  return settle(renameUser(db, id, username));
+}
+
+export const renameSelf = async (username: string) => settle(renameUser(db, (await requireUser()).id, username));
+export const changeOwnPassword = async (current: string, next: string) =>
+  settle(changePassword(db, (await requireUser()).id, current, next));

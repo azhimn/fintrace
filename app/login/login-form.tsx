@@ -27,14 +27,15 @@ export function LoginForm({ magicLink }: { magicLink: boolean }) {
     <div className="flex flex-col gap-3">
       <form action={passwordAction} className="flex flex-col gap-3 rounded-panel bg-panel p-4">
         <div className="flex flex-col gap-2">
-          <Label htmlFor={`${id}-email`}>Email</Label>
+          <Label htmlFor={`${id}-username`}>Username</Label>
           <Input
-            id={`${id}-email`}
-            name="email"
-            type="email"
-            defaultValue={password.email}
+            id={`${id}-username`}
+            name="username"
+            defaultValue={password.username}
             required
             autoComplete="username"
+            autoCapitalize="none"
+            spellCheck={false}
             autoFocus
            
           />

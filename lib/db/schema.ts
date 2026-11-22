@@ -36,10 +36,13 @@ const computedTotal = (expression: ReturnType<typeof sql>) =>
 export const users = pgTable("users", {
   id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
   name: text("name"),
+  username: text("username").notNull().unique(),
+  // Only set for magic-link sign-in.
   email: text("email").unique(),
   emailVerified: timestamp("email_verified", { mode: "date" }),
   image: text("image"),
   passwordHash: text("password_hash"),
+  isAdmin: boolean("is_admin").notNull().default(false),
 });
 
 // Named auth_accounts because `accounts` is the wallets table from SPEC section 2.

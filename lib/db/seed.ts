@@ -113,11 +113,17 @@ export { DEFAULT_SHORTCUTS };
  * Creates the user if needed, then seeds their reference lists once. The settings row marks a
  * seeded user, so re-running never resurrects anything renamed or archived later in Settings.
  */
-export async function seedUser(db: Db, email: string, passwordHash: string) {
+export async function seedUser(
+  db: Db,
+  username: string,
+  passwordHash: string,
+  extra: { isAdmin?: boolean; email?: string | null } = {},
+) {
   return db.transaction(async (tx) => {
-    const [existing] = await tx.select({ id: users.id }).from(users).where(eq(users.email, email));
+    const [existing] = await tx.select({ id: users.id }).from(users).where(eq(users.username, username));
     const userId =
-      existing?.id ?? (await tx.insert(users).values({ email, passwordHash }).returning({ id: users.id }))[0].id;
+      existing?.id ??
+      (await tx.insert(users).values({ username, passwordHash, ...extra }).returning({ id: users.id }))[0].id;
 
     const [seeded] = await tx.select({ userId: settings.userId }).from(settings).where(eq(settings.userId, userId));
     if (seeded) return { userId, seeded: false };

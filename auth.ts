@@ -19,7 +19,14 @@ class LoginLocked extends CredentialsSignin {
 
 export const magicLinkEnabled = !!process.env.SMTP_HOST;
 
-const credentials = z.object({ email: z.email(), password: z.string().min(1).max(128) });
+declare module "next-auth" {
+  interface User {
+    username?: string;
+    isAdmin?: boolean;
+  }
+}
+
+const credentials = z.object({ username: z.string().trim().toLowerCase().min(1).max(32), password: z.string().min(1).max(128) });
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   adapter: DrizzleAdapter(db, {
@@ -32,19 +39,19 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   pages: { signIn: "/login", error: "/login", verifyRequest: "/login?sent=1" },
   providers: [
     Credentials({
-      credentials: { email: {}, password: {} },
+      credentials: { username: {}, password: {} },
       async authorize(input) {
         const parsed = credentials.safeParse(input);
         if (!parsed.success) return null;
-        const email = parsed.data.email.toLowerCase();
-        if (isLocked(email)) throw new LoginLocked();
+        const { username } = parsed.data;
+        if (isLocked(username)) throw new LoginLocked();
 
-        const [user] = await db.select().from(users).where(eq(users.email, email));
+        const [user] = await db.select().from(users).where(eq(users.username, username));
         if (!(await verifyPassword(parsed.data.password, user?.passwordHash ?? null))) {
-          recordFailure(email);
+          recordFailure(username);
           return null;
         }
-        clearFailures(email);
+        clearFailures(username);
         return { id: user.id, email: user.email, name: user.name };
       },
     }),

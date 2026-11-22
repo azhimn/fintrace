@@ -12,7 +12,7 @@ Everything runs in Docker, so the host only needs Docker with the Compose plugin
 cp .env.example .env
 ```
 
-In `.env`, set `AUTH_SECRET` (`openssl rand -base64 33`), `SEED_EMAIL` and `SEED_PASSWORD`. Then:
+In `.env`, set `AUTH_SECRET` (`openssl rand -base64 33`), `SEED_USERNAME` and `SEED_PASSWORD`. Then:
 
 ```sh
 docker compose up -d --build          # starts Postgres and the dev server
@@ -20,7 +20,7 @@ docker compose exec app pnpm db:migrate
 docker compose exec app pnpm db:seed
 ```
 
-Open http://localhost:3000 and sign in with the seed email and password. `.env` sets `COMPOSE_FILE=docker-compose.dev.yml`, so plain `docker compose` commands use the dev stack. The first start takes a minute while `pnpm install` runs: follow it with `docker compose logs -f app`.
+Open http://localhost:3000 and sign in with the seed username and password. `.env` sets `COMPOSE_FILE=docker-compose.dev.yml`, so plain `docker compose` commands use the dev stack. The first start takes a minute while `pnpm install` runs: follow it with `docker compose logs -f app`.
 
 ### Everyday commands
 
@@ -40,7 +40,7 @@ Run all of these inside the container:
 | Stop, keeping data | `docker compose down` |
 | Stop and delete the database and dependencies | `docker compose down -v` |
 
-The seed creates your user and their reference lists once. Running it again changes nothing, even if you have renamed things since, and it won't reset a password. It creates the only login: there is no signup.
+The seed creates your user and their reference lists once. Running it again changes nothing, even if you have renamed things since, and it won't reset a password. It creates the first login, an admin: there is no signup. Everyone can change their own username and password under Settings, Your login. Admins add users, change anyone's username or password, and delete other users under Settings, Users.
 
 Tests don't need the Postgres container. `lib/db/db.test.ts` runs the real migrations on [PGlite](https://pglite.dev), an in-process build of Postgres.
 
@@ -57,8 +57,8 @@ After you change `.env`, run `docker compose up -d app` to recreate the containe
 | `DATABASE_URL` | yes | Postgres connection string. |
 | `AUTH_SECRET` | yes | Auth.js signing secret. |
 | `APP_URL` | yes | Public origin of the app, used for auth redirects. |
-| `SEED_EMAIL`, `SEED_PASSWORD` | to seed | Login created by `pnpm db:seed`. The password needs 8 to 128 characters. |
-| `SMTP_HOST` | no | Turns on magic-link sign-in. |
+| `SEED_USERNAME`, `SEED_PASSWORD` | to seed | Admin login created by `pnpm db:seed`. The username takes 3 to 32 letters, digits, dots, dashes or underscores; the password 8 to 128 characters. |
+| `SMTP_HOST` | no | Turns on magic-link sign-in, for users who have an email set. |
 | `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `SMTP_FROM` | no | Mail settings for magic links. `SMTP_PORT` defaults to 587. |
 | `COMPOSE_FILE`, `APP_PORT` | dev only | Which compose file to use, and the host port for the dev server. |
 
@@ -95,7 +95,7 @@ Server components and actions should get data through `getDal()`. `plan_items`, 
 - **Session contents.** `lib/public-session.ts` limits what `/api/auth/session` returns. Without it, Auth.js sends the whole user row to the browser, password hash included.
 - **Drizzle version.** Drizzle's docs now install the 1.0 release candidate, but `@auth/drizzle-adapter` doesn't type-check against it, so fintrace uses the stable `drizzle-orm` 0.45 and `drizzle-kit` 0.31.
 - **Passwords.** scrypt from Node's standard library, at OWASP's N=2^17, r=8, p=1. No extra dependency.
-- **Login throttle.** Ten failures for one email lock it for 15 minutes. The count lives in memory, so it resets on restart and assumes one app process.
+- **Login throttle.** Ten failures for one username lock it for 15 minutes. The count lives in memory, so it resets on restart and assumes one app process.
 - **`settings` table.** SPEC section 2 doesn't list one, but section 5 needs per-user pay day and shortcuts, and section 9 seeds them.
 - **`categories.archived`.** Not in the section 2 column list, but the same row says categories can be archived.
 - **Nullable classification.** `subcategories.default_classification` is null for Income and Saving, since section 2b gives them no Needs or Wants default.

@@ -17,7 +17,7 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
         </div>
         <RecordBar placement="float" />
         <footer className="mx-auto flex w-full max-w-5xl items-center justify-between gap-3 px-5 pt-6 pb-24 text-sm text-muted-foreground lg:px-8">
-          <span className="min-w-0 truncate">{user.email}</span>
+          <span className="min-w-0 truncate">{user.username}</span>
           <form
             action={async () => {
               "use server";

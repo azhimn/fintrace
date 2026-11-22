@@ -3,27 +3,27 @@
 import { AuthError, CredentialsSignin } from "next-auth";
 import { signIn } from "@/auth";
 
-// email goes back so the field survives React's form reset after an action.
-export type LoginState = { error?: string; email?: string };
+// The typed name goes back so the field survives React's form reset after an action.
+export type LoginState = { error?: string; username?: string; email?: string };
 
 // Both catch only AuthError: signIn signals success by throwing a redirect, which must propagate.
 function passwordErrorMessage(error: AuthError) {
   if (!(error instanceof CredentialsSignin)) return "Sign-in hit a problem on the server. Try again later.";
   return error.code === "locked"
-    ? "Too many failed tries for this email. Wait 15 minutes, then try again."
-    : "That email and password don't match.";
+    ? "Too many failed tries for this username. Wait 15 minutes, then try again."
+    : "That username and password don't match.";
 }
 
 export async function signInWithPassword(_: LoginState, form: FormData): Promise<LoginState> {
   try {
     await signIn("credentials", {
-      email: form.get("email"),
+      username: form.get("username"),
       password: form.get("password"),
       redirectTo: "/",
     });
   } catch (error) {
     if (error instanceof AuthError) {
-      return { error: passwordErrorMessage(error), email: String(form.get("email") ?? "") };
+      return { error: passwordErrorMessage(error), username: String(form.get("username") ?? "") };
     }
     throw error;
   }
