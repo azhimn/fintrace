@@ -27,6 +27,8 @@ const nextConfig: NextConfig = {
         loaders: ["@tailwindcss/turbopack"],
         as: "*.css",
       },
+      // The usage guide (docs/guide) is imported as text, so it ships inside the bundle.
+      "*.md": { type: "text" },
     },
   },
 };

@@ -3,6 +3,7 @@
 import { Drawer } from "@base-ui/react/drawer";
 import {
   ArrowsClockwiseIcon,
+  BookOpenIcon,
   CaretDownIcon,
   ChartBarIcon,
   ClipboardTextIcon,
@@ -63,6 +64,10 @@ const GROUPS: { label: string; items: Item[] }[] = [
       { href: "/settings/budgets", label: "Budgets", icon: EnvelopeSimpleOpenIcon },
       { href: "/settings/categories", label: "Categories", icon: TagIcon },
     ],
+  },
+  {
+    label: "Help",
+    items: [{ href: "/help", label: "Guide", icon: BookOpenIcon }],
   },
 ];
 

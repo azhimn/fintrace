@@ -86,6 +86,7 @@ After you change `.env`, run `docker compose up -d app` to recreate the containe
 | `components/shell/action.tsx` | `useAction` for Server Actions that answer with an error message, the row menu and the switch row |
 | `lib/offline-queue.ts`, `public/sw.js`, `app/manifest.ts` | The PWA: entries saved offline, the service worker, the manifest with its Record shortcut |
 | `auth.ts`, `proxy.ts` | Auth.js config and route protection |
+| `docs/guide/en.md`, `docs/guide/id.md` | The usage guide shown at `/help`, imported as text and parsed by `lib/guide.ts`. Change both files when the UI changes |
 
 Server components and actions should get data through `getDal()`. `plan_items`, `transactions` and `reconciliations` have no `user_id`, so their queries are scoped through the cycle they belong to.
 
