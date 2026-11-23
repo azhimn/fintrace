@@ -2,6 +2,9 @@ import { ViewTransition } from "react";
 import { cn } from "@/lib/utils";
 import { MenuButton } from "./nav";
 
+// A same-screen navigation tagged with this transition type (a Link's transitionTypes) animates the band's height.
+const RESIZE = { "band-resize": "auto", default: "none" };
+
 /**
  * The kraft pay envelope across the top of every app screen: the menu row on a phone (sticky), then whatever the
  * screen frames in its address window, then the wavy flap.
@@ -18,7 +21,7 @@ export function Band({ children }: { children?: React.ReactNode }) {
           <MenuButton />
         </div>
       </div>
-      <ViewTransition name="band" share="auto" default="none">
+      <ViewTransition name="band" share="auto" update={RESIZE} default="none">
         {/* flow-root: the first line's top margin stays inside the kraft, with no gap under the menu row. */}
         <header className="flow-root bg-kraft">
           <div className="mx-auto max-w-5xl px-5 pb-5 lg:px-8 lg:pt-4">
@@ -26,7 +29,7 @@ export function Band({ children }: { children?: React.ReactNode }) {
           </div>
         </header>
       </ViewTransition>
-      <ViewTransition name="flap" share="auto" default="none">
+      <ViewTransition name="flap" share="auto" update={RESIZE} default="none">
         <div className="flap" aria-hidden />
       </ViewTransition>
     </>

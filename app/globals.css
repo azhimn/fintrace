@@ -194,6 +194,7 @@
   animation-duration: 200ms;
 }
 ::view-transition-group(nav-current),
+::view-transition-group(lang-current),
 ::view-transition-group(band),
 ::view-transition-group(flap),
 ::view-transition-group(window),

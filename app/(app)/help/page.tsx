@@ -1,7 +1,10 @@
 import type { Metadata } from "next";
+import { cookies } from "next/headers";
 import Link from "next/link";
+import { ViewTransition } from "react";
 import en from "@/docs/guide/en.md";
 import id from "@/docs/guide/id.md";
+import { Contents, RememberLanguage } from "@/components/help/contents";
 import { Band } from "@/components/shell/band";
 import { type Block, parseGuide, parseInline } from "@/lib/guide";
 import { cn } from "@/lib/utils";
@@ -42,13 +45,16 @@ function Blocks({ blocks }: { blocks: Block[] }) {
 }
 
 export default async function HelpPage({ searchParams }: PageProps<"/help">) {
-  const lang = (await searchParams).lang === "id" ? "id" : "en";
+  // The link's choice, else the last one used (RememberLanguage).
+  const asked = (await searchParams).lang ?? (await cookies()).get("guide-lang")?.value;
+  const lang = asked === "id" ? "id" : "en";
   const guide = GUIDES[lang];
   const intro = guide.sections.find((s) => !s.title);
   const sections = guide.sections.filter((s) => s.title);
 
   return (
     <div lang={lang}>
+      <RememberLanguage lang={lang} />
       <Band>
         <div className="mt-3 flex items-center justify-between gap-3">
           <h1 className="text-[1.375rem] font-medium">{guide.title}</h1>
@@ -56,12 +62,20 @@ export default async function HelpPage({ searchParams }: PageProps<"/help">) {
             {(Object.keys(GUIDES) as (keyof typeof GUIDES)[]).map((key) => (
               <Link
                 key={key}
-                href={key === "en" ? "/help" : `/help?lang=${key}`}
+                href={`/help?lang=${key}`}
                 lang={key}
+                transitionTypes={["band-resize"]}
                 aria-current={key === lang ? "page" : undefined}
-                className={cn("rounded-[10px] px-3 py-1.5", key === lang ? "bg-secondary font-medium" : "text-muted-foreground hover:text-foreground")}
+                className={cn("relative rounded-[10px] px-3 py-1.5 transition-colors", key === lang ? "font-medium" : "text-muted-foreground hover:text-foreground")}
               >
-                {GUIDES[key].label}
+                {key === lang && (
+                  // Named, so the fill slides to the other language, like the sidebar's current item.
+                  <ViewTransition name="lang-current">
+                    <span aria-hidden className="absolute inset-0 rounded-[10px] bg-secondary" />
+                  </ViewTransition>
+                )}
+                {/* Named too, so mid-slide the labels stay above the fill. */}
+                <span className="relative" style={{ viewTransitionName: `lang-${key}` }}>{GUIDES[key].label}</span>
               </Link>
             ))}
           </nav>
@@ -69,23 +83,16 @@ export default async function HelpPage({ searchParams }: PageProps<"/help">) {
         {intro && <div className="mt-3 max-w-2xl text-[0.9375rem]"><Blocks blocks={intro.blocks} /></div>}
       </Band>
 
-      <main className="mx-auto max-w-5xl px-5 text-[0.9375rem] lg:px-8">
-        <nav aria-label={guide.contents} className="mt-[22px]">
-          <h2 className="mb-2 text-sm font-semibold">{guide.contents}</h2>
-          <ol className="flex flex-wrap gap-2">
-            {sections.map((s) => (
-              <li key={s.id}>
-                <a href={`#${s.id}`} className="block rounded-button bg-panel px-3 py-2 hover:bg-accent">{s.title}</a>
-              </li>
-            ))}
-          </ol>
-        </nav>
-        {sections.map((s) => (
-          <section key={s.id} id={s.id} className="mt-[22px] scroll-mt-20">
-            <h2 className="mb-2 text-sm font-semibold">{s.title}</h2>
-            <div className="max-w-2xl rounded-panel bg-panel px-4 py-4"><Blocks blocks={s.blocks} /></div>
-          </section>
-        ))}
+      <main className="mx-auto max-w-5xl px-5 text-[0.9375rem] lg:grid lg:grid-cols-[12rem_minmax(0,1fr)] lg:items-start lg:gap-8 lg:px-8">
+        <Contents label={guide.contents} sections={sections.map(({ id, title }) => ({ id, title }))} />
+        <div>
+          {sections.map((s) => (
+            <section key={s.id} id={s.id} className="mt-[22px] scroll-mt-20 lg:scroll-mt-6">
+              <h2 className="mb-2 text-sm font-semibold">{s.title}</h2>
+              <div className="max-w-2xl rounded-panel bg-panel px-4 py-4"><Blocks blocks={s.blocks} /></div>
+            </section>
+          ))}
+        </div>
       </main>
     </div>
   );
