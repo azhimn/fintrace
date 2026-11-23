@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import Form from "next/form";
 import { CategoryBars, DailyLine } from "@/components/analytics/charts";
 import { Uncategorised } from "@/components/analytics/uncategorised";
-import { RecordBar } from "@/components/overview/record-bar";
 import { AddressWindow, Band } from "@/components/shell/band";
 import { Empty, Money, Section } from "@/components/shell/bits";
 import { CycleStepper, pickCycle } from "@/components/shell/cycle-stepper";
@@ -120,7 +119,6 @@ export default async function AnalyticsPage({ searchParams }: PageProps<"/analyt
       </Band>
 
       <main className="mx-auto max-w-5xl px-5 lg:px-8">
-        <RecordBar placement="page" />
         {!cycle ? (
           <Section title="Analytics">
             <Empty>No pay cycle yet. Start one on the Cycles screen, and your spending shows up here as you record.</Empty>

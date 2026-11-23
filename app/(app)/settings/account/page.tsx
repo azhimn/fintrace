@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { RecordBar } from "@/components/overview/record-bar";
 import { AccountSettings, UserSettings } from "@/components/settings/users";
 import { Band } from "@/components/shell/band";
 import { Section } from "@/components/shell/bits";
@@ -21,7 +20,6 @@ export default async function AccountSettingsPage() {
       </Band>
 
       <main className="mx-auto max-w-5xl px-5 lg:px-8">
-        <RecordBar placement="page" />
         <div className="grid grid-cols-1 gap-x-8 lg:grid-cols-2">
           <Section title="Your login">
             <AccountSettings username={me.username ?? ""} />

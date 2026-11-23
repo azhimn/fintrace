@@ -2,7 +2,7 @@
 
 import { CaretDownIcon, CaretUpIcon } from "@phosphor-icons/react";
 import { Popover } from "@base-ui/react/popover";
-import { useId, useState } from "react";
+import { useId, useState, ViewTransition } from "react";
 import { deleteEnvelope, reorder, saveAccount, saveCategory, saveEnvelope, saveSubcategory } from "@/app/(app)/actions";
 import { fieldClass, labelClass, RowMenu, SwitchRow, useAction } from "@/components/shell/action";
 import { IconBadge } from "@/components/shell/bits";
@@ -260,66 +260,68 @@ function FundRow({ fund, up, down, order }: { fund: Fund; up: string[] | null; d
   const save = (patch: Partial<Fund>, done?: string) => run(() => saveAccount(fund.id, patch), done);
   const { nameId, picker, actions } = useRowEdit();
   return (
-    <li className={cn("border-t border-divider px-4 py-3 first:border-t-0", fund.archived && "[&_input]:text-muted-foreground")}>
-      <div className="flex items-center gap-2">
-        <LookPicker name={fund.name} icon={iconOf(fund, "wallet")} hue={fund.hue} onSave={(patch) => save(patch)} {...picker} />
-        <SavedText id={nameId} label="Name" value={fund.name} onSave={(name) => save({ name }, `Renamed to ${name}`)} className="flex-1" />
-        <Order name={fund.name} up={up} down={down} run={(ids) => run(() => order(ids))} />
-        <RowMenu
-          label={`Actions for ${fund.name}`}
-          actions={[
-            ...actions,
-            fund.archived
-              ? { label: "Restore", onClick: () => save({ archived: false }, `${fund.name} is back`) }
-              : { label: "Archive", onClick: () => save({ archived: true }, `${fund.name} archived`) },
-          ]}
-        />
-      </div>
-      {fund.archived && <p className="mb-1 text-xs text-muted-foreground">Archived: hidden from Record and the Overview</p>}
-      <div className="mt-3 grid grid-cols-2 gap-x-2 gap-y-3">
-        <label>
-          <span className={sr}>Kind of {fund.name}</span>
-          <select
-            value={fund.kind}
-            disabled={pending}
-            onChange={(e) => save({ kind: e.target.value as Kind })}
-            className={fieldClass}
-          >
-            {Object.entries(KINDS).map(([k, label]) => (
-              <option key={k} value={k}>
-                {label}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label className="relative">
-          <span className={sr}>Minimum balance for {fund.name}</span>
-          <span aria-hidden className="pointer-events-none absolute top-2.5 left-3 text-sm text-muted-foreground">
-            Keep
-          </span>
-          <input
-            value={min}
-            onChange={(e) => setMin(formatAmountInput(e.target.value))}
-            onBlur={() => {
-              const value = min.trim() ? parseAmount(min) : 0;
-              if (value === null || value < 0) return run(async () => "Enter a minimum like 50rb, or leave it empty");
-              if (value !== fund.minBalance) save({ minBalance: value }, `${fund.name} keeps ${formatAmountInput(String(value)) || 0} minimum`);
-            }}
-            onKeyDown={(e) => e.key === "Enter" && e.currentTarget.blur()}
-            inputMode="numeric"
-            autoComplete="off"
-            placeholder="Rp 0"
-            className={cn(fieldClass, "figure pl-14")}
+    <ViewTransition name={`row-${fund.id}`} share="row-move" update="row-move">
+      <li className={cn("border-t border-divider px-4 py-3 first:border-t-0", fund.archived && "[&_input]:text-muted-foreground")}>
+        <div className="flex items-center gap-2">
+          <LookPicker name={fund.name} icon={iconOf(fund, "wallet")} hue={fund.hue} onSave={(patch) => save(patch)} {...picker} />
+          <SavedText id={nameId} label="Name" value={fund.name} onSave={(name) => save({ name }, `Renamed to ${name}`)} className="flex-1" />
+          <Order name={fund.name} up={up} down={down} run={(ids) => run(() => order(ids))} />
+          <RowMenu
+            label={`Actions for ${fund.name}`}
+            actions={[
+              ...actions,
+              fund.archived
+                ? { label: "Restore", onClick: () => save({ archived: false }, `${fund.name} is back`) }
+                : { label: "Archive", onClick: () => save({ archived: true }, `${fund.name} archived`) },
+            ]}
           />
-        </label>
-      </div>
-      <div className="mt-1">
-        <SwitchRow checked={fund.countsAsUsable} disabled={pending} onChange={(countsAsUsable) => save({ countsAsUsable })}>
-          Count as usable
-        </SwitchRow>
-      </div>
-      {alert && <div className="mt-2">{alert}</div>}
-    </li>
+        </div>
+        {fund.archived && <p className="mb-1 text-xs text-muted-foreground">Archived: hidden from Record and the Overview</p>}
+        <div className="mt-3 grid grid-cols-2 gap-x-2 gap-y-3">
+          <label>
+            <span className={sr}>Kind of {fund.name}</span>
+            <select
+              value={fund.kind}
+              disabled={pending}
+              onChange={(e) => save({ kind: e.target.value as Kind })}
+              className={fieldClass}
+            >
+              {Object.entries(KINDS).map(([k, label]) => (
+                <option key={k} value={k}>
+                  {label}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="relative">
+            <span className={sr}>Minimum balance for {fund.name}</span>
+            <span aria-hidden className="pointer-events-none absolute top-2.5 left-3 text-sm text-muted-foreground">
+              Keep
+            </span>
+            <input
+              value={min}
+              onChange={(e) => setMin(formatAmountInput(e.target.value))}
+              onBlur={() => {
+                const value = min.trim() ? parseAmount(min) : 0;
+                if (value === null || value < 0) return run(async () => "Enter a minimum like 50rb, or leave it empty");
+                if (value !== fund.minBalance) save({ minBalance: value }, `${fund.name} keeps ${formatAmountInput(String(value)) || 0} minimum`);
+              }}
+              onKeyDown={(e) => e.key === "Enter" && e.currentTarget.blur()}
+              inputMode="numeric"
+              autoComplete="off"
+              placeholder="Rp 0"
+              className={cn(fieldClass, "figure pl-14")}
+            />
+          </label>
+        </div>
+        <div className="mt-1">
+          <SwitchRow checked={fund.countsAsUsable} disabled={pending} onChange={(countsAsUsable) => save({ countsAsUsable })}>
+            Count as usable
+          </SwitchRow>
+        </div>
+        {alert && <div className="mt-2">{alert}</div>}
+      </li>
+    </ViewTransition>
   );
 }
 
@@ -350,36 +352,38 @@ function BudgetRow({ budget, up, down }: { budget: Budget; up: string[] | null; 
   const { run, alert } = useAction();
   const { nameId, picker, actions } = useRowEdit();
   return (
-    <li className="border-t border-divider py-1.5 pr-1 pl-2 first:border-t-0">
-      <div className="flex items-center gap-2">
-        <LookPicker
-          name={budget.name}
-          icon={iconOf(budget, "wallet")}
-          hue={budget.hue}
-          fixedHue={budget.isSystem ? envelopeHue(budget) : undefined}
-          onSave={(patch) => run(() => saveEnvelope(budget.id, patch))}
-          {...picker}
-        />
-        <SavedText
-          id={nameId}
-          label={`Name of ${budget.name}`}
-          value={budget.name}
-          onSave={(name) => run(() => saveEnvelope(budget.id, { name }), `Renamed to ${name}`)}
-          className="flex-1"
-        />
-        <Order name={budget.name} up={up} down={down} run={(ids) => run(() => reorder("envelopes", ids))} />
-        {/* Unallocated can be renamed and given an icon, but never deleted. */}
-        <RowMenu
-          label={`Actions for ${budget.name}`}
-          actions={
-            budget.isSystem
-              ? actions
-              : [...actions, { label: "Delete", destructive: true, onClick: () => run(() => deleteEnvelope(budget.id), `Deleted ${budget.name}`) }]
-          }
-        />
-      </div>
-      {alert && <div className="mt-1 mr-3 mb-1.5">{alert}</div>}
-    </li>
+    <ViewTransition name={`row-${budget.id}`} share="row-move" update="row-move">
+      <li className="border-t border-divider py-1.5 pr-1 pl-2 first:border-t-0">
+        <div className="flex items-center gap-2">
+          <LookPicker
+            name={budget.name}
+            icon={iconOf(budget, "wallet")}
+            hue={budget.hue}
+            fixedHue={budget.isSystem ? envelopeHue(budget) : undefined}
+            onSave={(patch) => run(() => saveEnvelope(budget.id, patch))}
+            {...picker}
+          />
+          <SavedText
+            id={nameId}
+            label={`Name of ${budget.name}`}
+            value={budget.name}
+            onSave={(name) => run(() => saveEnvelope(budget.id, { name }), `Renamed to ${name}`)}
+            className="flex-1"
+          />
+          <Order name={budget.name} up={up} down={down} run={(ids) => run(() => reorder("envelopes", ids))} />
+          {/* Unallocated can be renamed and given an icon, but never deleted. */}
+          <RowMenu
+            label={`Actions for ${budget.name}`}
+            actions={
+              budget.isSystem
+                ? actions
+                : [...actions, { label: "Delete", destructive: true, onClick: () => run(() => deleteEnvelope(budget.id), `Deleted ${budget.name}`) }]
+            }
+          />
+        </div>
+        {alert && <div className="mt-1 mr-3 mb-1.5">{alert}</div>}
+      </li>
+    </ViewTransition>
   );
 }
 
@@ -432,67 +436,69 @@ function CategoryRow({ category, budgets, up, down }: { category: Category; budg
   const unset = category.kind === "expense" && category.subs.filter((s) => !s.defaultEnvelopeId).length;
   const { nameId, picker, actions } = useRowEdit();
   return (
-    <li className="border-t border-divider first:border-t-0">
-      <details className="disclosure group">
-        {/* Open, the header is tinted and its name is set at 500, so the open row stands out. */}
-        <summary className="flex min-h-14 cursor-pointer list-none items-center justify-between gap-3 rounded-panel px-4 py-2 transition-colors hover:bg-accent group-open:bg-accent [&::-webkit-details-marker]:hidden">
-          <span className="flex min-w-0 items-center gap-3">
-            <IconBadge icon={iconOf(category, "tag")} hue={hueVar(category.hue)} />
-            <span className="min-w-0">
-              <span className={cn("block truncate text-[0.9375rem] group-open:font-medium", category.archived && "text-muted-foreground")}>{category.name}</span>
-              <span className="mt-px block text-xs text-muted-foreground">
-                {[
-                  `${category.subs.length} ${category.subs.length === 1 ? "subcategory" : "subcategories"}`,
-                  unset ? `${unset} without a default Budget` : null,
-                  category.archived ? "Archived" : null,
-                ]
-                  .filter(Boolean)
-                  .join(" · ")}
+    <ViewTransition name={`row-${category.id}`} share="row-move" update="row-move">
+      <li className="border-t border-divider first:border-t-0">
+        <details className="disclosure group">
+          {/* Open, the header is tinted and its name is set at 500, so the open row stands out. */}
+          <summary className="flex min-h-14 cursor-pointer list-none items-center justify-between gap-3 rounded-panel px-4 py-2 transition-colors hover:bg-accent group-open:bg-accent [&::-webkit-details-marker]:hidden">
+            <span className="flex min-w-0 items-center gap-3">
+              <IconBadge icon={iconOf(category, "tag")} hue={hueVar(category.hue)} />
+              <span className="min-w-0">
+                <span className={cn("block truncate text-[0.9375rem] group-open:font-semibold", category.archived && "text-muted-foreground")}>{category.name}</span>
+                <span className="mt-px block text-xs text-muted-foreground">
+                  {[
+                    `${category.subs.length} ${category.subs.length === 1 ? "subcategory" : "subcategories"}`,
+                    unset ? `${unset} without a default Budget` : null,
+                    category.archived ? "Archived" : null,
+                  ]
+                    .filter(Boolean)
+                    .join(" · ")}
+                </span>
               </span>
             </span>
-          </span>
-          <CaretDownIcon weight="fill" aria-hidden className="size-4 shrink-0 text-quiet-control transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] group-open:rotate-180" />
-        </summary>
-        <div className="px-4 pt-2 pb-3">
-          <span className="text-xs text-muted-foreground">Name</span>
-          <div className="flex items-center gap-2">
-            <LookPicker
-              name={category.name}
-              icon={iconOf(category, "tag")}
-              hue={category.hue}
-              onSave={(patch) => run(() => saveCategory(category.id, patch))}
-              {...picker}
-            />
-            <SavedText
-              id={nameId}
-              label={`Name of ${category.name}`}
-              value={category.name}
-              onSave={(name) => run(() => saveCategory(category.id, { name }), `Renamed to ${name}`)}
-              className="flex-1"
-            />
-            <Order name={category.name} up={up} down={down} run={(ids) => run(() => reorder("categories", ids))} />
-            <RowMenu
-              label={`Actions for ${category.name}`}
-              actions={[
-                ...actions,
-                category.archived
-                  ? { label: "Restore", onClick: () => run(() => saveCategory(category.id, { archived: false }), `${category.name} is back`) }
-                  : { label: "Archive", onClick: () => run(() => saveCategory(category.id, { archived: true }), `${category.name} archived`) },
-              ]}
-            />
+            <CaretDownIcon weight="fill" aria-hidden className="size-4 shrink-0 text-quiet-control transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] group-open:rotate-180" />
+          </summary>
+          <div className="px-4 pt-2 pb-3">
+            <span className="text-xs text-muted-foreground">Name</span>
+            <div className="flex items-center gap-2">
+              <LookPicker
+                name={category.name}
+                icon={iconOf(category, "tag")}
+                hue={category.hue}
+                onSave={(patch) => run(() => saveCategory(category.id, patch))}
+                {...picker}
+              />
+              <SavedText
+                id={nameId}
+                label={`Name of ${category.name}`}
+                value={category.name}
+                onSave={(name) => run(() => saveCategory(category.id, { name }), `Renamed to ${name}`)}
+                className="flex-1"
+              />
+              <Order name={category.name} up={up} down={down} run={(ids) => run(() => reorder("categories", ids))} />
+              <RowMenu
+                label={`Actions for ${category.name}`}
+                actions={[
+                  ...actions,
+                  category.archived
+                    ? { label: "Restore", onClick: () => run(() => saveCategory(category.id, { archived: false }), `${category.name} is back`) }
+                    : { label: "Archive", onClick: () => run(() => saveCategory(category.id, { archived: true }), `${category.name} archived`) },
+                ]}
+              />
+            </div>
+            {alert && <div className="mt-2">{alert}</div>}
+            <ul className="mt-3 overflow-hidden rounded-field bg-background">
+              {category.subs.map((s) => (
+                <SubRow key={s.id} sub={s} categoryId={category.id} budgets={budgets} classified={category.kind === "expense"} />
+              ))}
+              <li>
+                <AddRow placeholder="New subcategory" onAdd={(name) => saveSubcategory(null, category.id, { name })} />
+              </li>
+            </ul>
           </div>
-          {alert && <div className="mt-2">{alert}</div>}
-          <ul className="mt-3 overflow-hidden rounded-field bg-background">
-            {category.subs.map((s) => (
-              <SubRow key={s.id} sub={s} categoryId={category.id} budgets={budgets} classified={category.kind === "expense"} />
-            ))}
-            <li>
-              <AddRow placeholder="New subcategory" onAdd={(name) => saveSubcategory(null, category.id, { name })} />
-            </li>
-          </ul>
-        </div>
-      </details>
-    </li>
+        </details>
+      </li>
+    </ViewTransition>
   );
 }
 

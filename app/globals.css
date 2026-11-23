@@ -271,3 +271,20 @@ select:not([multiple]) {
     transition: none;
   }
 }
+
+/* Settings rows (Funds, Budgets, categories) slide to their new place when reordered. */
+::view-transition-group(*.row-move) {
+  animation-duration: 300ms;
+  animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* The phone drawer while a swipe pulls it open (usePullToOpen in components/shell/nav.tsx): placed by
+   the finger, with no transition until release hands it back to its own slide. */
+[data-drawer-pull] .drawer-popup {
+  transform: translateX(calc(var(--drawer-pull, 0px) - 100%)) !important;
+  transition: none !important;
+}
+[data-drawer-pull] .drawer-backdrop {
+  opacity: calc(0.35 * var(--drawer-pull-progress, 0)) !important;
+  transition: none !important;
+}

@@ -1,7 +1,6 @@
 import { ArrowsLeftRightIcon } from "@phosphor-icons/react/ssr";
 import type { Metadata } from "next";
 import { AllocateButton, AllocateProvider } from "@/components/budgets/allocate";
-import { RecordBar } from "@/components/overview/record-bar";
 import { AddressWindow, Band } from "@/components/shell/band";
 import { Empty, IconBadge, Money, Section } from "@/components/shell/bits";
 import { CycleStepper, pickCycle } from "@/components/shell/cycle-stepper";
@@ -213,7 +212,7 @@ export default async function BudgetsPage({ searchParams }: PageProps<"/budgets"
         {cycle && <CycleStepper cycles={cycles} cycle={cycle} path="/budgets" date={date} />}
         {cycle && unallocated && (
           <AddressWindow label="Not yet in a Budget" className="mt-2">
-            <p className="text-[0.8125rem] font-medium text-kraft-ink">Unallocated, still in the envelope</p>
+            <p className="text-[0.8125rem] font-medium text-kraft-ink">Unallocated, not in a Budget yet</p>
             <Money
               value={balances.get(unallocated.id)!.remaining}
               className="mt-0.5 block text-[2.125rem] leading-tight font-semibold tracking-[-0.01em]"
@@ -243,7 +242,6 @@ export default async function BudgetsPage({ searchParams }: PageProps<"/budgets"
       </Band>
 
       <main className="mx-auto max-w-5xl px-5 lg:px-8">
-        <RecordBar placement="page" />
         <Section
           title="Budgets"
           action={

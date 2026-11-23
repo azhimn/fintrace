@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { RecordBar } from "@/components/overview/record-bar";
 import { PlanTable } from "@/components/plan/plan-table";
 import { AddressWindow, Band } from "@/components/shell/band";
 import { Empty, Money, Section } from "@/components/shell/bits";
@@ -29,7 +28,6 @@ export default async function PlanPage({ searchParams }: PageProps<"/plan">) {
           <h1 className="mt-3 text-[1.375rem] font-medium">Plan</h1>
         </Band>
         <main className="mx-auto max-w-5xl px-5 lg:px-8">
-          <RecordBar placement="page" />
           <Section title="Plan items">
             <Empty>No pay cycle yet. Start one on the Cycles screen, then plan it here.</Empty>
           </Section>
@@ -77,7 +75,6 @@ export default async function PlanPage({ searchParams }: PageProps<"/plan">) {
       </Band>
 
       <main className="mx-auto max-w-5xl px-5 lg:px-8">
-        <RecordBar placement="page" />
         <Section title="Plan items">
           <PlanTable
             cycle={{

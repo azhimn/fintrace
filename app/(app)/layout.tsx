@@ -1,3 +1,4 @@
+import { redirect } from "next/navigation";
 import { signOut } from "@/auth";
 import { RecordBar } from "@/components/overview/record-bar";
 import { RecordProvider } from "@/components/record/record-provider";
@@ -17,7 +18,9 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
           username={user.username ?? ""}
           signOut={async () => {
             "use server";
-            await signOut({ redirectTo: "/login" });
+            // Relative redirect, for the same reason as sign-in (app/login/actions.ts).
+            await signOut({ redirect: false });
+            redirect("/login");
           }}
         />
         <div className="flex min-h-dvh min-w-0 flex-1 flex-col">
@@ -25,7 +28,7 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
           <div className="flex-1 pb-30">
             <PageTransition>{children}</PageTransition>
           </div>
-          <RecordBar placement="float" />
+          <RecordBar />
         </div>
       </div>
     </RecordProvider>

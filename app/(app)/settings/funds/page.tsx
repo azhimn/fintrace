@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { RecordBar } from "@/components/overview/record-bar";
 import { FundSettings } from "@/components/settings/lists";
 import { Band } from "@/components/shell/band";
 import { Section } from "@/components/shell/bits";
@@ -17,7 +16,6 @@ export default async function FundsSettingsPage() {
       </Band>
 
       <main className="mx-auto max-w-5xl px-5 lg:px-8">
-        <RecordBar placement="page" />
         <Section title="Your Funds">
           <FundSettings
             funds={accounts.map(({ id, name, kind, minBalance, countsAsUsable, archived, icon, hue }) => ({

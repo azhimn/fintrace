@@ -34,7 +34,6 @@ export default function Loading() {
         </AddressWindow>
       </Band>
       <main className="mx-auto flex max-w-5xl flex-col gap-6 px-5 pt-[22px] lg:px-8">
-        <div className="h-15 rounded-button bg-foreground/15 lg:hidden" />
         <div className="h-48 animate-pulse rounded-panel bg-panel" />
         <div className="h-40 animate-pulse rounded-panel bg-panel" />
       </main>

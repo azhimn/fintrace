@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { RecordBar } from "@/components/overview/record-bar";
 import { BudgetSettings } from "@/components/settings/lists";
 import { Band } from "@/components/shell/band";
 import { Section } from "@/components/shell/bits";
@@ -17,7 +16,6 @@ export default async function BudgetsSettingsPage() {
       </Band>
 
       <main className="mx-auto max-w-5xl px-5 lg:px-8">
-        <RecordBar placement="page" />
         <Section title="Your Budgets">
           <BudgetSettings budgets={envelopes.map((e) => ({ id: e.id, name: e.name, isSystem: e.isSystem, hue: e.hue, icon: e.icon }))} />
           <p className="mt-2 px-1 text-sm text-muted-foreground">

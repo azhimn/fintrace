@@ -61,6 +61,7 @@ After you change `.env`, run `docker compose up -d app` to recreate the containe
 | `SMTP_HOST` | no | Turns on magic-link sign-in, for users who have an email set. |
 | `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `SMTP_FROM` | no | Mail settings for magic links. `SMTP_PORT` defaults to 587. |
 | `COMPOSE_FILE`, `APP_PORT` | dev only | Which compose file to use, and the host port for the dev server. |
+| `DEV_ORIGINS`, `AUTH_TRUST_HOST` | dev only | To open the dev server from another device through a tunnel such as bb Connect: the tunnel's hostname (comma-separated for several), and `true` so sign-in follows the request's host instead of `APP_URL`. Never set `AUTH_TRUST_HOST` in production. |
 
 ## Layout
 
@@ -92,6 +93,7 @@ Server components and actions should get data through `getDal()`. `plan_items`, 
 
 - **Auth table name.** The Auth.js accounts table is `auth_accounts`, because SPEC section 2 uses `accounts` for wallets.
 - **Credentials with database sessions.** Auth.js refuses this pairing when Credentials is the only provider, and it always stores `jwt.encode`'s result in the session cookie. So the magic-link provider stays registered even without SMTP (it refuses every request until `SMTP_HOST` is set), and `jwt.encode` creates a real row in `sessions`.
+- **Host-independent redirects.** Sign-in and sign-out redirect with relative paths, and a signed-out request is rewritten to the sign-in screen rather than redirected. Auth.js and Next would otherwise build absolute URLs from the request's host, which behind a tunnel such as bb Connect is the dev server's own address (`0.0.0.0` or `127.0.0.1`). `DEV_ORIGINS` also feeds Server Actions' `allowedOrigins`, because their CSRF check compares the browser's Origin with that same host.
 - **Session contents.** `lib/public-session.ts` limits what `/api/auth/session` returns. Without it, Auth.js sends the whole user row to the browser, password hash included.
 - **Drizzle version.** Drizzle's docs now install the 1.0 release candidate, but `@auth/drizzle-adapter` doesn't type-check against it, so fintrace uses the stable `drizzle-orm` 0.45 and `drizzle-kit` 0.31.
 - **Passwords.** scrypt from Node's standard library, at OWASP's N=2^17, r=8, p=1. No extra dependency.
@@ -133,7 +135,7 @@ Server components and actions should get data through `getDal()`. `plan_items`, 
 - **Plan items.** Plan items go through the same section 3 checks as records, so an empty Budget is stored as Unallocated or the subcategory's default. Recording from a plan item links the record to it, dated today when today is in that cycle, otherwise the cycle's start. Plan items can't be reordered yet: new ones go to the end.
 - **Allocate.** A Transfer within one Fund, from one Budget to another, dated today and named "Allocate to <Budget>". The Fund defaults to whichever holds the most in the source Budget. While a target Budget has nothing allocated, the amount starts at its planned total; a typed amount is never replaced.
 - **Transactions list.** It pages every match 50 at a time (`?page=`, newest first), including opening rows (read only); the totals above it cover all matches, and changing a filter goes back to page 1. With no cycle in the URL it shows the current cycle. The desktop quick-entry row saves the five required fields; More, or a date outside every cycle, opens the Quick Record sheet with what was typed. Phones use the sheet.
-- **Navigation.** All ten section tabs sit at the top of the kraft band and scroll sideways on phones. Every screen has the Record bar under the flap on phones, docking once it scrolls away, and a floating Record button on desktop.
+- **Navigation.** The sections live in a grouped sidebar on desktop and in a drawer on phones, opened from the sticky menu row or a swipe right. Every screen has one floating Record button, bottom-right.
 - **Close cycle confirmation.** Closing can't be undone, so the button asks a second time, naming the cycle and the next pay date.
 - **Reconcile.** Counts belong to the cycle on screen and only an open cycle takes new ones. The difference uses the latest count per Fund, and the history under each Fund lists every count in the cycle. A count can be removed while the cycle is open.
 - **Adjustments.** Adjust records the difference in one tap: income from External when you counted more, an expense to External when you counted less. It has no category, so a shortfall shows under Uncategorised in Analytics until you categorise it. It is dated today, or the nearest day inside the cycle, and goes to Unallocated. Undo deletes it.

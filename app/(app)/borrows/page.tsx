@@ -1,7 +1,6 @@
 import { CaretDownIcon } from "@phosphor-icons/react/ssr";
 import type { Metadata } from "next";
 import { BorrowForm, BorrowLine, PersonGroup, type BorrowRow } from "@/components/borrows/borrows";
-import { RecordBar } from "@/components/overview/record-bar";
 import { AddressWindow, Band } from "@/components/shell/band";
 import { Empty, Money, Section } from "@/components/shell/bits";
 import { SELF } from "@/lib/dal";
@@ -54,7 +53,6 @@ export default async function BorrowsPage() {
       </Band>
 
       <main className="mx-auto max-w-5xl px-5 lg:px-8">
-        <RecordBar placement="page" />
         <div className="grid grid-cols-1 gap-x-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
           <div>
             <Section title="People">

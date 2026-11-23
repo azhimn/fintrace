@@ -3,7 +3,6 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { AddressWindow, Band } from "@/components/shell/band";
 import { Empty, Money, Section } from "@/components/shell/bits";
-import { RecordBar } from "@/components/overview/record-bar";
 import { pickCycle } from "@/components/shell/cycle-stepper";
 import { Filters } from "@/components/transactions/filters";
 import { QuickEntry } from "@/components/transactions/quick-entry";
@@ -79,7 +78,6 @@ export default async function TransactionsPage({ searchParams }: PageProps<"/tra
       </Band>
 
       <main className="mx-auto max-w-5xl px-5 lg:px-8">
-        <RecordBar placement="page" />
         <Section title="Filters">
           <Filters
             values={filters}

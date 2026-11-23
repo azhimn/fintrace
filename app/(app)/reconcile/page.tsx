@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { RecordBar } from "@/components/overview/record-bar";
 import { CountRow } from "@/components/reconcile/count-row";
 import { AddressWindow, Band } from "@/components/shell/band";
 import { Empty, Money, Section } from "@/components/shell/bits";
@@ -81,7 +80,6 @@ export default async function ReconcilePage({ searchParams }: PageProps<"/reconc
       </Band>
 
       <main className="mx-auto max-w-5xl px-5 lg:px-8">
-        <RecordBar placement="page" />
         {!cycle ? (
           <Section title="Funds">
             <Empty>No pay cycle yet. Start one on the Cycles screen, then count your Funds here.</Empty>

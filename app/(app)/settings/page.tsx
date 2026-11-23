@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { RecordBar } from "@/components/overview/record-bar";
 import { PayDayWindow, ShortcutEditor } from "@/components/settings/preferences";
 import { ThemeChoice } from "@/components/theme";
 import { AddressWindow, Band } from "@/components/shell/band";
@@ -22,7 +21,6 @@ export default async function SettingsPage() {
       </Band>
 
       <main className="mx-auto max-w-5xl px-5 lg:px-8">
-        <RecordBar placement="page" />
         <div className="grid grid-cols-1 gap-x-8 lg:grid-cols-2">
           <Section title="Theme">
             <ThemeChoice />

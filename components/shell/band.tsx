@@ -3,7 +3,7 @@ import { cn } from "@/lib/utils";
 import { MenuButton } from "./nav";
 
 /**
- * The kraft pay envelope across the top of every app screen: the menu button on a phone, then whatever the
+ * The kraft pay envelope across the top of every app screen: the menu row on a phone (sticky), then whatever the
  * screen frames in its address window, then the wavy flap.
  */
 export function Band({ children }: { children?: React.ReactNode }) {
@@ -11,10 +11,17 @@ export function Band({ children }: { children?: React.ReactNode }) {
     <>
       {/* Named, so the band, its flap and its window resize and move smoothly between the loading
           skeleton and the screen, and between screens. Same-screen refreshes don't animate. */}
+      {/* On a phone the menu row stays at the top while the page scrolls. It wears the sidebar's colours and
+          the drawer header's exact box (12px above and below a 40px row), so opening the drawer doesn't shift it. */}
+      <div className="sticky top-0 z-30 bg-sidebar text-sidebar-ink lg:hidden">
+        <div className="px-3 pt-[max(0.75rem,env(safe-area-inset-top))] pb-3">
+          <MenuButton />
+        </div>
+      </div>
       <ViewTransition name="band" share="auto" default="none">
-        <header className="bg-kraft">
-          <div className="mx-auto max-w-5xl px-5 pt-3 pb-5 lg:px-8 lg:pt-4">
-            <MenuButton />
+        {/* flow-root: the first line's top margin stays inside the kraft, with no gap under the menu row. */}
+        <header className="flow-root bg-kraft">
+          <div className="mx-auto max-w-5xl px-5 pb-5 lg:px-8 lg:pt-4">
             {children}
           </div>
         </header>

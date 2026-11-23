@@ -1,5 +1,6 @@
 import { DrizzleAdapter } from "@auth/drizzle-adapter";
 import { eq } from "drizzle-orm";
+import { NextResponse } from "next/server";
 import NextAuth, { CredentialsSignin } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import Nodemailer from "next-auth/providers/nodemailer";
@@ -10,8 +11,9 @@ import { clearFailures, isLocked, recordFailure } from "@/lib/login-throttle";
 import { verifyPassword } from "@/lib/password";
 import { publicSession } from "@/lib/public-session";
 
-// Auth.js reads AUTH_URL; fintrace's single configured origin is APP_URL (SPEC section 1).
-process.env.AUTH_URL ??= process.env.APP_URL;
+// Auth.js reads AUTH_URL; fintrace's single configured origin is APP_URL (SPEC section 1). With
+// AUTH_TRUST_HOST (dev only, e.g. behind a bb Connect share) it follows the request's host instead.
+if (process.env.AUTH_TRUST_HOST !== "true") process.env.AUTH_URL ??= process.env.APP_URL;
 
 class LoginLocked extends CredentialsSignin {
   code = "locked";
@@ -89,6 +91,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       return known ? true : email?.verificationRequest ? "/login?sent=1" : false;
     },
     session: ({ session, user }) => publicSession(session, user) as typeof session,
-    authorized: ({ auth }) => !!auth,
+    // Signed out: show the sign-in screen in place (a rewrite), rather than redirecting. A redirect needs
+    // an absolute URL, and behind a tunnel the request's host is the dev server's own address.
+    authorized: ({ auth, request }) => !!auth || NextResponse.rewrite(new URL("/login", request.url)),
   },
 });

@@ -1,5 +1,6 @@
 "use server";
 
+import { redirect } from "next/navigation";
 import { AuthError, CredentialsSignin } from "next-auth";
 import { signIn } from "@/auth";
 
@@ -16,18 +17,16 @@ function passwordErrorMessage(error: AuthError) {
 
 export async function signInWithPassword(_: LoginState, form: FormData): Promise<LoginState> {
   try {
-    await signIn("credentials", {
-      username: form.get("username"),
-      password: form.get("password"),
-      redirectTo: "/",
-    });
+    // No redirect from Auth.js: it would build an absolute URL from the request's host, which behind a
+    // tunnel is the dev server's own address. A relative redirect keeps the address bar's host.
+    await signIn("credentials", { username: form.get("username"), password: form.get("password"), redirect: false });
   } catch (error) {
     if (error instanceof AuthError) {
       return { error: passwordErrorMessage(error), username: String(form.get("username") ?? "") };
     }
     throw error;
   }
-  return {};
+  redirect("/");
 }
 
 export async function sendMagicLink(_: LoginState, form: FormData): Promise<LoginState> {

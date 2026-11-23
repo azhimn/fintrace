@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { RecordBar } from "@/components/overview/record-bar";
 import { AddressWindow, Band } from "@/components/shell/band";
 import { Money } from "@/components/shell/bits";
 import { Wishlist } from "@/components/wishlist/wishlist";
@@ -38,7 +37,6 @@ export default async function WishlistPage() {
       </Band>
 
       <main className="mx-auto max-w-5xl px-5 lg:px-8">
-        <RecordBar placement="page" />
         <Wishlist items={items} />
       </main>
     </>

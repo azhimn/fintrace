@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { RecentList } from "@/components/overview/recent-list";
-import { RecordBar } from "@/components/overview/record-bar";
 import { NeedsWants } from "@/components/overview/needs-wants";
 import { AddressWindow, Band } from "@/components/shell/band";
 import { Empty, IconBadge, Money, Section } from "@/components/shell/bits";
@@ -96,7 +95,6 @@ export default async function OverviewPage() {
       </Band>
 
       <main className="mx-auto max-w-5xl px-5 lg:px-8">
-        <RecordBar placement="page" />
 
         <div className="grid grid-cols-1 gap-x-8 lg:grid-cols-2">
           <div>

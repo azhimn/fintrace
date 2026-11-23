@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { CloseCycle, StartDateEditor, StartFirstCycle } from "@/components/cycles/cycle-actions";
-import { RecordBar } from "@/components/overview/record-bar";
 import { AddressWindow, Band } from "@/components/shell/band";
 import { Section } from "@/components/shell/bits";
 import { addDays, daysBetween, nextPayDate, payDateOnOrBefore, today } from "@/lib/calendar";
@@ -43,7 +42,6 @@ export default async function CyclesPage() {
       </Band>
 
       <main className="mx-auto max-w-5xl px-5 lg:px-8">
-        <RecordBar placement="page" />
         <div className="grid grid-cols-1 gap-x-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
           <Section title="All cycles">
             {cycles.length === 0 ? (

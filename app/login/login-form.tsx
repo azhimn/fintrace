@@ -1,7 +1,7 @@
 "use client";
 
-import { SignInIcon } from "@phosphor-icons/react";
-import { useActionState, useId } from "react";
+import { EyeIcon, EyeSlashIcon, SignInIcon } from "@phosphor-icons/react";
+import { useActionState, useId, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -20,6 +20,7 @@ export function LoginForm({ magicLink }: { magicLink: boolean }) {
   const [password, passwordAction, signingIn] = useActionState(signInWithPassword, {});
   const [link, linkAction, sending] = useActionState(sendMagicLink, {});
   const id = useId();
+  const [peek, setPeek] = useState(false);
   const passwordError = `${id}-password-error`;
   const linkError = `${id}-link-error`;
 
@@ -42,16 +43,29 @@ export function LoginForm({ magicLink }: { magicLink: boolean }) {
         </div>
         <div className="flex flex-col gap-2">
           <Label htmlFor={`${id}-password`}>Password</Label>
-          <Input
-            id={`${id}-password`}
-            name="password"
-            type="password"
-            required
-            autoComplete="current-password"
-            aria-invalid={!!password.error}
-            aria-describedby={password.error ? passwordError : undefined}
-           
-          />
+          <div className="relative">
+            <Input
+              id={`${id}-password`}
+              name="password"
+              type={peek ? "text" : "password"}
+              required
+              autoComplete="current-password"
+              aria-invalid={!!password.error}
+              aria-describedby={password.error ? passwordError : undefined}
+              className="pr-12"
+            />
+            {/* Peek at the password: one tap shows it, another hides it again. */}
+            <button
+              type="button"
+              onClick={() => setPeek((p) => !p)}
+              aria-pressed={peek}
+              aria-label={peek ? "Hide password" : "Show password"}
+              title={peek ? "Hide password" : "Show password"}
+              className="absolute inset-y-0 right-0 flex w-11 items-center justify-center rounded-r-field text-quiet-control hover:text-foreground"
+            >
+              {peek ? <EyeSlashIcon weight="fill" aria-hidden className="size-5" /> : <EyeIcon weight="fill" aria-hidden className="size-5" />}
+            </button>
+          </div>
         </div>
         <FieldError id={passwordError} message={password.error} />
         <Button type="submit" size="lg" disabled={signingIn}>
