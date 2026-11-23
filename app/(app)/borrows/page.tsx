@@ -1,6 +1,6 @@
 import { CaretDownIcon } from "@phosphor-icons/react/ssr";
 import type { Metadata } from "next";
-import { BorrowForm, BorrowLine, PersonGroup, type BorrowRow } from "@/components/borrows/borrows";
+import { BorrowForm, PersonGroup, type BorrowRow } from "@/components/borrows/borrows";
 import { AddressWindow, Band } from "@/components/shell/band";
 import { Empty, Money, Section } from "@/components/shell/bits";
 import { SELF } from "@/lib/dal";
@@ -77,10 +77,13 @@ export default async function BorrowsPage() {
                   Settled · {settled.length}
                   <CaretDownIcon weight="fill" aria-hidden className="size-4 transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] group-open:rotate-180" />
                 </summary>
-                <ul className="mt-2 rounded-panel bg-panel py-1">
-                  {settled.map((b) => (
-                    <BorrowLine key={b.id} row={{ ...line(b), item: `${personOf(b)} · ${b.item}` }} muted />
-                  ))}
+                {/* Grouped by person like People, newest rows first, A to Z. */}
+                <ul className="mt-2 rounded-panel bg-panel">
+                  {[...new Set(settled.map(personOf))]
+                    .sort((a, b) => a.localeCompare(b))
+                    .map((person) => (
+                      <PersonGroup key={person} person={person} net={0} settled rows={settled.filter((b) => personOf(b) === person).map(line)} />
+                    ))}
                 </ul>
               </details>
             )}

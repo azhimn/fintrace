@@ -141,19 +141,21 @@ export function BorrowForm({ people, funds, budgets }: { people: string[]; funds
 
 const phrase = (net: number) => (net > 0 ? "owes you" : net < 0 ? "you owe" : "even");
 
-/** How many of a person's rows show when their group opens; the rest wait behind Show more. */
+/** How many of a person's rows show when their group opens, and how many more each Show more adds. */
 const RECENT = 5;
+const PAGE = 10;
 
 /**
  * One person's open rows and their net, as an accordion that starts closed. Opening shows the
  * newest rows first (they arrive newest first). Mark settled appears once the net is zero.
  */
-export function PersonGroup({ person, net, rows }: { person: string; net: number; rows: BorrowRow[] }) {
+export function PersonGroup({ person, net, rows, settled }: { person: string; net: number; rows: BorrowRow[]; settled?: boolean }) {
   const { run, pending, alert } = useAction();
   const [open, setOpen] = useState(false);
-  const [all, setAll] = useState(false);
+  const [count, setCount] = useState(RECENT);
   const id = useId();
-  const shown = all ? rows : rows.slice(0, RECENT);
+  const shown = rows.slice(0, count);
+  const left = rows.length - shown.length;
   return (
     <li className="border-t border-divider first:border-t-0">
       <div className="flex items-center gap-2 pr-4">
@@ -171,7 +173,7 @@ export function PersonGroup({ person, net, rows }: { person: string; net: number
             </span>
           </span>
           <span className="flex shrink-0 items-center gap-3">
-            {net !== 0 && (
+            {net !== 0 && !settled && (
               <span className="text-right">
                 <span className="figure">{formatMoney(Math.abs(net))}</span>
                 <span className={cn("block text-xs", net < 0 ? "text-destructive" : "text-muted-foreground")}>{phrase(net)}</span>
@@ -184,7 +186,7 @@ export function PersonGroup({ person, net, rows }: { person: string; net: number
             />
           </span>
         </button>
-        {net === 0 && (
+        {net === 0 && !settled && (
           <Button variant="secondary" disabled={pending} onClick={() => run(() => settleBorrows(person), `Settled with ${person}`)} className="h-11 px-4 text-[0.9375rem]">
             Mark settled
           </Button>
@@ -200,19 +202,19 @@ export function PersonGroup({ person, net, rows }: { person: string; net: number
         )}
       >
         <div className="min-h-0 overflow-hidden">
-          {net === 0 && <p className="px-4 text-xs text-muted-foreground">You&apos;re even. Settling moves these rows to history.</p>}
+          {net === 0 && !settled && <p className="px-4 text-xs text-muted-foreground">You&apos;re even. Settling moves these rows to history.</p>}
           <ul className="pb-1">
             {shown.map((r) => (
-              <BorrowLine key={r.id} row={r} />
+              <BorrowLine key={r.id} row={r} muted={settled} />
             ))}
           </ul>
           {rows.length > RECENT && (
             <button
               type="button"
-              onClick={() => setAll((v) => !v)}
+              onClick={() => setCount((c) => (left > 0 ? c + PAGE : RECENT))}
               className="mb-2 ml-2 h-11 rounded-button px-2 text-sm text-muted-foreground hover:bg-accent hover:text-foreground"
             >
-              {all ? "Show fewer" : `Show ${rows.length - RECENT} more`}
+              {left > 0 ? `Show ${Math.min(PAGE, left)} more` : "Show fewer"}
             </button>
           )}
         </div>
