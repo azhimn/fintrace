@@ -1,0 +1,7 @@
+{
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    // server-only throws outside a React Server Components build, so scripts get its empty stub (as in vitest.config.mts).
+    "paths": { "@/*": ["../*"], "server-only": ["../node_modules/server-only/empty.js"] }
+  }
+}

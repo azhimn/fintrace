@@ -35,6 +35,7 @@ Run all of these inside the container:
 | Generate a migration after editing the schema | `docker compose exec app pnpm db:generate` |
 | Apply migrations | `docker compose exec app pnpm db:migrate` |
 | Seed | `docker compose exec app pnpm db:seed` |
+| Demo user | `docker compose exec app pnpm db:seed-demo` makes `demo` / `demo1234` with two cycles of made-up records (`DEMO_USERNAME`, `DEMO_PASSWORD` override) |
 | Open psql | `docker compose exec db psql -U fintrace` |
 | Dev server logs | `docker compose logs -f app` |
 | Stop, keeping data | `docker compose down` |

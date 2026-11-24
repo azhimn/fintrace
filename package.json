@@ -11,7 +11,8 @@
     "test": "vitest run",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
-    "db:seed": "tsx scripts/seed.mts"
+    "db:seed": "tsx scripts/seed.mts",
+    "db:seed-demo": "tsx --tsconfig scripts/tsconfig.json scripts/seed-demo.mts"
   },
   "dependencies": {
     "@auth/drizzle-adapter": "^1.11.3",
